@@ -1,0 +1,297 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use App\Models\Appointment;
+use App\Models\Doctor;
+use App\Models\Service;
+use App\Models\Department;
+use App\Models\Patient;
+use Carbon\Carbon;
+
+class AppointmentController extends Controller
+{
+    /**
+     * 🩺 Hiển thị danh sách lịch hẹn của bệnh nhân đang đăng nhập
+     * ----------------------------------------------------------
+     * - Lấy thông tin bệnh nhân tương ứng với user hiện tại.
+     * - Nếu user chưa có hồ sơ bệnh nhân → trả về trang chủ kèm thông báo lỗi.
+     * - Nếu có, hiển thị danh sách các lịch hẹn (gồm thông tin bác sĩ, dịch vụ, ...).
+     */
+    public function index()
+    {
+        $user = Auth::user();
+
+        // Kiểm tra user đã có hồ sơ bệnh nhân hay chưa
+        if (!$user || !$user->patient) {
+            return redirect()->route('home')
+                ->with('error', 'Tài khoản của bạn chưa được liên kết với hồ sơ bệnh nhân.');
+        }
+
+        // Lấy danh sách lịch hẹn của bệnh nhân hiện tại
+        $appointments = Appointment::where('patient_id', $user->patient->id)
+            ->with(['doctor.user', 'service']) // Nạp thêm thông tin liên quan
+            ->orderByDesc('appointment_date')  // Mới nhất lên trước
+            ->paginate(10);
+
+        return view('appointments.index', compact('appointments'));
+    }
+
+    /**
+     * 📝 Hiển thị form tạo lịch hẹn mới
+     * ---------------------------------
+     * - Lấy danh sách bác sĩ, dịch vụ, khoa.
+     * - Trả về view form tạo lịch hẹn.
+     */
+    public function create()
+    {
+        $doctors = Doctor::with('user')->get();
+        $services = Service::all();
+        $departments = Department::all();
+
+        return view('appointments.create', compact('doctors', 'services', 'departments'));
+    }
+
+    /**
+     * 💾 Lưu lịch hẹn mới vào cơ sở dữ liệu
+     * --------------------------------------
+     * - Xác thực dữ liệu nhập vào.
+     * - Kiểm tra trùng lịch hẹn với bác sĩ.
+     * - Dùng transaction để đảm bảo toàn vẹn dữ liệu.
+     */
+    public function store(Request $request)
+    {
+        /**
+         * Bước 1️⃣: Kiểm tra dữ liệu đầu vào
+         * - Bắt buộc phải có các thông tin: bệnh nhân, bác sĩ, dịch vụ, ngày khám, ca khám.
+         * - Ngày khám không được nhỏ hơn hôm nay.
+         * - Ca khám chỉ có thể là "morning" hoặc "afternoon".
+         */
+        $validator = \Validator::make($request->all(), [
+            'patient_id'       => 'required|exists:patients,id',
+            'doctor_id'        => 'required|exists:doctors,id',
+            'service_id'       => 'required|exists:services,id',
+            'appointment_date' => 'required|date|after_or_equal:today',
+            'appointment_time' => 'required|in:morning,afternoon',
+            'note'             => 'nullable|string|max:500',
+        ]);
+
+        // Nếu dữ liệu nhập không hợp lệ → quay lại form, hiển thị lỗi.
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        /**
+         * Bước 2️⃣: Sử dụng transaction để đảm bảo an toàn dữ liệu
+         * - Nếu có lỗi trong quá trình tạo lịch hẹn, mọi thao tác sẽ bị rollback (hủy bỏ).
+         */
+        return DB::transaction(function () use ($request) {
+
+            // Lấy thông tin các đối tượng liên quan
+            $doctor  = Doctor::with('user')->findOrFail($request->doctor_id);
+            $service = Service::findOrFail($request->service_id);
+            $patient = Patient::findOrFail($request->patient_id);
+
+            /**
+             * Bước 3️⃣: Xác định tên ca khám dựa vào giá trị appointment_time
+             * - morning → Ca sáng (07:30 - 11:30)
+             * - afternoon → Ca chiều (13:00 - 17:00)
+             */
+            $medicalExaminationMap = [
+                'morning'   => 'Ca sáng (07:30 - 11:30)',
+                'afternoon' => 'Ca chiều (13:00 - 17:00)',
+            ];
+            $medicalExamination = $medicalExaminationMap[$request->appointment_time];
+
+            // ✅ Không cần giờ mặc định — chỉ lưu ngày khám
+            $appointmentDate = Carbon::parse($request->appointment_date)->toDateString();
+            
+            /**
+             * Bước 5️⃣: Kiểm tra giới hạn số ca mỗi buổi
+             * - Mỗi bác sĩ trong một ngày chỉ nhận tối đa:
+             *   + 25 ca sáng
+             *   + 25 ca chiều
+             * - Nếu đã đủ → báo lỗi, không cho đặt thêm.
+             */
+            $existingCount = Appointment::where('doctor_id', $doctor->id)
+                ->whereDate('appointment_date', $request->appointment_date)
+                ->where('medical_examination', $medicalExamination)
+                ->whereIn('status', ['pending', 'confirmed']) // chỉ tính các lịch đang chờ hoặc đã xác nhận
+                ->count();
+
+            if ($existingCount >= 25) {
+                return back()->with('error',
+                    'Buổi ' . ($request->appointment_time === 'morning' ? 'sáng' : 'chiều') .
+                    ' ngày ' . Carbon::parse($request->appointment_date)->format('d/m/Y') .
+                    ' của bác sĩ ' . $doctor->user->name . ' đã đủ 25 ca khám. ' .
+                    'Vui lòng chọn buổi khác hoặc ngày khác.'
+                )->withInput();
+            }
+
+            /**
+             * Bước 6️⃣: Kiểm tra trùng lịch hẹn (tránh cùng giờ)
+             * - Nếu bác sĩ đã có lịch hẹn ở cùng thời điểm → không cho đặt trùng.
+             */
+            $exists = Appointment::where('doctor_id', $request->doctor_id)
+                ->where('appointment_date', $appointmentDateTime)
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->exists();
+
+            if ($exists) {
+                return back()->with('error', 'Bác sĩ đã có lịch hẹn trong thời gian này.')->withInput();
+            }
+
+            /**
+             * Bước 7️⃣: Tạo lịch hẹn mới
+             * - Ghi vào bảng appointments
+             * - Trạng thái mặc định: "pending" (chờ xác nhận)
+             */
+            $appointment = Appointment::create([
+                'patient_id'          => $patient->id,
+                'doctor_id'           => $doctor->id,
+                'service_id'          => $service->id,
+                'appointment_date'    => $appointmentDateTime,
+                'status'              => 'pending',
+                'medical_examination' => $medicalExamination,
+                'note'                => $request->note,
+            ]);
+
+            /**
+             * Bước 8️⃣: Trả về thông báo thành công
+             * - Redirect về trang danh sách lịch hẹn.
+             */
+            return redirect()
+                ->route('appointments.index')
+                ->with('success', 'Đặt lịch thành công! Vui lòng chờ xác nhận.');
+        });
+    }
+
+    /**
+     * 🔍 Hiển thị chi tiết một lịch hẹn
+     * ---------------------------------
+     * - Bao gồm thông tin bệnh nhân, bác sĩ, dịch vụ.
+     */
+    public function show($id)
+    {
+        $appointment = Appointment::with(['patient', 'doctor.user', 'service'])
+            ->findOrFail($id);
+
+        return view('appointments.show', compact('appointment'));
+    }
+
+    /**
+     * ✏️ Hiển thị form chỉnh sửa lịch hẹn
+     * -----------------------------------
+     * - Dành cho bệnh nhân hoặc admin muốn thay đổi thông tin lịch hẹn.
+     */
+    public function edit($id)
+    {
+        $appointment = Appointment::findOrFail($id);
+        $doctors = Doctor::with('user')->get();
+        $services = Service::all();
+
+        return view('appointments.edit', compact('appointment', 'doctors', 'services'));
+    }
+
+    /**
+     * 🔄 Cập nhật thông tin lịch hẹn
+     * ------------------------------
+     * - Kiểm tra dữ liệu hợp lệ.
+     * - Cập nhật vào bảng `appointments`.
+     */
+    public function update(Request $request, $id)
+    {
+        $appointment = Appointment::findOrFail($id);
+
+        $request->validate([
+            'doctor_id'        => 'required|exists:doctors,id',
+            'service_id'       => 'required|exists:services,id',
+            'appointment_date' => 'required|date|after_or_equal:today',
+            'status'           => 'required|in:pending,confirmed,completed,cancelled',
+            'note'             => 'nullable|string|max:500',
+        ]);
+
+        $appointment->update($request->only([
+            'doctor_id', 'service_id', 'appointment_date', 'status', 'note'
+        ]));
+
+        return redirect()->route('appointments.index')->with('success', 'Cập nhật lịch hẹn thành công!');
+    }
+
+    /**
+     * ❌ Hủy lịch hẹn
+     * ---------------
+     * - Chỉ cho phép khi lịch hẹn đang ở trạng thái “pending”.
+     * - Chỉ bệnh nhân sở hữu lịch hẹn hoặc người có quyền mới được hủy.
+     */
+    public function cancel($id)
+    {
+        $appointment = Appointment::findOrFail($id);
+
+        $user = Auth::user();
+
+        // Kiểm tra quyền sở hữu
+        if ($user && $user->patient && $appointment->patient_id !== $user->patient->id) {
+            return redirect()->route('appointments.show', $appointment->id)
+                ->with('error', 'Bạn không có quyền hủy lịch hẹn này.');
+        }
+
+        // Chỉ được hủy khi lịch hẹn đang chờ xác nhận
+        if ($appointment->status !== 'pending') {
+            return redirect()->route('appointments.show', $appointment->id)
+                ->with('error', 'Chỉ có thể hủy lịch hẹn đang chờ xác nhận.');
+        }
+
+        // Xóa lịch hẹn thay vì cập nhật trạng thái
+        $appointment->delete();
+
+        return redirect()->route('appointments.index')
+            ->with('success', 'Đã hủy và xóa lịch hẹn thành công.');
+    }
+
+    /**
+     * 👨‍⚕️ Bác sĩ đánh dấu lịch hẹn đã hoàn thành
+     * -------------------------------------------
+     * - Chỉ bác sĩ của lịch hẹn và khi trạng thái là "confirmed" mới được phép cập nhật.
+     */
+    public function complete(Request $request, Appointment $appointment)
+    {
+        $user = Auth::user();
+
+        // Chỉ cho phép bác sĩ đúng của lịch hẹn
+        if (!$user || !$user->hasRole('doctor') || !$user->doctor || $user->doctor->id !== $appointment->doctor_id) {
+            return back()->with('error', 'Bạn không có quyền cập nhật lịch hẹn này.');
+        }
+
+        // Chỉ cho phép hoàn thành khi lịch hẹn đã được duyệt
+        if ($appointment->status !== 'confirmed') {
+            return back()->with('error', 'Chỉ có thể hoàn thành lịch hẹn đã được duyệt.');
+        }
+
+        // Cập nhật trạng thái lịch hẹn sang “completed”
+        $appointment->update(['status' => 'completed']);
+
+        return back()->with('success', 'Đã đánh dấu lịch hẹn là hoàn thành.');
+    }
+
+    /**
+     * 📋 Hiển thị hồ sơ bệnh án sau khi khám
+     * ---------------------------------------
+     * - Dành cho bệnh nhân xem lại chi tiết lịch khám và kết quả (medical_record).
+     */
+    public function viewRecord($id)
+    {
+        $appointment = \App\Models\Appointment::with(['doctor.user', 'service', 'patient', 'medicalRecord'])
+            ->findOrFail($id);
+
+        $record = $appointment->medicalRecord ?? null;
+        $patient = $appointment->patient ?? null;
+
+        // Truyền layout riêng dành cho hồ sơ bệnh nhân
+        return view('appointments.medical_record', compact('appointment', 'record', 'patient'))
+                ->with('layout', 'layouts.profile');
+    }
+}

@@ -1,0 +1,531 @@
+
+:root {
+    --primary-color: #0066b3;
+    --secondary-color: #e74c3c;
+}
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+/* Top Bar Styles */
+.top-bar {
+    background: linear-gradient(135deg, #0066b3 0%, #004d8c 100%);
+    color: white;
+    padding: 12px 0;
+    font-size: 14px;
+    font-weight: 400;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: relative;
+    z-index: 1040; /* Ensure it's below dropdown but above other content */
+}
+
+.top-bar a {
+    color: rgba(255,255,255,0.9);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.top-bar a:hover {
+    color: #fff;
+    text-decoration: none;
+}
+
+.top-bar-item {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+}
+
+.social-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.social-links a:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-2px);
+}
+
+/* Dropdown Menu Styles */
+.dropdown {
+    position: relative;
+}
+
+/* Dropdown styles */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-toggle {
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 9999; /* Ensure it's above other elements */
+    min-width: 280px;
+    padding: 0;
+    margin: 0.5rem 0 0;
+    font-size: 0.9375rem;
+    color: #212529;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* display: block !important; */ /* Controlled by JS/Bootstrap */
+    pointer-events: none;
+}
+
+/* The .show class is added by Bootstrap's JS */
+.dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+    /* display: block !important; */
+}
+
+/* Forced show for hover effect on desktop */
+.dropdown:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+    display: block; /* Overrides default Bootstrap hidden state for hover */
+    animation: fadeIn 0.3s;
+}
+
+
+.dropdown-item:hover, .dropdown-item:focus {
+    background-color: #f8f9fa;
+    color: #0066b3;
+    text-decoration: none;
+}
+
+.dropdown-item i {
+    margin-right: 10px;
+    width: 20px;
+    text-align: center;
+}
+
+.dropdown-divider {
+    margin: 0.25rem 0;
+    border-top: 1px solid #e9ecef;
+}
+
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.5rem 1.5rem;
+    clear: both;
+    font-weight: 400;
+    color: #212529;
+    text-decoration: none;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0;
+    transition: all 0.2s;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 2px 8px;
+    width: auto;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    color: var(--primary-color);
+    background-color: #f8f9fa;
+    text-decoration: none;
+}
+
+.dropdown-item i {
+    width: 20px;
+    margin-right: 10px;
+    text-align: center;
+}
+
+.dropdown-divider {
+    height: 0;
+    margin: 0.5rem 0;
+    overflow: hidden;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Ensure dropdown appears above other content */
+.top-bar {
+    position: relative;
+    z-index: 1030;
+}
+
+.main-header {
+    position: relative;
+    z-index: 1020;
+}
+
+/* Fix for dropdown positioning */
+.dropdown-toggle::after {
+    vertical-align: middle;
+    margin-left: 0.5em;
+}
+
+/* Main Navigation */
+.main-header {
+    position: sticky;
+    top: 0;
+    z-index: 1030; /* Higher than top-bar (1040/1030 conflict, setting nav higher is standard) */
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    background: #fff;
+}
+
+.navbar {
+    padding: 0;
+}
+
+.navbar-brand {
+    padding: 5px 0;
+}
+
+.navbar-brand img {
+    transition: all 0.3s ease;
+}
+
+.navbar-brand:hover img {
+    transform: scale(1.02);
+}
+
+.nav-item {
+    margin: 0 5px;
+    position: relative;
+}
+
+.debug-outline {
+    outline: 2px solid red !important;
+}
+
+/* Force show dropdown for debugging - REMOVED */
+
+
+.nav-link {
+    color: #333 !important;
+    font-weight: 500;
+    padding: 15px 12px !important;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.nav-link:after {
+    content: '';
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--primary-color);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.nav-link:hover:after,
+.nav-link.active:after {
+    width: 60%;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: var(--primary-color) !important;
+}
+
+.dropdown-toggle::after {
+    vertical-align: middle;
+    margin-left: 5px;
+    transition: transform 0.2s;
+}
+
+/* Hover effect for main nav dropdowns */
+.dropdown:hover .dropdown-menu {
+    display: block;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* User Dropdown Styles */
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+}
+
+.user-info small {
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+
+/* These were moved up to .dropdown-item definition */
+/* .dropdown-item {
+    transition: all 0.2s;
+    border-radius: 4px;
+    margin: 2px 8px;
+    width: auto;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: var(--primary-color) !important;
+} */
+
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    padding: 8px;
+    margin-top: 10px;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.dropdown-header {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Login/Register Buttons */
+.btn-outline-light:hover {
+    color: var(--primary-color) !important;
+    background: #fff;
+    border-color: #fff;
+}
+
+.btn-light {
+    background: #fff;
+    border-color: #fff;
+}
+
+.btn-light:hover {
+    background: #f8f9fa;
+    border-color: #f8f9fa;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 991.98px) {
+    .top-bar {
+        text-align: center;
+        padding: 8px 0;
+    }
+
+    .top-bar-left,
+    .top-bar-right {
+        justify-content: center !important;
+        width: 100%;
+    }
+
+    .social-links {
+        margin: 10px 0;
+    }
+
+    .navbar-collapse {
+        background: #fff;
+        padding: 15px;
+        margin-top: 10px;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .nav-link {
+        padding: 10px 0 !important;
+    }
+}
+/* Color Overrides */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+/* Icon Box for Services */
+.icon-box {
+    width: 80px;
+    height: 80px;
+    background: rgba(0, 102, 179, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+/* Department Card Styles */
+.department-card {
+    border: 1px solid #eee;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.3s;
+    margin-bottom: 20px;
+    background: white;
+    height: 100%; /* Ensure all cards are same height */
+}
+.department-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+.department-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+/* Doctor Card Styles */
+.doctor-card {
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+    background: white;
+    height: 100%;
+}
+.doctor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+.doctor-img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 auto 15px;
+    border: 5px solid #f8f9fa;
+}
+/* Footer Styles */
+footer {
+    background-color: #2c3e50;
+    color: white;
+    padding: 50px 0 20px;
+    margin-top: 50px;
+}
+.footer-links h5 {
+    color: #fff;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+.footer-links ul {
+    list-style: none;
+    padding: 0;
+}
+.footer-links li {
+    margin-bottom: 10px;
+}
+.footer-links a {
+    color: #bdc3c7;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+.footer-links a:hover {
+    color: white;
+    text-decoration: none;
+}
+.social-icons a {
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    text-align: center;
+    line-height: 36px;
+    color: white;
+    margin-right: 10px;
+    transition: all 0.3s;
+}
+.social-icons a:hover {
+    background: var(--primary-color);
+    transform: translateY(-3px);
+}
+/* Back to Top Button */
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    transition: all 0.3s;
+    display: none; /* Hidden by default, shown with JS */
+    z-index: 9999;
+}
+.back-to-top:hover {
+    background: #0056b3;
+    transform: translateY(-3px);
+    color: white;
+}
+/* Separator Line */
+.divider {
+    width: 50px;
+    height: 3px;
+    background: var(--primary-color);
+    margin: 15px auto;
+}
+/* Copyright/Footer Border */
+.copyright {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 20px;
+    margin-top: 30px;
+    font-size: 14px;
+}
+/* Hero Section Styling */
+.hero-section {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1581056771107-24ca5f033842?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: 100px 0;
+    text-align: center;
+    margin-bottom: 50px;
+}
+/* Feature Icons */
+.feature-icon i {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
