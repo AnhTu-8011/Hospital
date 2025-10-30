@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\{
     AppointmentController as AdminAppointmentController
 };
 use App\Http\Controllers\{
+    AIChatController,
     ServiceController,
     PatientController,
     UserController,
@@ -210,5 +211,8 @@ Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('adm
 
 Route::get('/admin/doctors/{doctor}/schedule', [App\Http\Controllers\Admin\DoctorController::class, 'schedule'])
     ->name('admin.doctors.schedule');
+
+// Trang giao diện chat AI
+Route::get('/ai-chat', function () {return view('chat.ai_chat');})->name('ai.chat');
 
 require __DIR__ . '/auth.php';
