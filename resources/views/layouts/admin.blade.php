@@ -67,6 +67,18 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a href="{{ route('admin.test-types.index') }}"
+                class="nav-link d-flex align-items-center {{ request()->routeIs('admin.test-types.*') ? 'active' : '' }}">
+                    <i class="fas fa-tags me-2"></i> Loại xét nghiệm
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.lab_tests.index') }}"
+                class="nav-link d-flex align-items-center {{ request()->routeIs('admin.lab_tests.*') ? 'active' : '' }}">
+                    <i class="fas fa-vials me-2"></i> Xét nghiệm
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="{{ route('admin.users.index') }}"
                    class="nav-link d-flex align-items-center {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                     <i class="fas fa-users me-2"></i> Người dùng

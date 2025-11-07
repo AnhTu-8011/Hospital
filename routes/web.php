@@ -27,12 +27,12 @@ use App\Http\Controllers\Doctor\{
 
 /*
 |--------------------------------------------------------------------------
-| 🏠 Trang chính (hiển thị khoa, dịch vụ, bác sĩ)
+| 🏠 Trang chính (Home)
 |--------------------------------------------------------------------------
 */
 Route::get('/', [DepartmentController::class, 'welcome'])->name('home');
 
-// 📅 Modal đặt lịch hẹn (hiển thị popup)
+// 📅 Modal đặt lịch hẹn (popup)
 Route::get('/appointment/modal', function () {
     $departments = \App\Models\Department::all();
     $services = \App\Models\Service::with('department')->get();
@@ -42,7 +42,7 @@ Route::get('/appointment/modal', function () {
 
 /*
 |--------------------------------------------------------------------------
-| 📊 Dashboard mặc định - redirect based on role
+| 📊 Dashboard mặc định (Redirect theo vai trò)
 |--------------------------------------------------------------------------
 */
 Route::get('/dashboard', function () {
@@ -56,7 +56,7 @@ Route::get('/dashboard', function () {
 
 /*
 |--------------------------------------------------------------------------
-| 🧑‍💼 Admin Routes
+| 🧑‍💼 ADMIN ROUTES
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'role:admin'])
@@ -64,10 +64,10 @@ Route::middleware(['auth', 'role:admin'])
     ->name('admin.')
     ->group(function () {
 
-        // Dashboard
+        // 📊 Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-        // CRUD
+        // ⚙️ CRUD quản lý
         Route::resource('departments', DepartmentController::class);
         Route::resource('doctors', AdminDoctorController::class);
         Route::resource('appointments', AdminAppointmentController::class);
@@ -75,17 +75,34 @@ Route::middleware(['auth', 'role:admin'])
         Route::resource('patients', PatientController::class);
         Route::resource('users', UserController::class)->only(['index', 'edit', 'update', 'destroy']);
 
-        // Cập nhật trạng thái lịch hẹn
+        // 🧪 Loại xét nghiệm (Danh mục)
+        Route::resource('test-types', \App\Http\Controllers\Admin\TestTypeController::class)->except(['show']);
+
+        // 🔄 Cập nhật trạng thái lịch hẹn
         Route::patch('/appointments/{appointment}/status', [AdminAppointmentController::class, 'updateStatus'])
             ->name('appointments.status');
 
-        // Trang thống kê
+        // 📈 Trang thống kê
         Route::get('/statistics', fn() => view('admin.statistics'))->name('statistics.index');
+
+        /*
+        |--------------------------------------------------------------------------
+        | 🧪 Quản lý xét nghiệm (Lab Tests)
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/lab-tests', [\App\Http\Controllers\Admin\LabTestController::class, 'index'])
+            ->name('lab_tests.index');
+        Route::get('/lab-tests/{id}/upload', [\App\Http\Controllers\Admin\LabTestController::class, 'uploadResult'])
+            ->name('lab_tests.upload');
+        Route::post('/lab-tests/{id}/upload', [\App\Http\Controllers\Admin\LabTestController::class, 'saveUpload'])
+            ->name('lab_tests.saveUpload');
+        Route::delete('/lab-tests/{id}', [\App\Http\Controllers\Admin\LabTestController::class, 'destroy'])
+            ->name('lab_tests.destroy');
     });
 
 /*
 |--------------------------------------------------------------------------
-| 🩺 Doctor Routes
+| 🩺 DOCTOR ROUTES
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'role:doctor'])
@@ -93,33 +110,42 @@ Route::middleware(['auth', 'role:doctor'])
     ->name('doctor.')
     ->group(function () {
 
-        // Dashboard
+        // 📊 Dashboard
         Route::get('/dashboard', [DoctorDashboardController::class, 'index'])->name('dashboard');
 
-        // Hồ sơ cá nhân
+        // 👤 Hồ sơ cá nhân
         Route::get('/profile', [DoctorProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [DoctorProfileController::class, 'update'])->name('profile.update');
         Route::put('/profile/password', [DoctorProfileController::class, 'updatePassword'])->name('password.update');
 
-        // Lịch hẹn
+        // 📅 Lịch hẹn
         Route::get('/appointments', [AppointmentController::class, 'doctorAppointments'])->name('appointments.index');
         Route::get('/appointments/{appointment}', [AppointmentController::class, 'show'])->name('appointments.show');
         Route::put('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.status');
         Route::post('/appointments/{appointment}/complete', [AppointmentController::class, 'complete'])->name('appointments.complete');
 
-        // Bệnh nhân
+        // 👨‍⚕️ Bệnh nhân
         Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
         Route::get('/patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
 
-        // Hồ sơ bệnh án
-        Route::get('/patients/{patient}/records', [MedicalRecordController::class, 'index'])->name('patients.records');
-        Route::post('/patients/{patient}/records', [MedicalRecordController::class, 'store'])->name('patients.records.store');
-        
+        // 📋 Hồ sơ bệnh án
+        Route::get('/patients/{patient}/records', [\App\Http\Controllers\Doctor\MedicalRecordController::class, 'index'])->name('patients.records');
+        Route::post('/patients/{patient}/records', [\App\Http\Controllers\Doctor\MedicalRecordController::class, 'store'])->name('patients.records.store');
+
+        // 🧪 Bác sĩ yêu cầu xét nghiệm
+        Route::get('/records/{record}/lab-tests/create', [\App\Http\Controllers\Doctor\LabTestController::class, 'create'])
+            ->name('lab_tests.create');
+        Route::post('/records/{record}/lab-tests', [\App\Http\Controllers\Doctor\LabTestController::class, 'store'])
+            ->name('lab_tests.store');
+        Route::get('/records/{record}/lab-tests', function (\App\Models\MedicalRecord $record) {
+            return redirect()->route('doctor.patient.record', $record->appointment_id)
+                ->with('error', 'Vui lòng gửi yêu cầu bằng biểu mẫu.');
+        });
     });
 
 /*
 |--------------------------------------------------------------------------
-| 👩‍🦰 Patient Routes
+| 👩‍🦰 PATIENT ROUTES
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'role:patient'])
@@ -136,12 +162,12 @@ Route::middleware(['auth', 'role:patient'])
 */
 Route::middleware(['auth'])->group(function () {
 
-    // Hồ sơ cá nhân
+    // 👤 Hồ sơ cá nhân
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Lịch hẹn (AppointmentController)
+    // 📅 Lịch hẹn
     Route::resource('appointments', AppointmentController::class);
     Route::patch('/appointments/{appointment}/cancel', [AppointmentController::class, 'cancel'])->name('appointments.cancel');
     Route::get('/appointments/{appointment}/cancel', function (\App\Models\Appointment $appointment) {
@@ -150,6 +176,9 @@ Route::middleware(['auth'])->group(function () {
     })->name('appointments.cancel.view');
     Route::get('/appointments/{appointment}/checkout', [PaymentController::class, 'checkout'])->name('payment.checkout');
 
+    // 📋 Hồ sơ khám bệnh
+    Route::get('/appointments/{id}/record', [AppointmentController::class, 'viewRecord'])->name('appointments.record');
+
     // API lấy bác sĩ theo khoa
     Route::get('/appointments/doctors/{departmentId}', [AppointmentController::class, 'getDoctors']);
     Route::get('/departments/{id}/doctors', [AdminDoctorController::class, 'getDoctorsByDepartment']);
@@ -157,6 +186,11 @@ Route::middleware(['auth'])->group(function () {
     // Trang kết quả thanh toán
     Route::view('/appointments/success', 'appointments.success')->name('appointments.success');
     Route::view('/appointments/fail', 'appointments.fail')->name('appointments.fail');
+
+    // 💬 Chat
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/{receiverId}', [ChatController::class, 'getMessages'])->name('chat.get');
+    Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.send');
 });
 
 /*
@@ -178,29 +212,20 @@ Route::get('/doctor/patient-history', [HistoryController::class, 'history'])->na
 
 /*
 |--------------------------------------------------------------------------
-| 📋 Hồ sơ khám bệnh (Appointment record)
+| 🧠 AI Chat (Giao diện AI)
 |--------------------------------------------------------------------------
 */
-Route::get('/appointments/{id}/record', [AppointmentController::class, 'viewRecord'])->name('appointments.record');
+Route::get('/ai-chat', fn() => view('chat.ai_chat'))->name('ai.chat');
 
 /*
 |--------------------------------------------------------------------------
-| 💬 Chat Routes
+| 🔧 Khác
 |--------------------------------------------------------------------------
 */
-// Patient gửi tin nhắn cho admin
-Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.send');
+Route::get('/admin/doctors/{doctor}/schedule', [AdminDoctorController::class, 'schedule'])
+    ->name('admin.doctors.schedule');
 
-// Lấy tin nhắn giữa patient và admin
-Route::get('/chat/messages/{receiverId}', [ChatController::class, 'getMessages'])->name('chat.messages');
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('/chat/{receiverId}', [ChatController::class, 'getMessages'])->name('chat.get');
-    Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.send');
-    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
-});
-
-// doanh thu
+// 👩‍💻 Doanh thu (Dashboard admin)
 Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
 /*
@@ -208,11 +233,4 @@ Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('adm
 | 🔑 Auth Routes (Laravel Breeze / Jetstream / Fortify)
 |--------------------------------------------------------------------------
 */
-
-Route::get('/admin/doctors/{doctor}/schedule', [App\Http\Controllers\Admin\DoctorController::class, 'schedule'])
-    ->name('admin.doctors.schedule');
-
-// Trang giao diện chat AI
-Route::get('/ai-chat', function () {return view('chat.ai_chat');})->name('ai.chat');
-
 require __DIR__ . '/auth.php';

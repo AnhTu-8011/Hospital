@@ -58,38 +58,42 @@
             <hr>
 
             <!-- Mô tả bệnh -->
-            <h5 class="text-warning mb-3"><i class="fas fa-clipboard-list"></i> Ảnh xét nghiệm nếu có</h5>
             @if($record)
+            @php
+                $labTests = \App\Models\LabTest::where('medical_record_id', $record->id)
+                    ->where('status', 'completed')
+                    ->get();
+            @endphp
+            @if(!empty($record->image) || (!empty($record->images) && is_array($record->images) && count($record->images)) || ($labTests && $labTests->count()))
+            <h5 class="text-warning mb-3"><i class="fas fa-clipboard-list"></i> Ảnh xét nghiệm nếu có</h5>
             <form action="{{ route('doctor.records.update', $record->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
-                <!-- Ảnh chính -->
-                <div class="mb-3">
-                    <label for="image" class="form-label fw-bold">Ảnh chính:</label>
-                    <!-- <input type="file" id="image" name="image" class="form-control" accept="image/*" disabled> -->
-                    @if($record && !empty($record->image))
-                        <div class="mt-2">
-                            <img src="{{ asset('storage/'.$record->image) }}" alt="Ảnh" class="thumb">
-                        </div>
-                    @endif
-                    <div id="imagePreview" class="mt-2"></div>
-                </div>
-                <!-- Ảnh kèm theo -->
-                <div class="mb-3">
-                    <label for="images" class="form-label fw-bold">Ảnh kèm theo:</label>
-                    <!-- <input type="file" id="images" name="images[]" class="form-control" accept="image/*" multiple disabled> -->
-                    @if($record && !empty($record->images) && is_array($record->images))
-                        <div class="mt-2 d-flex flex-wrap gap-2">
-                            @foreach($record->images as $img)
-                                <img src="{{ asset('storage/'.$img) }}" alt="Ảnh" class="thumb">
-                            @endforeach
-                        </div>
-                    @endif
-                    <div id="imagesPreview" class="mt-2 d-flex flex-wrap gap-2"></div>
-                </div>
-
+                <!-- Ảnh từ xét nghiệm (admin cập nhật) -->
+                @if($labTests && $labTests->count())
+                    <div class="mb-2">
+                        <label class="form-label fw-bold">Ảnh từ xét nghiệm:</label>
+                        @foreach($labTests as $t)
+                            @if(!empty($t->image))
+                                <div class="mt-2">
+                                    <img src="{{ asset('storage/'.$t->image) }}" alt="Ảnh" class="thumb">
+                                </div>
+                            @endif
+                            @if(!empty($t->images) && is_array($t->images))
+                            <label class="form-label fw-bold">Ảnh phụ từ xét nghiệm:</label>
+                                <div class="mt-2 d-flex flex-wrap gap-2">
+                                    @foreach($t->images as $img)
+                                        <img src="{{ asset('storage/'.$img) }}" alt="Ảnh" class="thumb">
+                                    @endforeach
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                @endif
+            </form>
+            @endif
             <hr>
-
+            
             <!-- Chuẩn đoán -->
             <h5 class="text-success mb-3"><i class="fas fa-diagnoses"></i> Chuẩn đoán & Kết luận</h5>
 
@@ -120,7 +124,6 @@
                     <textarea id="prescription" name="prescription" class="form-control" rows="4" placeholder="Ví dụ: Paracetamol 500mg - Uống 2 lần/ngày
             Vitamin C 1000mg - Sáng 1 viên" readonly disabled>{{ old('prescription', isset($record->prescription) ? (is_array($record->prescription) ? implode("\n", $record->prescription) : ( $record->prescription ? implode("\n", (array) json_decode($record->prescription, true)) : '')) : '') }}</textarea>
                 </div>
-            </form>
             @else
                 <div class="alert alert-info">Chưa có hồ sơ khám bệnh.</div>
             @endif
