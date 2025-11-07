@@ -56,7 +56,12 @@
                             @endphp
 
                             {{-- ✅ Hiển thị trạng thái thanh toán --}}
-                            @if($appointment->payment_status === 'success')
+                            @if($appointment->status === 'canceled' && $appointment->payment_status === 'success')
+                                <span class="badge bg-info text-dark">Đã hoàn</span><br>
+                                <small class="text-info fw-semibold">
+                                    {{ number_format($finalPrice, 0, ',', '.') }} đ
+                                </small>
+                            @elseif($appointment->payment_status === 'success')
                                 <span class="badge bg-success">Thành công</span><br>
                                 <small class="text-success fw-semibold">
                                     {{ number_format($finalPrice, 0, ',', '.') }} đ

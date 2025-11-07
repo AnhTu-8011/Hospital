@@ -116,7 +116,7 @@ class PaymentController extends Controller
             : 'Thanh toán thất bại. Mã lỗi: ' . $responseCode;
 
         $appointment->update(['payment_status' => 'failed']);
-        return redirect()->route('appointments.create')->with('error', $errorMessage);
+        return redirect()->route('appointments.show', $appointment->id)->with('error', $errorMessage);
     }
 
     /**

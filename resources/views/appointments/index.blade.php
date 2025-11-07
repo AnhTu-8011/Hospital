@@ -66,7 +66,7 @@
                                     </td>
                                     <td>{{ $appointment->note ?? '---' }}</td>
                                     <td>
-                                        <a href="{{ route('appointments.show', $appointment->id) }}" 
+                                        <a href="{{ route('appointments.show', $appointment->id) }}"
                                            class="btn btn-sm btn-outline-info">
                                             <i class="fas fa-eye"></i>
                                         </a>
@@ -76,27 +76,14 @@
                                                 <i class="fas fa-notes-medical"></i>
                                             </a>
                                         @endif
-                                        @if($appointment->status === 'pending')
-                                            <form action="{{ route('appointments.cancel', $appointment->id) }}" 
-                                                  method="POST" 
-                                                  class="d-inline"
-                                                  onsubmit="return confirm('Bạn có chắc chắn muốn hủy lịch hẹn này không?')">
-                                                @csrf
-                                                @method('PATCH')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </form>
-                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
-
                 <div class="d-flex justify-content-center mt-4">
-                    {{ $appointments->links() }}
+                    {{ $appointments->appends(request()->all())->links() }}
                 </div>
             @endif
         </div>

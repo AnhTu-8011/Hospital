@@ -107,7 +107,9 @@
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold">Trạng thái thanh toán:</div>
                         <div class="col-md-8">
-                            @if($appointment->payment_status === 'success')
+                            @if($appointment->status === 'canceled' && $appointment->payment_status === 'success')
+                                <span class="badge bg-info text-dark">Đã hoàn</span>
+                            @elseif($appointment->payment_status === 'success')
                                 <span class="badge bg-success">Đã thanh toán</span>
                             @else
                                 <span class="badge bg-danger">Chưa thanh toán</span>
@@ -121,7 +123,7 @@
                                 <form action="{{ route('appointments.cancel', $appointment->id) }}" 
                                       method="POST" 
                                       class="d-inline"
-                                      onsubmit="return confirm('Bạn có chắc chắn muốn hủy lịch hẹn này?')">
+                                      onsubmit="return confirm('{{ $appointment->payment_status === 'success' ? ('Lịch hẹn đã được thanh toán. Khi hủy sẽ hoàn tiền ' . number_format($finalPrice, 0, ',', '.') . ' đ. Bạn có chắc chắn muốn hủy?') : 'Bạn có chắc chắn muốn hủy lịch hẹn này?' }}')">
                                     @csrf
                                     @method('PATCH')
                                     <button type="submit" class="btn btn-danger">
@@ -129,7 +131,7 @@
                                     </button>
                                 </form>
                                 
-                                @if($appointment->payment_status != 'paid')
+                                @if($appointment->payment_status != 'success')
                                     <a href="{{ route('payment.checkout', $appointment->id) }}" class="btn btn-primary">
                                         <i class="fas fa-credit-card me-1"></i> Thanh toán ngay
                                     </a>
