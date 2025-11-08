@@ -46,6 +46,9 @@
                 <a href="{{ route('admin.appointments.index') }}"
                    class="nav-link d-flex align-items-center {{ request()->routeIs('admin.appointments.*') ? 'active' : '' }}">
                     <i class="fas fa-calendar-check me-2"></i> Lịch hẹn
+                    @if(isset($newAppointmentsCount) && $newAppointmentsCount > 0)
+                        <span class="badge bg-danger ms-auto">{{ $newAppointmentsCount }}</span>
+                    @endif
                 </a>
             </li>
             <li class="nav-item">
@@ -76,6 +79,9 @@
                 <a href="{{ route('admin.lab_tests.index') }}"
                 class="nav-link d-flex align-items-center {{ request()->routeIs('admin.lab_tests.*') ? 'active' : '' }}">
                     <i class="fas fa-vials me-2"></i> Xét nghiệm
+                    @if(isset($newLabTestsCount) && $newLabTestsCount > 0)
+                        <span class="badge bg-danger ms-auto">{{ $newLabTestsCount }}</span>
+                    @endif
                 </a>
             </li>
             <li class="nav-item">
