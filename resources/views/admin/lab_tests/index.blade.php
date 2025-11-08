@@ -19,6 +19,7 @@
                 <th>Trạng thái</th>
                 <th>Ảnh chính</th>
                 <th>Ảnh phụ</th>
+                <th>Ghi chú xét nghiệm</th>
                 <th>Thao tác</th>
             </tr>
         </thead>
@@ -55,6 +56,7 @@
                             ---
                         @endif
                     </td>
+                    <td>{{ $test->note ?? '---' }}</td>
                     <td>
                         <a href="{{ route('admin.lab_tests.upload', $test->id) }}" class="btn btn-sm btn-outline-primary me-1">
                             <i class="fas fa-upload"></i>

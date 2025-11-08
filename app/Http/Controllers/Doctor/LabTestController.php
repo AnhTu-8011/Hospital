@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 
 class LabTestController extends Controller
 {
+    // Yêu cầu xn 
     public function create($recordId)
     {
         $record = MedicalRecord::findOrFail($recordId);
