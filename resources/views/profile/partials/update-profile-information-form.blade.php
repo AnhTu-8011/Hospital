@@ -107,19 +107,47 @@
 
                 {{-- Ngày sinh --}}
                 <div class="col-md-6">
-                    <label for="birthdate" class="form-label">Ngày sinh</label>
+                    <label class="form-label">Ngày sinh</label>
                     @php
                         $birthdate = $user->patient->birthdate ?? $user->birthdate ?? null;
-                        $formattedBirthdate = $birthdate ? (is_string($birthdate) ? $birthdate : $birthdate->format('Y-m-d')) : '';
+                        // hiển thị dạng dd/mm/yyyy nếu có giá trị
+                        $formattedBirthdate = $birthdate
+                            ? (is_string($birthdate)
+                                ? \Carbon\Carbon::parse($birthdate)->format('d/m/Y')
+                                : $birthdate->format('d/m/Y'))
+                            : '';
                     @endphp
-                    <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="fas fa-calendar text-muted"></i></span>
-                        <input type="date"
-                            name="birthdate"
-                            class="form-control @error('birthdate') is-invalid @enderror"
-                            value="{{ old('birthdate', $formattedBirthdate) }}"
-                            max="{{ now()->format('Y-m-d') }}">
+
+                    <div class="row g-2 align-items-center">
+                        <div class="col-4">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="fas fa-calendar text-muted"></i></span>
+                                <select id="profile_birth_day" class="form-select">
+                                    <option value="">Ngày</option>
+                                    @for ($d = 1; $d <= 31; $d++)
+                                        <option value="{{ $d }}" {{ old('birth_day') == $d ? 'selected' : '' }}>{{ $d }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <select id="profile_birth_month" class="form-select">
+                                <option value="">Tháng</option>
+                                @for ($m = 1; $m <= 12; $m++)
+                                    <option value="{{ $m }}" {{ old('birth_month') == $m ? 'selected' : '' }}>Tháng {{ $m }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <div class="col-4">
+                            <input id="profile_birth_year" type="number" min="1900" max="{{ now()->year }}" placeholder="Năm" class="form-control" value="{{ old('birth_year') }}">
+                        </div>
                     </div>
+                    <input type="hidden" id="birthdate" name="birthdate" value="{{ old('birthdate', $formattedBirthdate) }}">
+
+                    @error('birthdate')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
 
                 {{-- Giới tính --}}
                 <div class="col-md-6">
@@ -188,62 +216,77 @@
     </div>
 </form>
 
-@push('styles')
-<style>
-    .input-group-text {
-        min-width: 42px;
-        justify-content: center;
-    }
-    .form-control:focus, .form-select:focus {
-        border-color: #86b7fe;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
-    }
-    .form-control.is-invalid, .was-validated .form-control:invalid {
-        border-color: #dc3545;
-        padding-right: calc(1.5em + 0.75rem);
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
-        background-repeat: no-repeat;
-        background-position: right calc(0.375em + 0.1875rem) center;
-        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-    }
-    .was-validated .form-control:valid {
-        border-color: #198754;
-        padding-right: calc(1.5em + 0.75rem);
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
-        background-repeat: no-repeat;
-        background-position: right calc(0.375em + 0.1875rem) center;
-        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-    }
-</style>
-@endpush
-
 @push('scripts')
+<!-- jQuery & jQuery Mask -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+
 <script>
-    // Enable Bootstrap form validation
+    // Bootstrap form validation
     (function () {
-        'use strict'
-        
-        // Fetch all the forms we want to apply custom Bootstrap validation styles to
-        var forms = document.querySelectorAll('.needs-validation')
-        
-        // Loop over them and prevent submission
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
         Array.prototype.slice.call(forms).forEach(function (form) {
             form.addEventListener('submit', function (event) {
                 if (!form.checkValidity()) {
-                    event.preventDefault()
-                    event.stopPropagation()
+                    event.preventDefault();
+                    event.stopPropagation();
                 }
-                
-                form.classList.add('was-validated')
-            }, false)
-        })
-    })()
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+
+    // Avatar preview
     document.getElementById('avatar')?.addEventListener('change', function() {
-    if (this.files && this.files[0]) {
-        const reader = new FileReader();
-        reader.onload = e => document.getElementById('avatarPreview').src = e.target.result;
-        reader.readAsDataURL(this.files[0]);
-    }
-});
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => document.getElementById('avatarPreview').src = e.target.result;
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // Compose hidden birthdate from day/month/year selectors
+    $(document).ready(function(){
+        function pad(n){ return (n<10? '0'+n : n); }
+        function updateHiddenBirthdate(){
+            const d = parseInt($('#profile_birth_day').val(), 10);
+            const m = parseInt($('#profile_birth_month').val(), 10);
+            const y = parseInt($('#profile_birth_year').val(), 10);
+            if(d && m && y){
+                $('#birthdate').val(`${y}-${pad(m)}-${pad(d)}`);
+            } else {
+                // allow clearing birthdate
+                if(!d && !m && !y){
+                    $('#birthdate').val('');
+                }
+            }
+        }
+
+        // Prefill day/month/year from existing hidden value (accept dd/mm/YYYY or YYYY-MM-DD)
+        (function prefill(){
+            const oldVal = $('#birthdate').val();
+            if(oldVal){
+                let y,m,d;
+                if(/^\d{2}\/\d{2}\/\d{4}$/.test(oldVal)){
+                    const parts = oldVal.split('/');
+                    d = parseInt(parts[0],10); m = parseInt(parts[1],10); y = parseInt(parts[2],10);
+                } else if(/^\d{4}-\d{2}-\d{2}$/.test(oldVal)){
+                    const parts = oldVal.split('-');
+                    y = parseInt(parts[0],10); m = parseInt(parts[1],10); d = parseInt(parts[2],10);
+                }
+                if(y){ $('#profile_birth_year').val(y); }
+                if(m){ $('#profile_birth_month').val(m); }
+                if(d){ $('#profile_birth_day').val(d); }
+            }
+        })();
+
+        $('#profile_birth_day, #profile_birth_month, #profile_birth_year').on('change keyup', updateHiddenBirthdate);
+
+        // Ensure hidden value composed before submit
+        $('form[action="{{ route('profile.update') }}"]').on('submit', function(){
+            updateHiddenBirthdate();
+        });
+    });
 </script>
 @endpush

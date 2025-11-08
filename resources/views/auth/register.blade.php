@@ -66,14 +66,27 @@
 
             <!-- Ngày sinh -->
             <div>
-                <label for="birthdate" class="block text-gray-700 text-sm font-medium mb-1">
+                <label class="block text-gray-700 text-sm font-medium mb-1">
                     <i class="fa-solid fa-calendar-days text-blue-500 mr-1"></i> Ngày sinh
                 </label>
-                <input id="birthdate" name="birthdate" type="date"
-                    value="{{ old('birthdate') }}"
-                    required
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:border-blue-500 focus:ring focus:ring-blue-100 outline-none
-                    @error('birthdate') border-red-500 @enderror">
+                <div class="grid grid-cols-3 gap-2">
+                    <select id="birth_day" class="border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-100 outline-none">
+                        <option value="">Ngày</option>
+                        @for ($d = 1; $d <= 31; $d++)
+                            <option value="{{ $d }}" {{ old('birth_day') == $d ? 'selected' : '' }}>{{ $d }}</option>
+                        @endfor
+                    </select>
+                    <select id="birth_month" class="border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-100 outline-none">
+                        <option value="">Tháng</option>
+                        @for ($m = 1; $m <= 12; $m++)
+                            <option value="{{ $m }}" {{ old('birth_month') == $m ? 'selected' : '' }}>Tháng {{ $m }}</option>
+                        @endfor
+                    </select>
+                    <input id="birth_year" type="number" min="1900" max="{{ now()->year }}" placeholder="Năm"
+                           value="{{ old('birth_year') }}"
+                           class="border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-100 outline-none" />
+                </div>
+                <input type="hidden" id="birthdate" name="birthdate" value="{{ old('birthdate') }}" />
                 @error('birthdate')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
@@ -177,4 +190,45 @@
         }
     </script>
 </body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+<script>
+$(document).ready(function(){
+    function pad(n){ return (n<10? '0'+n : n); }
+    function updateHiddenBirthdate(){
+        const d = parseInt($('#birth_day').val(), 10);
+        const m = parseInt($('#birth_month').val(), 10);
+        const y = parseInt($('#birth_year').val(), 10);
+        if(d && m && y){
+            $('#birthdate').val(`${y}-${pad(m)}-${pad(d)}`);
+        }
+    }
+
+    // If old hidden value exists (dd/mm/yyyy or yyyy-mm-dd), prefill parts
+    const oldVal = $('#birthdate').val();
+    if(oldVal){
+        let y,m,d;
+        if(/^\d{2}\/\d{2}\/\d{4}$/.test(oldVal)){
+            const parts = oldVal.split('/');
+            d = parseInt(parts[0],10); m = parseInt(parts[1],10); y = parseInt(parts[2],10);
+        } else if(/^\d{4}-\d{2}-\d{2}$/.test(oldVal)){
+            const parts = oldVal.split('-');
+            y = parseInt(parts[0],10); m = parseInt(parts[1],10); d = parseInt(parts[2],10);
+        }
+        if(y){ $('#birth_year').val(y); }
+        if(m){ $('#birth_month').val(m); }
+        if(d){ $('#birth_day').val(d); }
+    }
+
+    $('#birth_day, #birth_month, #birth_year').on('change keyup', updateHiddenBirthdate);
+
+    $('form[action="{{ route('register') }}"]').on('submit', function(e){
+        updateHiddenBirthdate();
+        if(!$('#birthdate').val()){
+            e.preventDefault();
+            alert('Vui lòng chọn đầy đủ Ngày/Tháng và nhập Năm.');
+        }
+    });
+});
+</script>
 </html>
