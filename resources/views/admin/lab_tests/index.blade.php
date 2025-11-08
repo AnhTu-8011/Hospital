@@ -15,6 +15,8 @@
                 <th>Tên xét nghiệm</th>
                 <th>Khoa</th>
                 <th>Hồ sơ khám</th>
+                <th>Tên bệnh nhân</th>
+                <th>Ngày giờ yêu cầu</th>
                 <th>Bác sĩ yêu cầu</th>
                 <th>Trạng thái</th>
                 <th>Ảnh chính</th>
@@ -30,6 +32,8 @@
                     <td>{{ $test->test_name }}</td>
                     <td>{{ $test->department->name ?? '---' }}</td>
                     <td>#{{ $test->medical_record_id }}</td>
+                    <td>{{ $test->record->patient->name ?? '---' }}</td>
+                    <td>{{ optional($test->created_at)->format('d/m/Y H:i') }}</td>
                     <td>{{ $test->doctor->name ?? $test->doctor->email ?? '---' }}</td>
                     <td>
                         @if($test->status == 'completed')

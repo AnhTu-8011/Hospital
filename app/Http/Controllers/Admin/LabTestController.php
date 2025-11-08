@@ -13,7 +13,7 @@ class LabTestController extends Controller
     // 📋 Danh sách xét nghiệm
     public function index()
     {
-        $labTests = LabTest::with(['department', 'record', 'doctor'])
+        $labTests = LabTest::with(['department', 'record.patient', 'doctor'])
             ->latest()
             ->paginate(10);
 
