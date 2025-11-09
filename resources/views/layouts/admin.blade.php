@@ -6,6 +6,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>Admin Dashboard</title>
+    <link rel="icon" type="image/png" href="{{ asset('image/favicon.png') }}">
+    <link rel="shortcut icon" href="{{ asset('image/favicon.png') }}">
 
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">

@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Đăng ký - Bệnh viện PHÚC AN</title>
-
+    <link rel="icon" type="image/png" href="{{ asset('image/favicon.png') }}">
+    <link rel="shortcut icon" href="{{ asset('image/favicon.png') }}">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 

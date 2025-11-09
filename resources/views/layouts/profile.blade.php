@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Thông tin cá nhân') - Bệnh viện Đa khoa Phúc An</title>
+    <link rel="icon" type="image/png" href="{{ asset('image/favicon.png') }}">
+    <link rel="shortcut icon" href="{{ asset('image/favicon.png') }}">
     <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
     
     <!-- CSS -->
