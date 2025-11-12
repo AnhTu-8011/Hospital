@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Service;
 use App\Models\Department;
+use App\Models\Appointment;
 
 class ServiceController extends Controller
 {
@@ -77,9 +78,19 @@ class ServiceController extends Controller
      */
     public function destroy(Service $service)
     {
-        $service->delete();
+        // Không cho phép xóa nếu đã có lịch hẹn tham chiếu tới dịch vụ này
+        if (Appointment::where('service_id', $service->id)->exists()) {
+            return redirect()->route('admin.services.index')
+                             ->with('error', 'Không thể xóa dịch vụ vì đã có lịch hẹn sử dụng dịch vụ này. Vui lòng hủy/đổi lịch liên quan trước.');
+        }
 
-        return redirect()->route('admin.services.index')
-                         ->with('success', 'Xóa dịch vụ thành công!');
+        try {
+            $service->delete();
+            return redirect()->route('admin.services.index')
+                             ->with('success', 'Xóa dịch vụ thành công!');
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.services.index')
+                             ->with('error', 'Xóa dịch vụ thất bại. Vui lòng thử lại sau.');
+        }
     }
 }

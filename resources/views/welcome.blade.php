@@ -310,7 +310,7 @@
         @endphp
         @include('chat.user', ['receiverId' => $admin->id ?? null])
     @endauth
-    @include('chat.ai_chat')
+    <!-- @include('chat.ai_chat') -->
     @include('layouts.footer')
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
