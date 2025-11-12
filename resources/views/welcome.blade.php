@@ -78,7 +78,7 @@
 
     @include('modal.appointment')   
 
-    <section class="py-5">
+    <section class="py-5 bg-light">
         <div class="container">
             <div class="text-center mb-5">
                 <h2 class="fw-bold">TẠI SAO CHỌN CHÚNG TÔI?</h2>
@@ -125,7 +125,7 @@
         </div>
     </section>
 
-    <section id="services" class="py-5 bg-light">
+    <!-- <section id="services" class="py-5 bg-light">
         <div class="container">
             <div class="text-center mb-5">
                 <h2 class="fw-bold">DỊCH VỤ NỔI BẬT</h2>
@@ -165,7 +165,7 @@
                 @endif
             </div>
         </div>
-    </section>
+    </section> -->
 
     <section id="departments" class="py-5">
         <div class="container">

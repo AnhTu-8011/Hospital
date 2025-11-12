@@ -5,8 +5,27 @@
         <i class="fas fa-calendar-plus me-2"></i>Đặt lịch khám
     </h2>
 
-    <!-- ✅ Chỉ cần 1 form -->
-    <form id="appointmentForm" method="POST" action="{{ route('vnpay_payment') }}">
+    <div class="row">
+        <div class="col-md-5 mb-4">
+            <div class="card h-100">
+                <div class="card-header">Thông tin dịch vụ</div>
+                <div class="card-body" id="serviceDetails">
+                    <div class="text-muted" id="sd_empty">Chưa chọn dịch vụ.</div>
+                    <div class="d-none" id="sd_content">
+                        <h5 class="card-title mb-2" id="sd_name"></h5>
+                        <div class="mb-2"><strong>Giá:</strong> <span id="sd_price"></span></div>
+                        <div class="mb-2"><strong>Khoa:</strong> <span id="sd_dept"></span></div>
+                        <div><strong>Mô tả:</strong>
+                            <div id="sd_desc" class="mt-1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <!-- ✅ Chỉ cần 1 form -->
+            <form id="appointmentForm" method="POST" action="{{ route('vnpay_payment') }}" data-auth="{{ auth()->check() ? '1' : '0' }}">
         @csrf
 
         @if ($errors->any())
@@ -38,10 +57,10 @@
 
         <div class="mb-3">
             <label for="service_id" class="form-label">Dịch vụ</label>
-            <select name="service_id" id="service_id" class="form-select" required>
+            <select name="service_id" id="service_id" class="form-select" required @guest disabled @endguest>
                 <option value="">-- Chọn dịch vụ --</option>
                 @foreach($services as $service)
-                    <option value="{{ $service->id }}" data-department-id="{{ $service->department_id }}" data-price="{{ $service->price }}">
+                    <option value="{{ $service->id }}" data-department-id="{{ $service->department_id }}" data-price="{{ $service->price }}" data-description="{{ $service->description }}">
                         {{ $service->name }} ({{ number_format($service->price, 0, ',', '.') }} đ)
                     </option>
                 @endforeach
@@ -101,7 +120,9 @@
         @else
             <a href="{{ route('login') }}" class="btn btn-success">Đăng nhập để thanh toán VNPay</a>
         @endauth
-    </form>
+            </form>
+        </div>
+    </div>
 
 </section>
 

@@ -17,25 +17,11 @@
                         <li class="nav-item">
                             <a class="nav-link" href="#about">Giới thiệu</a>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="servicesDropdown" role="button" data-bs-toggle="dropdown">
-                                Dịch vụ
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="servicesDropdown">
-                                <li><a class="dropdown-item" href="#">Khám chữa bệnh</a></li>
-                                <li><a class="dropdown-item" href="#">Gói khám sức khỏe</a></li>
-                                <li><a class="dropdown-item" href="#">Xét nghiệm</a></li>
-                                <li><a class="dropdown-item" href="#">Chẩn đoán hình ảnh</a></li>
-                            </ul>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#departments">Chuyên khoa</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#doctors">Đội ngũ bác sĩ</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#contact">Liên hệ</a>
                         </li>
                         @auth
                             <li class="nav-item d-lg-none">
