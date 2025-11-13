@@ -15,7 +15,7 @@
                         <h5 class="card-title mb-2" id="sd_name"></h5>
                         <div class="mb-2"><strong>Giá:</strong> <span id="sd_price"></span></div>
                         <div class="mb-2"><strong>Khoa:</strong> <span id="sd_dept"></span></div>
-                        <div><strong>Mô tả:</strong>
+                        <div><strong>Gói dịch vụ:</strong>
                             <div id="sd_desc" class="mt-1"></div>
                         </div>
                     </div>
