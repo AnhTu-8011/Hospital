@@ -78,7 +78,7 @@
 
     @include('modal.appointment')   
 
-    <section class="py-5 bg-light">
+    <section class="py-5">
         <div class="container">
             <div class="text-center mb-5">
                 <h2 class="fw-bold">TẠI SAO CHỌN CHÚNG TÔI?</h2>
@@ -125,7 +125,7 @@
         </div>
     </section>
 
-    <!-- <section id="services" class="py-5 bg-light">
+    <section id="services" class="py-5 bg-light">
         <div class="container">
             <div class="text-center mb-5">
                 <h2 class="fw-bold">DỊCH VỤ NỔI BẬT</h2>
@@ -150,10 +150,10 @@
                                             <i class="fas fa-heartbeat fa-3x text-primary"></i>
                                         </div>
                                         <h4 class="mb-2">{{ $service->name }}</h4>
-                                        <p class="text-muted mb-0">{{ \Illuminate\Support\Str::limit($service->description, 120) }}</p>
+                                        <!-- <p class="text-muted mb-0">{{ \Illuminate\Support\Str::limit($service->description, 120) }}</p>
                                         @if(!is_null($service->price))
                                             <div class="mt-3 fw-semibold text-primary">{{ number_format($service->price, 0, ',', '.') }} đ</div>
-                                        @endif
+                                        @endif -->
                                     </div>
                                 </div>
                             @endforeach
@@ -165,7 +165,7 @@
                 @endif
             </div>
         </div>
-    </section> -->
+    </section>
 
     <section id="departments" class="py-5">
         <div class="container">
