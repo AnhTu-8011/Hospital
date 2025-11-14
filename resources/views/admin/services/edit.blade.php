@@ -21,9 +21,22 @@
 
         <!-- Mô tả -->
         <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Mô tả</label>
-            <textarea name="description" rows="3"
-                      class="w-full border rounded px-3 py-2">{{ old('description', $service->description) }}</textarea>
+            <label class="block text-sm font-medium mb-1">Gói dịch vụ:</label>
+            <textarea name="description" rows="10" class="w-full border rounded px-3 py-2">{{ old('description', $service->description) }}</textarea>
+            @php
+                $editDescValue = old('description', $service->description ?? '');
+                $editDescLines = preg_split('/\r\n|\r|\n/', $editDescValue);
+                $editDescLines = array_values(array_filter($editDescLines, function ($line) {
+                    return trim($line) !== '';
+                }));
+            @endphp
+            @if(!empty($editDescLines))
+                <ul class="mt-2 text-sm">
+                    @foreach($editDescLines as $line)
+                        <li>{{ $line }}</li>
+                    @endforeach
+                </ul>
+            @endif
             @error('description')
                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
             @enderror

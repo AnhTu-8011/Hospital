@@ -20,9 +20,21 @@
 
         <!-- Mô tả -->
         <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Mô tả</label>
-            <textarea name="description" rows="3"
-                      class="w-full border rounded px-3 py-2">{{ old('description') }}</textarea>
+            <label class="block text-sm font-medium mb-1">Gói dịch vụ:</label>
+            <textarea name="description" rows="10" class="w-full border rounded px-3 py-2">{{ old('description') }}</textarea>
+            @php
+                $createDescLines = preg_split('/\r\n|\r|\n/', old('description', ''));
+                $createDescLines = array_values(array_filter($createDescLines, function ($line) {
+                    return trim($line) !== '';
+                }));
+            @endphp
+            @if(!empty($createDescLines))
+                <ul class="mt-2 text-sm">
+                    @foreach($createDescLines as $line)
+                        <li>{{ $line }}</li>
+                    @endforeach
+                </ul>
+            @endif
             @error('description')
                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
             @enderror

@@ -100,7 +100,7 @@
                 </form>
             </div>
 
-        <hr>
+            <hr>
 
             <!-- Mô tả bệnh -->
             @php
@@ -135,6 +135,58 @@
                         </div>
                     @endif
                 @endif
+
+            <hr>
+
+            <!-- Gói dịch vụ cho lần khám này -->
+            @php
+                $svc = $appointment->service ?? null;
+            @endphp
+            @if($svc)
+                @php
+                    $descLines = preg_split('/\r\n|\r|\n/', $svc->description ?? '');
+                    $descLines = array_values(array_filter($descLines, function ($line) {
+                        return trim($line) !== '';
+                    }));
+                    $selectedItems = [];
+                    if (!empty($record->description)) {
+                        $decoded = is_array($record->description)
+                            ? $record->description
+                            : json_decode($record->description, true);
+                        if (is_array($decoded)) {
+                            $selectedItems = array_values(array_filter($decoded, function ($v) {
+                                return is_string($v) && trim($v) !== '';
+                            }));
+                        }
+                    }
+                @endphp
+                <div class="mb-4">
+                    <h5 class="text-primary mb-3"><i class="fas fa-list-ul"></i> Gói dịch vụ bệnh nhân đã chọn</h5>
+                    <div class="border rounded p-3">
+                        <div class="fw-bold mb-2">
+                            {{ $svc->name }} 
+                        </div>
+                        @if(!empty($descLines))
+                            <ul class="mb-0 mt-1 small list-unstyled">
+                                @foreach($descLines as $idx => $line)
+                                    @php
+                                        $isChecked = in_array($line, $selectedItems, true);
+                                    @endphp
+                                    <li class="mb-1">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="service_items[]" value="{{ $line }}" id="svc_item_{{ $svc->id }}_{{ $idx }}" {{ $isChecked ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="svc_item_{{ $svc->id }}_{{ $idx }}">{{ $line }}</label>
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                        @if($svc->department)
+                            <div class="mt-1 small text-muted">Khoa: {{ $svc->department->name }}</div>
+                        @endif
+                    </div>
+                </div>
+            @endif
 
             <hr>
 
@@ -185,61 +237,6 @@
     #imagesPreview img, #imagePreview img { margin-right: 8px; margin-bottom: 8px; }
 </style>
 @push('scripts')
-<script>
-(function initPreview() {
-  function setup() {
-    const imageInput = document.querySelector('#image');
-    const imagesInput = document.querySelector('#images');
-    const imagePreview = document.querySelector('#imagePreview');
-    const imagesPreview = document.querySelector('#imagesPreview');
-
-    function clear(el){ while (el && el.firstChild) el.removeChild(el.firstChild); }
-    function makeThumb(src){ const img = document.createElement('img'); img.src = src; img.className = 'thumb'; return img; }
-
-    if (imageInput && imagePreview) {
-      imageInput.addEventListener('change', function() {
-        clear(imagePreview);
-        const file = this.files && this.files[0];
-        if (file) {
-          const url = URL.createObjectURL(file);
-          imagePreview.appendChild(makeThumb(url));
-        }
-      });
-    }
-
-    if (imagesInput && imagesPreview) {
-      imagesInput.addEventListener('change', function() {
-        clear(imagesPreview);
-        Array.from(this.files || []).forEach(f => {
-          const url = URL.createObjectURL(f);
-          imagesPreview.appendChild(makeThumb(url));
-        });
-      });
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setup, { once: true });
-  } else {
-    setup();
-  }
-})();
-
-// Auto-fill test name and department from selected test type
-document.addEventListener('DOMContentLoaded', function(){
-  const sel = document.getElementById('testTypeSelect');
-  const nameInput = document.getElementById('testNameInput');
-  const deptSel = document.getElementById('departmentSelect');
-  if (sel && nameInput && deptSel) {
-    sel.addEventListener('change', function(){
-      const opt = this.options[this.selectedIndex];
-      const n = opt.getAttribute('data-name') || '';
-      const d = opt.getAttribute('data-dept') || '';
-      if (n) nameInput.value = n;
-      if (d) deptSel.value = d;
-    });
-  }
-});
-</script>
+<script src="{{ asset('js/patient_record.js') }}"></script>
 @endpush
 @endsection

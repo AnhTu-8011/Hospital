@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\{Appointment, Patient, MedicalRecord};
+use App\Models\{Appointment, Patient, MedicalRecord, Service};
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -17,6 +17,8 @@ class DoctorRecordController extends Controller
     {
         $appointment = Appointment::with(['patient', 'doctor.user', 'service'])->findOrFail($appointmentId);
 
+        $services = Service::with('department')->orderBy('name')->get();
+
         $record = MedicalRecord::firstOrCreate(
             ['appointment_id' => $appointmentId],
             [
@@ -28,7 +30,7 @@ class DoctorRecordController extends Controller
             ]
         );
 
-        return view('doctor.patient_record', compact('appointment', 'record'))
+        return view('doctor.patient_record', compact('appointment', 'record', 'services'))
             ->with('patient', $appointment->patient);
     }
 
@@ -44,12 +46,27 @@ class DoctorRecordController extends Controller
             'image' => 'nullable|image|max:5120',
             'images.*' => 'nullable|image|max:5120',
             'status' => 'nullable|in:pending,confirmed,completed',
+            'service_items' => 'nullable|array',
+            'service_items.*' => 'nullable|string',
         ]);
 
         try {
-            // Lưu thông tin
+            // Lưu thông tin chẩn đoán, kết luận
             $record->diagnosis = $request->input('diagnosis');
             $record->doctor_conclusion = $request->input('doctor_conclusion');
+
+            // Lưu các hạng mục gói dịch vụ mà bác sĩ đã tích chọn
+            $items = $request->input('service_items', []);
+            if (is_array($items)) {
+                $items = array_values(array_filter($items, function ($v) {
+                    return is_string($v) && trim($v) !== '';
+                }));
+            } else {
+                $items = [];
+            }
+            $record->description = !empty($items)
+                ? json_encode($items, JSON_UNESCAPED_UNICODE)
+                : null;
 
             // Xử lý toa thuốc (mỗi dòng là một thuốc)
             $prescriptions = array_filter(preg_split('/\r\n|\r|\n/', $request->input('prescription', '')));

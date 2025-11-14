@@ -25,7 +25,7 @@
                     <th>STT</th>
                     <th>Mã dịch vụ</th>
                     <th>Tên dịch vụ</th>
-                    <th>Mô tả</th>
+                    <th>Gói dịch vụ</th>
                     <th>Giá</th>
                     <th>Khoa</th>
                     <th>Hành động</th>
@@ -37,7 +37,23 @@
                         <td class="text-center fw-medium">{{ $loop->iteration }}</td>
                         <td class="text-center text-muted">#{{ str_pad($service->id, 6, '0', STR_PAD_LEFT) }}</td>
                         <td class="fw-semibold">{{ $service->name }}</td>
-                        <td>{{ Str::limit($service->description, 60, '...') }}</td>
+                        <td>
+                            @php
+                                $descLines = preg_split('/\r\n|\r|\n/', $service->description ?? '');
+                                $descLines = array_values(array_filter($descLines, function ($line) {
+                                    return trim($line) !== '';
+                                }));
+                            @endphp
+                            @if(!empty($descLines))
+                                <ul class="mb-0">
+                                    @foreach($descLines as $line)
+                                        <li>{{ $line }}</li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                -
+                            @endif
+                        </td>
                         <td class="text-success fw-semibold">{{ number_format($service->price, 0, ',', '.') }} đ</td>
                         <td class="text-primary fw-medium">{{ $service->department->name ?? '-' }}</td>
                         <td class="text-center">
