@@ -2,11 +2,12 @@
 
 @section('content')
 <div class="container mt-4">
-    <h4 class="text-primary"><i class="fas fa-list me-2"></i> Danh sách loại xét nghiệm</h4>
-
-    <a href="{{ route('admin.test-types.create') }}" class="btn btn-primary mb-3">
-        <i class="fas fa-plus"></i> Thêm loại xét nghiệm
-    </a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="text-primary mb-0"><i class="fas fa-list me-2"></i> Danh sách loại xét nghiệm</h4>
+        <a href="{{ route('admin.test-types.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm loại xét nghiệm
+        </a>
+    </div>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>

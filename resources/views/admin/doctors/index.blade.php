@@ -19,7 +19,7 @@
 
 <div class="card shadow-sm border-0 rounded-4">
     <div class="card-body table-responsive">
-        <table class="table align-middle table-hover">
+        <table class="table align-middle table-hover table-bordered">
             <thead class="table-light text-center">
                 <tr>
                     <th>STT</th>
@@ -73,5 +73,10 @@
             </tbody>
         </table>
     </div>
+</div>
+
+{{-- Phân trang --}}
+<div class="d-flex justify-content-center mt-4">
+    {{ $doctors->links('pagination::bootstrap-5') }}
 </div>
 @endsection

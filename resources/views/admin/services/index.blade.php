@@ -19,7 +19,7 @@
 
 <div class="card shadow-sm border-0 rounded-4">
     <div class="card-body table-responsive">
-        <table class="table align-middle table-hover">
+        <table class="table align-middle table-hover table-bordered">
             <thead class="table-light text-center align-middle">
                 <tr>
                     <th>STT</th>

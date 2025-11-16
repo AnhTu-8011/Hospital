@@ -87,7 +87,22 @@ class DepartmentController extends Controller
      */
     public function destroy(Department $department)
     {
+        // Nếu còn bác sĩ thuộc khoa này thì không cho xóa
+        if ($department->doctors()->exists()) {
+            return redirect()
+                ->route('admin.departments.index')
+                ->with('error', 'Không thể xóa khoa vì vẫn còn bác sĩ thuộc khoa này.');
+        }
+
+        // Nếu có dịch vụ thuộc khoa này thì cũng không cho xóa (nếu có quan hệ services)
+        if (method_exists($department, 'services') && $department->services()->exists()) {
+            return redirect()
+                ->route('admin.departments.index')
+                ->with('error', 'Không thể xóa khoa vì vẫn còn dịch vụ thuộc khoa này.');
+        }
+
         $department->delete();
+
         return redirect()
             ->route('admin.departments.index')
             ->with('success', 'Xóa khoa thành công!');

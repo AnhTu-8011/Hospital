@@ -101,31 +101,31 @@
             @endphp
             @if(!empty($record->image) || (!empty($record->images) && is_array($record->images) && count($record->images)) || ($labTests && $labTests->count()))
             <h5 class="text-warning mb-3"><i class="fas fa-clipboard-list"></i> Ảnh xét nghiệm nếu có</h5>
-            <form action="{{ route('doctor.records.update', $record->id) }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
                 <!-- Ảnh từ xét nghiệm (admin cập nhật) -->
                 @if($labTests && $labTests->count())
                     <div class="mb-2">
-                        <label class="form-label fw-bold">Ảnh từ xét nghiệm:</label>
                         @foreach($labTests as $t)
                             @if(!empty($t->image))
-                                <div class="mt-2">
-                                    <img src="{{ asset('storage/'.$t->image) }}" alt="Ảnh" class="thumb">
+                                <div class="mt-3">
+                                    <label class="form-label fw-bold">{{ $t->test_name }} - Ảnh chính:</label>
+                                    <div class="mt-2">
+                                        <img src="{{ asset('storage/'.$t->image) }}" alt="{{ $t->test_name }}" class="thumb">
+                                    </div>
                                 </div>
                             @endif
                             @if(!empty($t->images) && is_array($t->images))
-                            <label class="form-label fw-bold">Ảnh phụ từ xét nghiệm:</label>
-                                <div class="mt-2 d-flex flex-wrap gap-2">
-                                    @foreach($t->images as $img)
-                                        <img src="{{ asset('storage/'.$img) }}" alt="Ảnh" class="thumb">
-                                    @endforeach
+                                <div class="mt-3">
+                                    <label class="form-label fw-bold">{{ $t->test_name }} - Ảnh phụ:</label>
+                                    <div class="mt-2 d-flex flex-wrap gap-2">
+                                        @foreach($t->images as $img)
+                                            <img src="{{ asset('storage/'.$img) }}" alt="{{ $t->test_name }}" class="thumb">
+                                        @endforeach
+                                    </div>
                                 </div>
                             @endif
                         @endforeach
                     </div>
                 @endif
-            </form>
             @endif
             <hr>
             

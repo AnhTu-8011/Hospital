@@ -51,4 +51,47 @@ document.addEventListener('DOMContentLoaded', function(){
       if (d) deptSel.value = d;
     });
   }
+
+  // AJAX submit for lab test request form (no page reload)
+  const labForm = document.getElementById('labTestForm');
+  const alertBox = document.getElementById('labTestAlert');
+
+  if (labForm && alertBox) {
+    labForm.addEventListener('submit', function(e){
+      e.preventDefault();
+
+      alertBox.style.display = 'none';
+      alertBox.className = 'mb-2';
+      alertBox.textContent = '';
+
+      const formData = new FormData(labForm);
+
+      fetch(labForm.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+      })
+      .then(function(resp){
+        if (!resp.ok) throw new Error('Request failed');
+        // Dù server redirect hay trả HTML, chỉ cần thành công là đủ
+        return resp.text();
+      })
+      .then(function(){
+        alertBox.className = 'mb-2 alert alert-success';
+        alertBox.textContent = 'Gửi yêu cầu xét nghiệm thành công.';
+        alertBox.style.display = '';
+
+        // Optional: reset các ô nhập (giữ lại danh sách loại nếu muốn)
+        labForm.reset();
+      })
+      .catch(function(){
+        alertBox.className = 'mb-2 alert alert-danger';
+        alertBox.textContent = 'Có lỗi xảy ra khi gửi yêu cầu xét nghiệm. Vui lòng thử lại.';
+        alertBox.style.display = '';
+      });
+    });
+  }
 });

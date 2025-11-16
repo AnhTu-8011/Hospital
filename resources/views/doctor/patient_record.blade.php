@@ -53,90 +53,10 @@
             </div>
 
             <hr>
-
-            <!-- Yêu cầu xét nghiệm -->
-            <div class="mb-4">
-                <h5 class="text-primary mb-3"><i class="fas fa-vial me-1"></i> Yêu cầu xét nghiệm</h5>
-                @php
-                    $testTypes = \App\Models\TestType::with('department')->orderBy('name')->get();
-                    $allDepartments = \App\Models\Department::orderBy('name')->get();
-                @endphp
-                <form action="{{ route('doctor.lab_tests.store', ['record' => $record->id]) }}" method="POST" class="row g-3">
-                    @csrf
-                    <div class="col-md-6">
-                        <label class="form-label">Chọn loại xét nghiệm</label>
-                        <select id="testTypeSelect" class="form-select">
-                            <option value="" data-name="" data-dept="">-- Chọn loại --</option>
-                            @foreach($testTypes as $tt)
-                                <option value="{{ $tt->id }}" data-name="{{ $tt->name }}" data-dept="{{ $tt->department_id }}">
-                                    {{ $tt->name }} @if($tt->department) ({{ $tt->department->name }}) @endif
-                                </option>
-                            @endforeach
-                        </select>
-                        <small class="text-muted">Chọn để tự động điền Tên xét nghiệm và Khoa.</small>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Tên xét nghiệm</label>
-                        <input type="text" name="test_name" id="testNameInput" class="form-control" placeholder="Nhập tên xét nghiệm" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Khoa phụ trách</label>
-                        <select name="department_id" id="departmentSelect" class="form-select" required>
-                            <option value="">-- Chọn khoa --</option>
-                            @foreach($allDepartments as $dep)
-                                <option value="{{ $dep->id }}">{{ $dep->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Ghi chú</label>
-                        <textarea name="note" class="form-control" rows="2" placeholder="Ghi chú thêm (nếu có)"></textarea>
-                    </div>
-                    <div class="col-12 text-end">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane me-1"></i> Gửi yêu cầu xét nghiệm
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <hr>
-
-            <!-- Mô tả bệnh -->
-            @php
-                $labTests = \App\Models\LabTest::where('medical_record_id', $record->id)
-                    ->where('status', 'completed')
-                    ->get();
-            @endphp
+            
             <form action="{{ route('doctor.records.update', $record->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
-                @if(!empty($record->image) || (!empty($record->images) && is_array($record->images) && count($record->images)) || ($labTests && $labTests->count()))
-                    <h5 class="text-warning mb-3"><i class="fas fa-clipboard-list"></i> Ảnh xét nghiệm nếu có</h5>
-                    <!-- Ảnh từ xét nghiệm (admin cập nhật) -->
-                    @if($labTests && $labTests->count())
-                        <div class="mb-2">
-                            <label class="form-label fw-bold">Ảnh từ xét nghiệm:</label>
-                            @foreach($labTests as $t)
-                                @if(!empty($t->image))
-                                    <div class="mt-2">
-                                        <img src="{{ asset('storage/'.$t->image) }}" alt="Ảnh" class="thumb">
-                                    </div>
-                                @endif
-                                @if(!empty($t->images) && is_array($t->images))
-                                <label class="form-label fw-bold">Ảnh phụ từ xét nghiệm:</label>
-                                    <div class="mt-2 d-flex flex-wrap gap-2">
-                                        @foreach($t->images as $img)
-                                            <img src="{{ asset('storage/'.$img) }}" alt="Ảnh" class="thumb">
-                                        @endforeach
-                                    </div>
-                                @endif
-                            @endforeach
-                        </div>
-                    @endif
-                @endif
-
-            <hr>
 
             <!-- Gói dịch vụ cho lần khám này -->
             @php
@@ -190,6 +110,43 @@
 
             <hr>
 
+            <!-- Mô tả bệnh -->
+            @php
+                $labTests = \App\Models\LabTest::where('medical_record_id', $record->id)
+                    ->where('status', 'completed')
+                    ->get();
+            @endphp
+                @if(!empty($record->image) || (!empty($record->images) && is_array($record->images) && count($record->images)) || ($labTests && $labTests->count()))
+                    <h5 class="text-warning mb-3"><i class="fas fa-clipboard-list"></i> Ảnh xét nghiệm nếu có</h5>
+                    <!-- Ảnh từ xét nghiệm (admin cập nhật) -->
+                    @if($labTests && $labTests->count())
+                        <div class="mb-2">
+                            @foreach($labTests as $t)
+                                @if(!empty($t->image))
+                                    <div class="mt-3">
+                                        <label class="form-label fw-bold">{{ $t->test_name }} - Ảnh chính:</label>
+                                        <div class="mt-2">
+                                            <img src="{{ asset('storage/'.$t->image) }}" alt="{{ $t->test_name }}" class="thumb">
+                                        </div>
+                                    </div>
+                                @endif
+                                @if(!empty($t->images) && is_array($t->images))
+                                    <div class="mt-3">
+                                        <label class="form-label fw-bold">{{ $t->test_name }} - Ảnh phụ:</label>
+                                        <div class="mt-2 d-flex flex-wrap gap-2">
+                                            @foreach($t->images as $img)
+                                                <img src="{{ asset('storage/'.$img) }}" alt="{{ $t->test_name }}" class="thumb">
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    @endif
+                @endif
+
+            <hr>
+
             <!-- Chuẩn đoán -->
             <h5 class="text-success mb-3"><i class="fas fa-diagnoses"></i> Chuẩn đoán & Kết luận</h5>
 
@@ -228,6 +185,55 @@
                     </button>
                 </div>
             </form>
+
+            <hr>
+
+            <!-- Yêu cầu xét nghiệm -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3"><i class="fas fa-vial me-1"></i> Yêu cầu xét nghiệm</h5>
+                @php
+                    $testTypes = \App\Models\TestType::with('department')->orderBy('name')->get();
+                    $allDepartments = \App\Models\Department::orderBy('name')->get();
+                @endphp
+                <div id="labTestAlert" class="mb-2" style="display:none;"></div>
+                <form id="labTestForm" action="{{ route('doctor.lab_tests.store', ['record' => $record->id]) }}" method="POST" class="row g-3">
+                    @csrf
+                    <div class="col-md-6">
+                        <label class="form-label">Chọn loại xét nghiệm</label>
+                        <select id="testTypeSelect" class="form-select">
+                            <option value="" data-name="" data-dept="">-- Chọn loại --</option>
+                            @foreach($testTypes as $tt)
+                                <option value="{{ $tt->id }}" data-name="{{ $tt->name }}" data-dept="{{ $tt->department_id }}">
+                                    {{ $tt->name }} @if($tt->department) ({{ $tt->department->name }}) @endif
+                                </option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted">Chọn để tự động điền Tên xét nghiệm và Khoa.</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tên xét nghiệm</label>
+                        <input type="text" name="test_name" id="testNameInput" class="form-control" placeholder="Nhập tên xét nghiệm" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Khoa phụ trách</label>
+                        <select name="department_id" id="departmentSelect" class="form-select" required>
+                            <option value="">-- Chọn khoa --</option>
+                            @foreach($allDepartments as $dep)
+                                <option value="{{ $dep->id }}">{{ $dep->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Ghi chú</label>
+                        <textarea name="note" class="form-control" rows="2" placeholder="Ghi chú thêm (nếu có)"></textarea>
+                    </div>
+                    <div class="col-12 text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-1"></i> Gửi yêu cầu xét nghiệm
+                        </button>
+                    </div>
+                </form>
+            </div>
 
         </div>
     </div>

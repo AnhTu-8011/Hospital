@@ -92,20 +92,27 @@
                     <i class="fas fa-users me-2"></i> Người dùng
                 </a>
             </li>
+            <!-- Logout -->
+            <li class="nav-item mt-2">
+                <a href="#" class="nav-link text-danger d-flex align-items-center"
+                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
+                </a>
+            </li>
         </ul>
-
-        <!-- Logout -->
-        <div class="border-top pt-3 mt-auto">
-            <a href="#" class="nav-link text-danger d-flex align-items-center"
-               onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
-            </a>
-            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
-        </div>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
     </aside>
 
     <!-- 🌤 Main content -->
     <main class="flex-grow-1 d-flex flex-column">
+        <!-- Top bar: sidebar toggle on small screens -->
+        <div class="d-lg-none d-flex justify-content-between align-items-center p-3 border-bottom bg-white">
+            <button id="sidebarToggle" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-bars"></i>
+            </button>
+            <span class="fw-semibold">Bệnh viện PHÚC AN - Admin</span>
+        </div>
+
         <!-- Content -->
         <div class="flex-grow-1 p-4">
             <div class="bg-white border rounded-4 shadow-sm p-4">
@@ -169,6 +176,32 @@
 
 <!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var toggleBtn = document.getElementById('sidebarToggle');
+        var sidebar = document.querySelector('.sidebar');
+
+        if (toggleBtn && sidebar) {
+            // Bấm nút 3 gạch: mở/thu sidebar
+            toggleBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                sidebar.classList.toggle('active');
+            });
+
+            // Bấm ra ngoài sidebar trên màn hình nhỏ: tự thu lại
+            document.addEventListener('click', function (e) {
+                if (window.innerWidth > 992) return; // chỉ áp dụng cho màn nhỏ
+
+                var clickInsideSidebar = sidebar.contains(e.target);
+                var clickOnToggle = toggleBtn.contains(e.target);
+
+                if (!clickInsideSidebar && !clickOnToggle) {
+                    sidebar.classList.remove('active');
+                }
+            });
+        }
+    });
+  </script>
 @stack('scripts')
 </body>
 </html>
