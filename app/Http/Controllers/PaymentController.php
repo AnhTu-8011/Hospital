@@ -177,8 +177,8 @@ class PaymentController extends Controller
      */
     private function buildVnpayUrl(Appointment $appointment, $price, Request $request, $txnRef)
     {
-        $vnp_TmnCode    = trim(env('VNPAY_TMN_CODE', 'A8QWNVFV'));
-        $vnp_HashSecret = trim(env('VNPAY_HASH_SECRET', 'JSMVCML1ETPZZXLGUAUQ677FZTDJEU36'));
+        $vnp_TmnCode    = trim(env('VNPAY_TMN_CODE', '4ITGG2O5'));
+        $vnp_HashSecret = trim(env('VNPAY_HASH_SECRET', 'AJ45UO1MCUTPO3F1HIMTSVYOESY1GCJ0'));
         $vnp_Url        = rtrim(env('VNPAY_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'), '?');
         $vnp_Returnurl  = trim(env('VNPAY_RETURN_URL', route('vnpay.return')));
 
