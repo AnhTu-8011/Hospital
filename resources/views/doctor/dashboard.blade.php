@@ -18,7 +18,7 @@
         </h1>
         <form method="get" action="{{ route('doctor.dashboard') }}" class="d-flex align-items-center gap-2">
             <label for="date" class="me-2 mb-0">Chọn ngày:</label>
-            <input type="date" id="date" name="date" value="{{ $selectedDate ?? now()->format('Y-m-d') }}" class="form-control" max="{{ now()->format('Y-m-d') }}">
+            <input type="date" id="date" name="date" value="{{ $selectedDate ?? now()->format('Y-m-d') }}" class="form-control" min="{{ now()->format('Y-m-d') }}" max="{{ now()->addDays(7)->format('Y-m-d') }}">
             <button class="btn btn-primary">Xem</button>
         </form>
     </div>

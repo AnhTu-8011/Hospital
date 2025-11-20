@@ -64,8 +64,9 @@ class DoctorRecordController extends Controller
             } else {
                 $items = [];
             }
+            // Lưu vào cột description dạng chuỗi, mỗi dịch vụ 1 dòng
             $record->description = !empty($items)
-                ? json_encode($items, JSON_UNESCAPED_UNICODE)
+                ? implode("\n", $items)
                 : null;
 
             // Xử lý toa thuốc (mỗi dòng là một thuốc)

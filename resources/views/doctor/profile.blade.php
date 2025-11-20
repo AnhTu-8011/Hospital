@@ -52,8 +52,28 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Ngày sinh:</label>
-                                <input type="date" name="birth_date" class="form-control"
-                                    value="{{ old('birth_date', optional($doctor->birth_date)->format('Y-m-d')) }}">
+                                @php
+                                    $birthDate = optional($doctor->birth_date);
+                                    $birthDay = old('birth_day', $birthDate ? $birthDate->format('d') : null);
+                                    $birthMonth = old('birth_month', $birthDate ? $birthDate->format('m') : null);
+                                    $birthYear = old('birth_year', $birthDate ? $birthDate->format('Y') : null);
+                                @endphp
+                                <div class="d-flex gap-2">
+                                    <select name="birth_day" id="birth_day" class="form-select">
+                                        <option value="">Ngày</option>
+                                        @for ($d = 1; $d <= 31; $d++)
+                                            <option value="{{ sprintf('%02d', $d) }}" {{ $birthDay == sprintf('%02d', $d) ? 'selected' : '' }}>{{ $d }}</option>
+                                        @endfor
+                                    </select>
+                                    <select name="birth_month" id="birth_month" class="form-select">
+                                        <option value="">Tháng</option>
+                                        @for ($m = 1; $m <= 12; $m++)
+                                            <option value="{{ sprintf('%02d', $m) }}" {{ $birthMonth == sprintf('%02d', $m) ? 'selected' : '' }}>Tháng {{ $m }}</option>
+                                        @endfor
+                                    </select>
+                                    <input type="text" name="birth_year" id="birth_year" class="form-control" placeholder="Năm" value="{{ $birthYear }}">
+                                </div>
+                                <input type="hidden" name="birth_date" id="birth_date" value="{{ old('birth_date', optional($doctor->birth_date)->format('Y-m-d')) }}">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Giới tính:</label>
@@ -188,6 +208,32 @@ function preview(e, selector) {
     reader.onload = event => document.querySelector(selector).src = event.target.result;
     reader.readAsDataURL(e.target.files[0]);
 }
+// ghép ngày sinh từ ngày/tháng/năm vào input ẩn birth_date
+function updateBirthDate() {
+    const day = document.querySelector('#birth_day')?.value;
+    const month = document.querySelector('#birth_month')?.value;
+    const year = document.querySelector('#birth_year')?.value;
+    const target = document.querySelector('#birth_date');
+
+    if (!target) return;
+
+    if (day && month && year && /^\d{4}$/.test(year)) {
+        target.value = `${year}-${month}-${day}`;
+    } else {
+        target.value = '';
+    }
+}
+
+['#birth_day', '#birth_month', '#birth_year'].forEach(sel => {
+    const el = document.querySelector(sel);
+    if (el) {
+        el.addEventListener('change', updateBirthDate);
+        el.addEventListener('input', updateBirthDate);
+    }
+});
+
+// khởi tạo giá trị birth_date khi load trang
+updateBirthDate();
 // xem MK
 document.querySelectorAll('.toggle-password').forEach(button => {
     button.addEventListener('click', () => {
