@@ -18,6 +18,9 @@
                             <a class="nav-link" href="#about">Giới thiệu</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="#services">Dịch vụ</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="#departments">Chuyên khoa</a>
                         </li>
                         <li class="nav-item">

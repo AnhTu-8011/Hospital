@@ -64,27 +64,11 @@
             @endphp
             @if($svc)
                 @php
+                    // Tách mô tả gói dịch vụ thành từng dòng
                     $descLines = preg_split('/\r\n|\r|\n/', $svc->description ?? '');
                     $descLines = array_values(array_filter($descLines, function ($line) {
                         return trim($line) !== '';
                     }));
-
-                    // Các mục dịch vụ đã được lưu trong hồ sơ
-                    $selectedItems = [];
-                    if (!empty($record->description)) {
-                        if (is_array($record->description)) {
-                            // Dữ liệu cũ: lưu dạng array JSON
-                            $selectedItems = array_values(array_filter($record->description, function ($v) {
-                                return is_string($v) && trim($v) !== '';
-                            }));
-                        } elseif (is_string($record->description)) {
-                            // Dữ liệu mới hoặc đã chuyển đổi: lưu dạng chuỗi mỗi dòng 1 dịch vụ
-                            $selectedItems = preg_split('/\r\n|\r|\n/', $record->description);
-                            $selectedItems = array_values(array_filter($selectedItems, function ($v) {
-                                return is_string($v) && trim($v) !== '';
-                            }));
-                        }
-                    }
                 @endphp
                 <div class="mb-4">
                     <h5 class="text-primary mb-3"><i class="fas fa-list-ul"></i> Gói dịch vụ bệnh nhân đã chọn</h5>
@@ -93,24 +77,10 @@
                             {{ $svc->name }} 
                         </div>
                         @if(!empty($descLines))
-                            @php
-                                // Chuẩn hoá danh sách đã chọn (trim khoảng trắng)
-                                $normalizedSelected = array_map(function ($v) {
-                                    return is_string($v) ? trim($v) : $v;
-                                }, $selectedItems);
-                            @endphp
-                            <ul class="mb-0 mt-1 small list-unstyled">
-                                @foreach($descLines as $idx => $line)
-                                    @php
-                                        $lineTrimmed = trim($line);
-                                        $isChecked = in_array($lineTrimmed, $normalizedSelected, true);
-                                    @endphp
-                                    <li class="mb-1">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="service_items[]" value="{{ $lineTrimmed }}" id="svc_item_{{ $svc->id }}_{{ $idx }}" {{ $isChecked ? 'checked' : '' }}>
-                                            <label class="form-check-label" for="svc_item_{{ $svc->id }}_{{ $idx }}">{{ $lineTrimmed }}</label>
-                                        </div>
-                                    </li>
+                            <ul class="mb-0 mt-1 small">
+                                @foreach($descLines as $line)
+                                    @php $lineTrimmed = trim($line); @endphp
+                                    <li class="mb-1">{{ $lineTrimmed }}</li>
                                 @endforeach
                             </ul>
                         @endif

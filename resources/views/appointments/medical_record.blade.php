@@ -60,31 +60,24 @@
             @endphp
             @if($svc)
                 @php
-                    // Các mục trong gói dịch vụ mà bác sĩ đã tích (lưu trong description)
-                    $selectedItems = [];
-                    if (!empty($record) && !empty($record->description)) {
-                        $decoded = is_array($record->description)
-                            ? $record->description
-                            : json_decode($record->description, true);
-                        if (is_array($decoded)) {
-                            $selectedItems = array_values(array_filter($decoded, function ($v) {
-                                return is_string($v) && trim($v) !== '';
-                            }));
-                        }
-                    }
+                    // Mô tả gói dịch vụ (lấy trực tiếp từ dịch vụ, mỗi dòng một mục)
+                    $descLines = preg_split('/\r\n|\r|\n/', $svc->description ?? '');
+                    $descLines = array_values(array_filter($descLines, function ($line) {
+                        return trim($line) !== '';
+                    }));
                 @endphp
                 <div class="mt-2 mb-3">
                     <h6 class="text-primary mb-2"><i class="fas fa-list-ul"></i> Gói dịch vụ bệnh nhân đã chọn</h6>
                     <div class="border rounded p-2">
                         <div class="fw-bold mb-1">{{ $svc->name }}</div>
-                        @if(!empty($selectedItems))
+                        @if(!empty($descLines))
                             <ul class="mb-0 small">
-                                @foreach($selectedItems as $line)
-                                    <li>{{ $line }}</li>
+                                @foreach($descLines as $line)
+                                    <li>{{ trim($line) }}</li>
                                 @endforeach
                             </ul>
                         @else
-                            <div class="small text-muted">Chưa có hạng mục nào được bác sĩ đánh dấu.</div>
+                            <div class="small text-muted">Chưa có mô tả gói dịch vụ.</div>
                         @endif
                     </div>
                 </div>

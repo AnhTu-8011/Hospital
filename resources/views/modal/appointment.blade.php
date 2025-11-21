@@ -56,23 +56,23 @@
         @endauth
 
         <div class="mb-3">
-            <label for="service_id" class="form-label">Dịch vụ</label>
+            <label for="department_id" class="form-label">Khoa</label>
+            <select id="department_id" class="form-select" required>
+                <option value="">-- Chọn khoa --</option>
+                @foreach($departments as $dept)
+                    <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="service_id" class="form-label">Dịch vụ trong khoa</label>
             <select name="service_id" id="service_id" class="form-select" required @guest disabled @endguest>
                 <option value="">-- Chọn dịch vụ --</option>
                 @foreach($services as $service)
                     <option value="{{ $service->id }}" data-department-id="{{ $service->department_id }}" data-price="{{ $service->price }}" data-description="{{ $service->description }}">
                         {{ $service->name }} ({{ number_format($service->price, 0, ',', '.') }} đ)
                     </option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label for="department_id" class="form-label">Khoa</label>
-            <select id="department_id" class="form-select" required>
-                <option value="">-- Chọn khoa --</option>
-                @foreach($departments as $dept)
-                    <option value="{{ $dept->id }}">{{ $dept->name }}</option>
                 @endforeach
             </select>
         </div>

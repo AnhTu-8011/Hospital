@@ -38,9 +38,16 @@ class ServiceController extends Controller
             'description'   => 'nullable|string',
             'price'         => 'required|numeric|min:0',
             'department_id' => 'required|exists:departments,id',
+            'image'         => 'nullable|image|max:2048',
         ]);
 
-        Service::create($request->only('name', 'description', 'price', 'department_id'));
+        $data = $request->only('name', 'description', 'price', 'department_id');
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('services', 'public');
+        }
+
+        Service::create($data);
 
         return redirect()->route('admin.services.index')
                          ->with('success', 'Thêm dịch vụ thành công!');
@@ -65,9 +72,16 @@ class ServiceController extends Controller
             'description'   => 'nullable|string',
             'price'         => 'required|numeric|min:0',
             'department_id' => 'required|exists:departments,id',
+            'image'         => 'nullable|image|max:2048',
         ]);
 
-        $service->update($request->only('name', 'description', 'price', 'department_id'));
+        $data = $request->only('name', 'description', 'price', 'department_id');
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('services', 'public');
+        }
+
+        $service->update($data);
 
         return redirect()->route('admin.services.index')
                          ->with('success', 'Cập nhật dịch vụ thành công!');

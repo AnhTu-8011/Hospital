@@ -24,6 +24,7 @@
                 <tr>
                     <th>STT</th>
                     <th>Mã dịch vụ</th>
+                    <th>Ảnh</th>
                     <th>Tên dịch vụ</th>
                     <th>Gói dịch vụ</th>
                     <th>Giá</th>
@@ -36,20 +37,17 @@
                     <tr>
                         <td class="text-center fw-medium">{{ $loop->iteration }}</td>
                         <td class="text-center text-muted">#{{ str_pad($service->id, 6, '0', STR_PAD_LEFT) }}</td>
+                        <td class="text-center">
+                            @if($service->image)
+                                <img src="{{ asset('storage/'.$service->image) }}" alt="{{ $service->name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                            @else
+                                <span class="text-muted">Không có</span>
+                            @endif
+                        </td>
                         <td class="fw-semibold">{{ $service->name }}</td>
                         <td>
-                            @php
-                                $descLines = preg_split('/\r\n|\r|\n/', $service->description ?? '');
-                                $descLines = array_values(array_filter($descLines, function ($line) {
-                                    return trim($line) !== '';
-                                }));
-                            @endphp
-                            @if(!empty($descLines))
-                                <ul class="mb-0">
-                                    @foreach($descLines as $line)
-                                        <li>{{ $line }}</li>
-                                    @endforeach
-                                </ul>
+                            @if(!empty($service->description))
+                                {{ \Illuminate\Support\Str::limit($service->description, 100) }}
                             @else
                                 -
                             @endif

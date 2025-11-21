@@ -24,6 +24,7 @@
                 <tr>
                     <th>STT</th>
                     <th>Mã khoa</th>
+                    <th>Ảnh</th>
                     <th>Tên khoa</th>
                     <th>Mô tả</th>
                     <th>Hành động</th>
@@ -34,8 +35,21 @@
                     <tr>
                         <td class="text-center fw-medium">{{ $loop->iteration }}</td>
                         <td class="text-center text-muted">#{{ str_pad($department->id, 6, '0', STR_PAD_LEFT) }}</td>
+                        <td class="text-center">
+                            @if($department->image)
+                                <img src="{{ asset('storage/'.$department->image) }}" alt="{{ $department->name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                            @else
+                                <span class="text-muted">Không có</span>
+                            @endif
+                        </td>
                         <td class="fw-semibold">{{ $department->name }}</td>
-                        <td>{{ $department->description ?? '-' }}</td>
+                        <td>
+                            @if(!empty($department->description))
+                                {{ \Illuminate\Support\Str::limit($department->description, 100) }}
+                            @else
+                                -
+                            @endif
+                        </td>
                         <td class="text-center">
                             <a href="{{ route('admin.departments.edit', $department) }}" class="btn btn-sm btn-warning me-1">
                                 <i class="fas fa-edit"></i>

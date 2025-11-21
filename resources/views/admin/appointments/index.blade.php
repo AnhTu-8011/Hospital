@@ -109,7 +109,6 @@
                                     <select name="status" class="form-select form-select-sm w-auto">
                                         <option value="pending" {{ $appointment->status === 'pending' ? 'selected' : '' }}>Chờ duyệt</option>
                                         <option value="confirmed" {{ $appointment->status === 'confirmed' ? 'selected' : '' }}>Đã duyệt</option>
-                                        <option value="completed" {{ $appointment->status === 'completed' ? 'selected' : '' }}>Đã khám</option>
                                         <option value="canceled" {{ $appointment->status === 'canceled' ? 'selected' : '' }}>Đã hủy</option>
                                     </select>
                                     <button type="submit" class="btn btn-sm btn-primary">

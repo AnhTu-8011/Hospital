@@ -13,6 +13,7 @@ class Service extends Model
         'description',
         'price',
         'department_id',
+        'image',
     ];
 
     public function department()

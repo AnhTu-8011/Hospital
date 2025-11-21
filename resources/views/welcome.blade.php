@@ -134,31 +134,35 @@
             </div>
             <div>
                 @if(isset($services) && $services->count())
-                    <div class="position-relative">
-                        <button type="button" class="btn btn-outline-primary rounded-circle position-absolute" data-scroll="left" data-target="#servicesScroller" style="left:-10px; top:50%; transform:translateY(-50%); z-index:2; width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-primary rounded-circle" data-scroll="left" data-target="#servicesScroller" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
                             <i class="bi bi-chevron-left"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-primary rounded-circle position-absolute" data-scroll="right" data-target="#servicesScroller" style="right:-10px; top:50%; transform:translateY(-50%); z-index:2; width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
-                            <i class="bi bi-chevron-right"></i>
-                        </button>
-                        <div class="overflow-auto" id="servicesScroller">
+                        <div class="overflow-auto flex-grow-1" id="servicesScroller" style="overflow-y:hidden; scrollbar-width:none; -ms-overflow-style:none;">
                             <div class="d-flex flex-nowrap gap-3">
-                            @foreach($services as $service)
+                            @foreach($services->take(6) as $service)
                                 <div class="card border-0 shadow-sm" style="min-width: 300px;">
                                     <div class="card-body text-center p-4">
-                                        <div class="icon-box mb-3">
-                                            <i class="fas fa-heartbeat fa-3x text-primary"></i>
+                                        <div class="mb-3 d-flex justify-content-center">
+                                            <div style="width: 160px; height: 160px; overflow:hidden; border-radius: 0.75rem;">
+                                                @if(!empty($service->image))
+                                                    <img src="{{ asset('storage/'.$service->image) }}" alt="{{ $service->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                                @else
+                                                    <div class="d-flex align-items-center justify-content-center bg-light h-100">
+                                                        <span class="fw-semibold text-secondary">{{ $service->name }}</span>
+                                                    </div>
+                                                @endif
+                                            </div>
                                         </div>
                                         <h4 class="mb-2">{{ $service->name }}</h4>
-                                        <!-- <p class="text-muted mb-0">{{ \Illuminate\Support\Str::limit($service->description, 120) }}</p>
-                                        @if(!is_null($service->price))
-                                            <div class="mt-3 fw-semibold text-primary">{{ number_format($service->price, 0, ',', '.') }} đ</div>
-                                        @endif -->
                                     </div>
                                 </div>
                             @endforeach
                             </div>
                         </div>
+                        <button type="button" class="btn btn-outline-primary rounded-circle" data-scroll="right" data-target="#servicesScroller" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
                     </div>
                 @else
                     <div class="alert alert-info text-center mb-0">Chưa có dịch vụ nào được hiển thị.</div>
@@ -176,28 +180,94 @@
             </div>
             <div>
                 @if(isset($departments) && $departments->count())
-                    <div class="position-relative">
-                        <button type="button" class="btn btn-outline-primary rounded-circle position-absolute" data-scroll="left" data-target="#departmentsScroller" style="left:-10px; top:50%; transform:translateY(-50%); z-index:2; width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-primary rounded-circle" data-scroll="left" data-target="#departmentsScroller" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
                             <i class="bi bi-chevron-left"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-primary rounded-circle position-absolute" data-scroll="right" data-target="#departmentsScroller" style="right:-10px; top:50%; transform:translateY(-50%); z-index:2; width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
-                            <i class="bi bi-chevron-right"></i>
-                        </button>
-                        <div class="overflow-auto" id="departmentsScroller">
+                        <div class="overflow-auto flex-grow-1" id="departmentsScroller" style="overflow-y:hidden; scrollbar-width:none; -ms-overflow-style:none;">
                             <div class="d-flex flex-nowrap gap-3">
                             @foreach($departments as $dept)
-                                <div class="card border-0 shadow-sm" style="min-width: 260px;">
-                                    <div class="bg-light d-flex align-items-center justify-content-center" style="height: 160px; border-top-left-radius: .5rem; border-top-right-radius: .5rem;">
-                                        <i class="fas fa-hospital-user text-primary" style="font-size: 2rem;"></i>
+                                <div class="card border-0 shadow-sm" style="min-width: 260px; cursor:pointer;" data-bs-toggle="modal" data-bs-target="#departmentModal{{ $dept->id }}">
+                                    <div class="bg-light d-flex justify-content-center pt-3" style="border-top-left-radius: .5rem; border-top-right-radius: .5rem;">
+                                        <div style="width: 160px; height: 160px; overflow:hidden; border-radius: .75rem;">
+                                            @if(!empty($dept->image))
+                                                <img src="{{ asset('storage/'.$dept->image) }}" alt="{{ $dept->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                            @else
+                                                <div class="d-flex align-items-center justify-content-center bg-light h-100">
+                                                    <span class="fw-bold text-secondary text-center">{{ $dept->name }}</span>
+                                                </div>
+                                            @endif
+                                        </div>
                                     </div>
                                     <div class="p-3">
-                                        <h5 class="fw-bold text-primary mt-2 mb-1">{{ $dept->name }}</h5>
-                                        <p class="card-text small text-muted mb-2">{{ $dept->description }}</p>
+                                        <h5 class="fw-bold mt-2 mb-1">{{ $dept->name }}</h5>
+                                    </div>
+                                </div>
+
+                                @php
+                                    $deptServices = isset($services) ? $services->where('department_id', $dept->id) : collect();
+                                @endphp
+
+                                <div class="modal fade" id="departmentModal{{ $dept->id }}" tabindex="-1" aria-labelledby="departmentModalLabel{{ $dept->id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-xl" style="max-width:90%;">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title fw-bold" id="departmentModalLabel{{ $dept->id }}">{{ $dept->name }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-5 mb-3 mb-md-0">
+                                                        <h6 class="fw-bold mb-2">Mô tả chuyên khoa</h6>
+                                                        <p class="mb-0" style="white-space: pre-line;">{{ $dept->description ?? 'Chưa có mô tả cho chuyên khoa này.' }}</p>
+                                                    </div>
+                                                    <div class="col-md-7">
+                                                        <h6 class="fw-bold mb-2">Danh sách dịch vụ của khoa</h6>
+                                                        @if($deptServices->count())
+                                                            <ul class="list-group mb-0">
+                                                                @foreach($deptServices as $service)
+                                                                    <li class="list-group-item d-flex align-items-start">
+                                                                        <div class="me-3" style="width:60px; height:60px; flex-shrink:0;">
+                                                                            @if(!empty($service->image))
+                                                                                <img src="{{ asset('storage/'.$service->image) }}" alt="{{ $service->name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                                                                            @else
+                                                                                <div class="d-flex align-items-center justify-content-center bg-light" style="width: 60px; height: 60px; border-radius: 8px;">
+                                                                                    <i class="fas fa-stethoscope text-primary"></i>
+                                                                                </div>
+                                                                            @endif
+                                                                        </div>
+                                                                        <div class="flex-grow-1 d-flex justify-content-between align-items-start">
+                                                                            <div class="me-3">
+                                                                                <div class="fw-semibold">{{ $service->name }}</div>
+                                                                                @if(!empty($service->description))
+                                                                                    <div class="small text-muted" style="white-space: pre-line;">{{ $service->description }}</div>
+                                                                                @endif
+                                                                            </div>
+                                                                            @if(!is_null($service->price))
+                                                                                <span class="badge bg-primary rounded-pill">{{ number_format($service->price, 0, ',', '.') }} đ</span>
+                                                                            @endif
+                                                                        </div>
+                                                                    </li>
+                                                                @endforeach
+                                                            </ul>
+                                                        @else
+                                                            <p class="text-muted mb-0">Chưa có dịch vụ nào được gán cho khoa này.</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
                             </div>
                         </div>
+                        <button type="button" class="btn btn-outline-primary rounded-circle" data-scroll="right" data-target="#departmentsScroller" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
                     </div>
                 @else
                     <div class="alert alert-info text-center mb-0">Chưa có chuyên khoa nào được hiển thị.</div>
@@ -215,14 +285,11 @@
             </div>
             <div>
                 @if(isset($doctors) && $doctors->count())
-                    <div class="position-relative">
-                        <button type="button" class="btn btn-outline-primary rounded-circle position-absolute" data-scroll="left" data-target="#doctorsScroller" style="left:-10px; top:50%; transform:translateY(-50%); z-index:2; width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-primary rounded-circle" data-scroll="left" data-target="#doctorsScroller" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
                             <i class="bi bi-chevron-left"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-primary rounded-circle position-absolute" data-scroll="right" data-target="#doctorsScroller" style="right:-10px; top:50%; transform:translateY(-50%); z-index:2; width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
-                            <i class="bi bi-chevron-right"></i>
-                        </button>
-                        <div class="overflow-auto" id="doctorsScroller">
+                        <div class="overflow-auto flex-grow-1" id="doctorsScroller" style="overflow-y:hidden; scrollbar-width:none; -ms-overflow-style:none;">
                             <div class="d-flex flex-nowrap gap-3">
                             @foreach($doctors as $doc)
                     @php
@@ -244,7 +311,7 @@
                             </div>
                     <!-- Modal Chi Tiết Bác Sĩ (per doctor) -->
                     <div class="modal fade" id="doctorModal{{ $doc->id }}" tabindex="-1" aria-labelledby="doctorModalLabel{{ $doc->id }}" aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
+                        <div class="modal-dialog modal-lg" style="max-width:90%;">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title fw-bold" id="doctorModalLabel{{ $doc->id }}">Hồ sơ chi tiết - Bác Sĩ {{ $name }}</h5>
@@ -295,6 +362,9 @@
                             @endforeach
                             </div>
                         </div>
+                        <button type="button" class="btn btn-outline-primary rounded-circle" data-scroll="right" data-target="#doctorsScroller" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
                     </div>
                 @else
                     <div class="alert alert-info text-center mb-0">Chưa có bác sĩ nào được hiển thị.</div>
@@ -315,34 +385,5 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/custom.js') }}"></script>
     <script src="{{ asset('js/chat.js') }}"></script>
-    <script>
-    (function(){
-        function setup(targetId){
-            var scroller = document.querySelector(targetId);
-            if(!scroller) return;
-            function amount(){
-                var first = scroller.querySelector('.card');
-                return first ? first.getBoundingClientRect().width + 12 : scroller.clientWidth * 0.9;
-            }
-            document.querySelectorAll('[data-target="'+targetId+'"]').forEach(function(btn){
-                btn.addEventListener('click', function(){
-                    var dir = btn.getAttribute('data-scroll');
-                    var a = amount();
-                    var max = scroller.scrollWidth - scroller.clientWidth;
-                    if(dir === 'right'){
-                        if(scroller.scrollLeft >= max - 5){ scroller.scrollTo({left:0, behavior:'smooth'}); }
-                        else { scroller.scrollBy({left:a, behavior:'smooth'}); }
-                    } else {
-                        if(scroller.scrollLeft <= 5){ scroller.scrollTo({left:max, behavior:'smooth'}); }
-                        else { scroller.scrollBy({left:-a, behavior:'smooth'}); }
-                    }
-                });
-            });
-        }
-        setup('#servicesScroller');
-        setup('#departmentsScroller');
-        setup('#doctorsScroller');
-    })();
-    </script>
     </body>
     </html>

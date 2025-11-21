@@ -29,3 +29,31 @@ $(document).ready(function() {
         }
     });
 });
+
+    (function(){
+        function setup(targetId){
+            var scroller = document.querySelector(targetId);
+            if(!scroller) return;
+            function amount(){
+                var first = scroller.querySelector('.card');
+                return first ? first.getBoundingClientRect().width + 12 : scroller.clientWidth * 0.9;
+            }
+            document.querySelectorAll('[data-target="'+targetId+'"]').forEach(function(btn){
+                btn.addEventListener('click', function(){
+                    var dir = btn.getAttribute('data-scroll');
+                    var a = amount();
+                    var max = scroller.scrollWidth - scroller.clientWidth;
+                    if(dir === 'right'){
+                        if(scroller.scrollLeft >= max - 5){ scroller.scrollTo({left:0, behavior:'smooth'}); }
+                        else { scroller.scrollBy({left:a, behavior:'smooth'}); }
+                    } else {
+                        if(scroller.scrollLeft <= 5){ scroller.scrollTo({left:max, behavior:'smooth'}); }
+                        else { scroller.scrollBy({left:-a, behavior:'smooth'}); }
+                    }
+                });
+            });
+        }
+        setup('#servicesScroller');
+        setup('#departmentsScroller');
+        setup('#doctorsScroller');
+    })();

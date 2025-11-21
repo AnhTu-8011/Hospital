@@ -8,11 +8,16 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 class Kernel extends ConsoleKernel
 {
     /**
-     * Define the application's command schedule.
+     *
+     * Để gửi email nhắc lịch trước 1 ngày, cách chuẩn nhất trong Laravel là:
+     * Tạo Mailable cho nội dung email.
+     * Tạo Console Command chạy mỗi ngày, quét các lịch hẹn ngày mai và gửi mail.
+     * Đăng ký command trong Kernel để Laravel Scheduler gọi tự động.
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Gửi nhắc lịch mỗi ngày lúc 07:00
+        $schedule->command('appointments:send-reminders')->dailyAt('07:00');
     }
 
     /**

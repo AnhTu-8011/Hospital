@@ -5,7 +5,7 @@
 
     <a href="{{ route('admin.services.index') }}" class="px-3 py-2 bg-gray-300 text-black rounded">← Quay lại</a>
 
-    <form action="{{ route('admin.services.store') }}" method="POST" class="mt-4 max-w-lg">
+    <form action="{{ route('admin.services.store') }}" method="POST" enctype="multipart/form-data" class="mt-4 max-w-3xl">
         @csrf
 
         <!-- Tên dịch vụ -->
@@ -63,6 +63,14 @@
                 @endforeach
             </select>
             @error('department_id')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Ảnh dịch vụ (tùy chọn)</label>
+            <input type="file" name="image" class="w-full border rounded px-3 py-2" accept="image/*">
+            @error('image')
                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
             @enderror
         </div>

@@ -529,3 +529,8 @@ footer {
     color: var(--primary-color);
     margin-bottom: 15px;
 }
+    #servicesScroller::-webkit-scrollbar,
+    #departmentsScroller::-webkit-scrollbar,
+    #doctorsScroller::-webkit-scrollbar {
+        display: none;
+    }

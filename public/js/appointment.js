@@ -24,6 +24,12 @@ document.addEventListener('DOMContentLoaded', () => {
     dateInput.min = start.toISOString().split('T')[0];
     dateInput.max = end.toISOString().split('T')[0];
 
+    // 🔒 Khóa chọn khoa (và giữ nguyên hành vi hiện tại) nếu chưa đăng nhập
+    const isAuth = form && form.dataset && form.dataset.auth === '1';
+    if (!isAuth && departmentSelect) {
+        departmentSelect.disabled = true;
+    }
+
     // ============================================================
     // 🔥 HÀM CHÍNH: cập nhật chi tiết gói dịch vụ
     // ============================================================
@@ -38,10 +44,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 🔹 Tự động gán khoa theo dịch vụ
+        // 🔹 Tự động gán khoa theo dịch vụ (nếu chưa chọn khoa hoặc khác khoa)
         const deptId = opt.dataset.departmentId;
         if (deptId) {
-            departmentSelect.value = deptId;
+            if (!departmentSelect.value || departmentSelect.value !== deptId) {
+                departmentSelect.value = deptId;
+            }
 
             // Lọc bác sĩ theo khoa
             doctorSelect.querySelectorAll('option').forEach(o => {
@@ -98,6 +106,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
     // Sự kiện
     // ============================================================
+
+    // Khi chọn khoa → lọc dịch vụ và bác sĩ
+    departmentSelect.addEventListener('change', () => {
+        const deptId = departmentSelect.value;
+
+        // Lọc dịch vụ theo khoa
+        serviceSelect.querySelectorAll('option').forEach(o => {
+            if (!o.value) {
+                o.style.display = '';
+                return;
+            }
+            const sDeptId = o.dataset.departmentId;
+            o.style.display = (!deptId || sDeptId === deptId) ? '' : 'none';
+        });
+        serviceSelect.value = '';
+
+        // Lọc bác sĩ theo khoa
+        doctorSelect.querySelectorAll('option').forEach(o => {
+            if (!o.value) {
+                o.style.display = '';
+                return;
+            }
+            const dDeptId = o.dataset.departmentId;
+            o.style.display = (!deptId || dDeptId === deptId) ? '' : 'none';
+        });
+        doctorSelect.value = '';
+
+        // Reset thông tin dịch vụ
+        if (sdEmpty && sdContent) {
+            sdEmpty.classList.remove('d-none');
+            sdContent.classList.add('d-none');
+        }
+    });
 
     // Khi chọn dịch vụ → cập nhật thông tin
     serviceSelect.addEventListener('change', updateServiceDetails);

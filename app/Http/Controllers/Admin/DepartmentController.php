@@ -48,9 +48,16 @@ class DepartmentController extends Controller
         $request->validate([
             'name'        => 'required|string|max:255|unique:departments,name',
             'description' => 'nullable|string',
+            'image'       => 'nullable|image|max:2048',
         ]);
 
-        Department::create($request->only('name', 'description'));
+        $data = $request->only('name', 'description');
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('departments', 'public');
+        }
+
+        Department::create($data);
 
         return redirect()
             ->route('admin.departments.index')
@@ -73,9 +80,16 @@ class DepartmentController extends Controller
         $request->validate([
             'name'        => 'required|string|max:255|unique:departments,name,' . $department->id,
             'description' => 'nullable|string',
+            'image'       => 'nullable|image|max:2048',
         ]);
 
-        $department->update($request->only('name', 'description'));
+        $data = $request->only('name', 'description');
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('departments', 'public');
+        }
+
+        $department->update($data);
 
         return redirect()
             ->route('admin.departments.index')

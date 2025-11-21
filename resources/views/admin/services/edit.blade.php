@@ -5,7 +5,7 @@
 
     <a href="{{ route('admin.services.index') }}" class="px-3 py-2 bg-gray-300 text-black rounded">← Quay lại</a>
 
-    <form action="{{ route('admin.services.update', $service->id) }}" method="POST" class="mt-4 max-w-lg">
+    <form action="{{ route('admin.services.update', $service->id) }}" method="POST" enctype="multipart/form-data" class="mt-4 max-w-3xl">
         @csrf
         @method('PUT')
 
@@ -69,6 +69,21 @@
             @enderror
         </div>
 
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Ảnh hiện tại</label>
+            @if($service->image)
+                <img src="{{ asset('storage/'.$service->image) }}" alt="{{ $service->name }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;" class="mb-2">
+            @else
+                <p class="text-sm text-gray-500 mb-2">Chưa có ảnh.</p>
+            @endif
+
+            <label class="block text-sm font-medium mb-1">Đổi ảnh (tùy chọn)</label>
+            <input type="file" name="image" class="w-full border rounded px-3 py-2" accept="image/*">
+            @error('image')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
         <!-- Submit -->
         <div>
             <button type="submit" class="px-4 py-2 bg-blue-500 text-black rounded">
@@ -77,4 +92,3 @@
         </div>
     </form>
 @endsection
-```
