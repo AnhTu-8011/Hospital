@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\{
     DashboardController,
-    DepartmentController,
+    DepartmentController as AdminDepartmentController,
     ReportController,
     DoctorController as AdminDoctorController,
     AppointmentController as AdminAppointmentController
@@ -18,7 +18,8 @@ use App\Http\Controllers\{
     PaymentController,
     ChatController,
     ForgotPasswordController,
-    ResetPasswordController
+    ResetPasswordController,
+    HomeController
 };
 use App\Http\Controllers\Doctor\{
     DoctorDashboardController,
@@ -32,14 +33,18 @@ use App\Http\Controllers\Doctor\{
 | 🏠 Trang chính (Home)
 |--------------------------------------------------------------------------
 */
-Route::get('/', [DepartmentController::class, 'welcome'])->name('home');
+Route::get('/', [HomeController::class, 'welcome'])->name('home');
+Route::get('/doctors', [HomeController::class, 'doctorsPage'])->name('doctors.index');
+Route::get('/departments', [HomeController::class, 'departmentsPage'])->name('departments.index');
+Route::get('/services', [HomeController::class, 'servicesPage'])->name('services.index');
+Route::view('/introduces', 'home.introduces.index')->name('introduces.index');
 
-// 📅 Modal đặt lịch hẹn (popup)
+// 📅 Trang / popup đặt lịch hẹn
 Route::get('/appointment/modal', function () {
     $departments = \App\Models\Department::all();
     $services = \App\Models\Service::with('department')->get();
     $doctors = \App\Models\Doctor::with(['user', 'department'])->get();
-    return view('modal.appointment', compact('departments', 'services', 'doctors'));
+    return view('home.booking', compact('departments', 'services', 'doctors'));
 })->name('modal.appointment');
 
 /*
@@ -70,7 +75,7 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         // ⚙️ CRUD quản lý
-        Route::resource('departments', DepartmentController::class);
+        Route::resource('departments', AdminDepartmentController::class);
         Route::resource('doctors', AdminDoctorController::class);
         Route::resource('appointments', AdminAppointmentController::class);
         Route::resource('services', ServiceController::class);

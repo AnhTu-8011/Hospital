@@ -247,9 +247,6 @@
                             <li><a class="dropdown-item" href="{{ route('appointments.index') }}">
                                 <i class="fas fa-calendar-alt me-2"></i> Lịch hẹn
                             </a></li>
-                            <li><a class="dropdown-item" href="#">
-                                <i class="fas fa-cog me-2"></i> Cài đặt
-                            </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
