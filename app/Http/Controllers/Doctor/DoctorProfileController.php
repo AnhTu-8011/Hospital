@@ -37,7 +37,7 @@ class DoctorProfileController extends Controller
             'department_id' => 'required|exists:departments,id',
             'specialization' => 'required|string|max:255',
             'license_number' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
+            'description' => 'nullable|string',
             'avatar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 

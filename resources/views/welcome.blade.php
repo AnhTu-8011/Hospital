@@ -121,47 +121,60 @@
     </section>
 
     {{-- WHY CHOOSE US --}}
-    <section class="py-5 py-lg-6 bg-light">
+    <section class="py-5 py-lg-6 bg-white">
         <div class="container">
             <div class="text-center mb-5">
-                <h2 class="fw-bold mb-2">Tại sao chọn chúng tôi?</h2>
+                <p class="text-uppercase text-primary fw-semibold mb-2" style="letter-spacing: .08em;">LÝ DO LỰA CHỌN</p>
+                <h2 class="fw-bold mb-2" style="font-size: clamp(1.8rem, 2.2vw + .6rem, 2.4rem);">Tại sao chọn chúng tôi?</h2>
                 <p class="text-muted mb-0">Những giá trị khác biệt giúp Bệnh viện Phúc An trở thành lựa chọn của bạn.</p>
             </div>
             <div class="row g-4 g-lg-5 justify-content-center">
                 <div class="col-6 col-md-3">
-                    <div class="h-100 text-center bg-white rounded-4 shadow-sm px-3 py-4">
-                        <div class="mb-3 text-primary fs-2">
+                    <div class="h-100 text-center bg-white rounded-4 shadow-sm px-3 py-4" 
+                         style="transition: all 0.3s ease;"
+                         onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 12px 24px rgba(13, 110, 253, 0.15)';" 
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)';">
+                        <div class="mb-3 text-primary" style="font-size: 3rem;">
                             <i class="bi bi-person-badge"></i>
                         </div>
-                        <h5 class="fw-semibold mb-1">Đội ngũ bác sĩ giỏi</h5>
-                        <p class="text-muted small mb-0">Chuyên môn cao, liên tục đào tạo và cập nhật kiến thức.</p>
+                        <h5 class="fw-semibold mb-2 text-dark">Đội ngũ bác sĩ giỏi</h5>
+                        <p class="text-muted small mb-0" style="line-height: 1.6;">Chuyên môn cao, liên tục đào tạo và cập nhật kiến thức.</p>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="h-100 text-center bg-white rounded-4 shadow-sm px-3 py-4">
-                        <div class="mb-3 text-primary fs-2">
+                    <div class="h-100 text-center bg-white rounded-4 shadow-sm px-3 py-4" 
+                         style="transition: all 0.3s ease;"
+                         onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 12px 24px rgba(13, 110, 253, 0.15)';" 
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)';">
+                        <div class="mb-3 text-primary" style="font-size: 3rem;">
                             <i class="bi bi-hospital"></i>
                         </div>
-                        <h5 class="fw-semibold mb-1">Cơ sở hiện đại</h5>
-                        <p class="text-muted small mb-0">Trang thiết bị chẩn đoán và điều trị đạt chuẩn quốc tế.</p>
+                        <h5 class="fw-semibold mb-2 text-dark">Cơ sở hiện đại</h5>
+                        <p class="text-muted small mb-0" style="line-height: 1.6;">Trang thiết bị chẩn đoán và điều trị đạt chuẩn quốc tế.</p>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="h-100 text-center bg-white rounded-4 shadow-sm px-3 py-4">
-                        <div class="mb-3 text-primary fs-2">
+                    <div class="h-100 text-center bg-white rounded-4 shadow-sm px-3 py-4" 
+                         style="transition: all 0.3s ease;"
+                         onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 12px 24px rgba(13, 110, 253, 0.15)';" 
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)';">
+                        <div class="mb-3 text-primary" style="font-size: 3rem;">
                             <i class="bi bi-heart-pulse"></i>
                         </div>
-                        <h5 class="fw-semibold mb-1">Dịch vụ toàn diện</h5>
-                        <p class="text-muted small mb-0">Từ phòng khám tổng quát đến các chuyên khoa sâu.</p>
+                        <h5 class="fw-semibold mb-2 text-dark">Dịch vụ toàn diện</h5>
+                        <p class="text-muted small mb-0" style="line-height: 1.6;">Từ phòng khám tổng quát đến các chuyên khoa sâu.</p>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="h-100 text-center bg-white rounded-4 shadow-sm px-3 py-4">
-                        <div class="mb-3 text-primary fs-2">
+                    <div class="h-100 text-center bg-white rounded-4 shadow-sm px-3 py-4" 
+                         style="transition: all 0.3s ease;"
+                         onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 12px 24px rgba(13, 110, 253, 0.15)';" 
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)';">
+                        <div class="mb-3 text-primary" style="font-size: 3rem;">
                             <i class="bi bi-emoji-smile"></i>
                         </div>
-                        <h5 class="fw-semibold mb-1">Chăm sóc tận tâm</h5>
-                        <p class="text-muted small mb-0">Đặt trải nghiệm và sự an tâm của bệnh nhân lên hàng đầu.</p>
+                        <h5 class="fw-semibold mb-2 text-dark">Chăm sóc tận tâm</h5>
+                        <p class="text-muted small mb-0" style="line-height: 1.6;">Đặt trải nghiệm và sự an tâm của bệnh nhân lên hàng đầu.</p>
                     </div>
                 </div>
             </div>

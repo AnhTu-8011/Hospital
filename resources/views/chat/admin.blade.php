@@ -45,39 +45,57 @@
 }
 
 .chat-bubble {
-    background-color: #007bff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: #fff;
-    width: 55px;
-    height: 55px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 26px;
+    font-size: 28px;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
-.chat-bubble:hover { background-color: #0056b3; }
+.chat-bubble:hover { 
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
 
 .chat-box {
     width: 500px;
     background: white;
-    border-radius: 10px;
+    border-radius: 16px;
     overflow: hidden;
     position: absolute;
-    bottom: 70px;
+    bottom: 75px;
     right: 0;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    border: none;
 }
 .hidden { display: none; }
 
+.chat-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    padding: 12px 16px !important;
+}
+
 .notify-dot {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 12px;
-    height: 12px;
-    background: red;
+    top: 8px;
+    right: 8px;
+    width: 14px;
+    height: 14px;
+    background: #f5576c;
     border-radius: 50%;
+    border: 2px solid white;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.8; }
 }
 </style>
 

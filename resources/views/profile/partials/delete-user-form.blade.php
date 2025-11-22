@@ -2,7 +2,10 @@
     <!-- Nút mở modal -->
     <button 
         type="button" 
-        class="btn btn-danger w-full md:w-auto"
+        class="btn btn-lg rounded-pill shadow-lg text-white fw-bold"
+        style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); transition: all 0.3s ease;" 
+        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(250, 112, 154, 0.4)';" 
+        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(250, 112, 154, 0.3)';"
         data-bs-toggle="modal" 
         data-bs-target="#confirmUserDeletion"
     >
@@ -14,12 +17,12 @@
     <div class="modal fade" id="confirmUserDeletion" tabindex="-1" aria-labelledby="confirmUserDeletionLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="confirmUserDeletionLabel">
+                <div class="modal-header border-0 text-white" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); border-radius: 0.5rem 0.5rem 0 0 !important;">
+                    <h5 class="modal-title fw-bold" id="confirmUserDeletionLabel">
                         <i class="fas fa-exclamation-triangle me-2"></i>
                         {{ __('Xác nhận xóa tài khoản') }}
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
                 <form method="post" action="{{ route('profile.destroy') }}" class="needs-validation" novalidate>
@@ -75,11 +78,11 @@
                     </div>
 
                     <div class="modal-footer border-top">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
                             <i class="fas fa-times me-1"></i> {{ __('Hủy bỏ') }}
                         </button>
-                        <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-trash-alt me-1"></i> {{ __('Xóa tài khoản') }}
+                        <button type="submit" class="btn btn-lg rounded-pill shadow-lg text-white fw-bold" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(250, 112, 154, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(250, 112, 154, 0.3)';">
+                            <i class="fas fa-trash-alt me-2"></i> {{ __('Xóa tài khoản') }}
                         </button>
                     </div>
                 </form>

@@ -9,15 +9,18 @@
                 Mật khẩu hiện tại <span class="text-danger">*</span>
             </label>
             <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                <span class="input-group-text rounded-start-3 border-2"><i class="fas fa-lock"></i></span>
                 <input type="password"
                        id="update_password_current_password"
                        name="current_password"
-                       class="form-control @error('current_password','updatePassword') is-invalid @enderror"
+                       class="form-control rounded-end-3 border-2 @error('current_password','updatePassword') is-invalid @enderror"
                        autocomplete="current-password"
                        placeholder="Nhập mật khẩu hiện tại"
-                       required>
-                <button type="button" class="btn btn-outline-secondary"
+                       required
+                       style="transition: all 0.3s ease;" 
+                       onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" 
+                       onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                <button type="button" class="btn btn-outline-secondary rounded-end-3"
                         onclick="togglePassword('update_password_current_password')">
                     <i class="fas fa-eye"></i>
                 </button>
@@ -33,15 +36,18 @@
                 Mật khẩu mới <span class="text-danger">*</span>
             </label>
             <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-key"></i></span>
+                <span class="input-group-text rounded-start-3 border-2"><i class="fas fa-key"></i></span>
                 <input type="password"
                        id="update_password_password"
                        name="password"
-                       class="form-control @error('password','updatePassword') is-invalid @enderror"
+                       class="form-control rounded-end-3 border-2 @error('password','updatePassword') is-invalid @enderror"
                        autocomplete="new-password"
                        placeholder="Nhập mật khẩu mới"
-                       required>
-                <button type="button" class="btn btn-outline-secondary"
+                       required
+                       style="transition: all 0.3s ease;" 
+                       onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" 
+                       onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                <button type="button" class="btn btn-outline-secondary rounded-end-3"
                         onclick="togglePassword('update_password_password')">
                     <i class="fas fa-eye"></i>
                 </button>
@@ -69,15 +75,18 @@
                 Xác nhận mật khẩu <span class="text-danger">*</span>
             </label>
             <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-check-double"></i></span>
+                <span class="input-group-text rounded-start-3 border-2"><i class="fas fa-check-double"></i></span>
                 <input type="password"
                        id="update_password_password_confirmation"
                        name="password_confirmation"
-                       class="form-control @error('password_confirmation','updatePassword') is-invalid @enderror"
+                       class="form-control rounded-end-3 border-2 @error('password_confirmation','updatePassword') is-invalid @enderror"
                        autocomplete="new-password"
                        placeholder="Nhập lại mật khẩu mới"
-                       required>
-                <button type="button" class="btn btn-outline-secondary"
+                       required
+                       style="transition: all 0.3s ease;" 
+                       onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" 
+                       onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                <button type="button" class="btn btn-outline-secondary rounded-end-3"
                         onclick="togglePassword('update_password_password_confirmation')">
                     <i class="fas fa-eye"></i>
                 </button>
@@ -97,11 +106,11 @@
     @endif
 
     <div class="d-flex justify-content-end gap-2 mt-4 border-top pt-3">
-        <button type="reset" class="btn btn-outline-secondary">
-            <i class="fas fa-undo me-1"></i> Đặt lại
+        <button type="reset" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="fas fa-undo me-1"></i>Đặt lại
         </button>
-        <button type="submit" class="btn btn-primary">
-            <i class="fas fa-save me-1"></i> Cập nhật mật khẩu
+        <button type="submit" class="btn btn-lg rounded-pill shadow-lg text-white fw-bold" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(245, 87, 108, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(245, 87, 108, 0.3)';">
+            <i class="fas fa-save me-2"></i>Cập nhật mật khẩu
         </button>
     </div>
 </form>

@@ -35,11 +35,11 @@
 
   @if ($discountPercent > 0)
       <li><strong>Giảm giá:</strong> {{ $discountPercent }}% ({{ number_format($discountAmount, 0, ',', '.') }} đ)</li>
-      <p style="color:green; font-weight:bold; margin-top:8px;">
+      <li style="color:green; font-weight:bold; margin-top:8px; list-style:none;">
           🎉 Sinh nhật trong tháng! Bạn chỉ cần thanh toán <strong>{{ $prepayPercent }}%</strong> giá gốc (đã bao gồm ưu đãi sinh nhật).
-      </p>
+      </li>
   @else
-      <p><strong>Thanh toán trước {{ $prepayPercent }}%</strong> tổng giá dịch vụ.</p>
+      <li style="list-style:none;"><strong>Thanh toán trước {{ $prepayPercent }}%</strong> tổng giá dịch vụ.</li>
   @endif
 
   <li><strong>Thanh toán trước:</strong> 

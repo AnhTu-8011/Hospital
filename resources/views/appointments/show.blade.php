@@ -2,60 +2,111 @@
 
 @section('content')
 <div class="container py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Thông tin chi tiết lịch hẹn</h5>
-                    <div class="d-flex gap-2">
-                        <a href="{{ route('appointments.index') }}" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-arrow-left me-1"></i> Quay lại
-                        </a>
-                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="window.print()">
-                            <i class="fas fa-file-invoice me-1"></i> Xuất hóa đơn
-                        </button>
-                    </div>
-                </div>
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+        <div>
+            <p class="text-uppercase text-primary fw-semibold mb-1" style="letter-spacing: .08em; font-size: 0.85rem;">CHI TIẾT LỊCH HẸN</p>
+            <h1 class="h3 mb-0 fw-bold text-dark">
+                <i class="fas fa-calendar-alt me-2 text-primary"></i>Thông tin chi tiết lịch hẹn
+            </h1>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ route('appointments.index') }}" class="btn btn-outline-primary rounded-pill px-4 shadow-sm">
+                <i class="fas fa-arrow-left me-2"></i>Quay lại
+            </a>
+            <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="window.print()">
+                <i class="fas fa-file-invoice me-2"></i>Xuất hóa đơn
+            </button>
+        </div>
+    </div>
 
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Mã lịch hẹn:</div>
-                        <div class="col-md-8">#{{ str_pad($appointment->id, 6, '0', STR_PAD_LEFT) }}</div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Ngày giờ đặt lịch:</div>
-                        <div class="col-md-8">{{ $appointment->created_at ?? ''}}</div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Ngày khám:</div>
-                        <div class="col-md-8">{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d/m/Y') }}</div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Ca khám:</div>
-                        <div class="col-md-8">{{ $appointment->medical_examination ?? '---' }}</div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Bác sĩ:</div>
-                        <div class="col-md-8">{{ $appointment->doctor->user->name ?? 'N/A' }}</div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Khoa/Phòng:</div>
-                        <div class="col-md-8">{{ $appointment->doctor->department->name ?? 'N/A' }}</div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Dịch vụ:</div>
-                        <div class="col-md-8">{{ $appointment->service->name ?? 'N/A' }}</div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Ghi chú:</div>
-                        <div class="col-md-8">{{ $appointment->note ?? 'Không có ghi chú' }}</div>
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="card-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <h6 class="m-0 font-weight-bold text-white d-flex align-items-center">
+                <i class="fas fa-info-circle me-2"></i>Thông tin lịch hẹn
+            </h6>
+        </div>
+        <div class="card-body p-4">
+                    <div class="bg-light rounded-4 p-4 mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-hashtag text-primary me-3 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Mã lịch hẹn</small>
+                                        <strong class="text-dark fs-6">
+                                            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                                                #{{ str_pad($appointment->id, 6, '0', STR_PAD_LEFT) }}
+                                            </span>
+                                        </strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-calendar-plus text-primary me-3 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Ngày đặt lịch</small>
+                                        <strong class="text-dark">{{ $appointment->created_at ? \Carbon\Carbon::parse($appointment->created_at)->format('d/m/Y H:i') : '---' }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-calendar-check text-primary me-3 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Ngày khám</small>
+                                        <strong class="text-dark">{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d/m/Y') }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-clock text-primary me-3 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Ca khám</small>
+                                        <strong class="text-dark">{{ $appointment->medical_examination ?? '---' }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user-md text-primary me-3 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Bác sĩ</small>
+                                        <strong class="text-dark">{{ $appointment->doctor->user->name ?? 'N/A' }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-building text-primary me-3 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Khoa/Phòng</small>
+                                        <strong class="text-dark">{{ $appointment->doctor->department->name ?? 'N/A' }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-stethoscope text-primary me-3 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Dịch vụ</small>
+                                        <span class="badge bg-info-subtle text-info rounded-pill px-3 py-1">
+                                            {{ $appointment->service->name ?? 'N/A' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-sticky-note text-primary me-3 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Ghi chú</small>
+                                        <strong class="text-dark">{{ $appointment->note ?? 'Không có ghi chú' }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     @php
@@ -73,72 +124,80 @@
                         $finalPrice = $price * $discount;
                     @endphp
 
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">
-                            Tổng giá {{ $discount == 0.7 ? '70%' : '80%' }}:
+                    <div class="bg-light rounded-4 p-4 mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-dollar-sign text-success me-3 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Tổng giá {{ $discount == 0.7 ? '70%' : '80%' }}</small>
+                                        <strong class="text-success fs-5">{{ number_format($finalPrice, 0, ',', '.') }} đ</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-info-circle text-primary me-3 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Trạng thái</small>
+                                        @if($appointment->status === 'pending')
+                                            <span class="badge bg-warning rounded-pill px-3 py-2">Chờ duyệt</span>
+                                        @elseif($appointment->status === 'confirmed')
+                                            <span class="badge bg-success rounded-pill px-3 py-2">Đã duyệt</span>
+                                        @elseif($appointment->status === 'completed')
+                                            <span class="badge bg-primary rounded-pill px-3 py-2">Đã khám</span>
+                                        @elseif($appointment->status === 'canceled')
+                                            <span class="badge bg-danger rounded-pill px-3 py-2">Đã hủy</span>
+                                        @else
+                                            <span class="badge bg-secondary rounded-pill px-3 py-2">{{ $appointment->status ?? 'Không xác định' }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-credit-card text-info me-3 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Trạng thái thanh toán</small>
+                                        @if($appointment->status === 'canceled' && $appointment->payment_status === 'success')
+                                            <span class="badge bg-info rounded-pill px-3 py-2">Đã hoàn</span>
+                                        @elseif($appointment->payment_status === 'success')
+                                            <span class="badge bg-success rounded-pill px-3 py-2">Đã thanh toán</span>
+                                        @else
+                                            <span class="badge bg-danger rounded-pill px-3 py-2">Chưa thanh toán</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-8">
-                            {{ number_format($finalPrice, 0, ',', '.') }} đ
-                        </div>
+                        @if ($discount == 0.7)
+                            <div class="alert alert-success rounded-3 border-0 mt-3 mb-0">
+                                <i class="fas fa-gift me-2"></i>
+                                <strong>🎉 Ưu đãi đặc biệt!</strong> Bạn được giảm thêm 10% vì sinh trong tháng {{ Carbon::parse($birthdate)->format('m') }}!
+                            </div>
+                        @endif
                     </div>
-                    @if ($discount == 0.7)
-                        <p class="text-success fw-semibold mt-2">
-                            🎉 Bạn được giảm thêm 10% vì sinh trong tháng {{ Carbon::parse($birthdate)->format('m') }}!
-                        </p>
+                    
+                    @if($appointment->status == 'pending')
+                        <div class="d-flex gap-2 mt-4">
+                            <form action="{{ route('appointments.cancel', $appointment->id) }}" 
+                                  method="POST" 
+                                  class="d-inline"
+                                  onsubmit="return confirm('{{ $appointment->payment_status === 'success' ? ('Lịch hẹn đã được thanh toán. Khi hủy sẽ hoàn tiền ' . number_format($finalPrice, 0, ',', '.') . ' đ. Bạn có chắc chắn muốn hủy?') : 'Bạn có chắc chắn muốn hủy lịch hẹn này?' }}')">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="btn btn-lg btn-danger rounded-pill px-4 shadow-sm">
+                                    <i class="fas fa-times me-2"></i>Hủy lịch hẹn
+                                </button>
+                            </form>
+                            
+                            @if($appointment->payment_status != 'success')
+                                <a href="{{ route('payment.checkout', $appointment->id) }}" class="btn btn-lg rounded-pill shadow-lg text-white fw-bold" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(102, 126, 234, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(102, 126, 234, 0.3)';">
+                                    <i class="fas fa-credit-card me-2"></i>Thanh toán ngay
+                                </a>
+                            @endif
+                        </div>
                     @endif
-
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Trạng thái:</div>
-                        <div class="col-md-8">
-                            @if($appointment->status === 'pending')
-                                <span class="badge bg-warning text-dark">Chờ duyệt</span>
-                            @elseif($appointment->status === 'confirmed')
-                                <span class="badge bg-success">Đã duyệt</span>
-                            @elseif($appointment->status === 'completed')
-                                <span class="badge bg-primary">Đã khám</span>
-                            @elseif($appointment->status === 'canceled')
-                                <span class="badge bg-danger">Đã hủy</span>
-                            @else
-                                <span class="badge bg-secondary">{{ $appointment->status ?? 'Không xác định' }}</span>
-                            @endif
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Trạng thái thanh toán:</div>
-                        <div class="col-md-8">
-                            @if($appointment->status === 'canceled' && $appointment->payment_status === 'success')
-                                <span class="badge bg-info text-dark">Đã hoàn</span>
-                            @elseif($appointment->payment_status === 'success')
-                                <span class="badge bg-success">Đã thanh toán</span>
-                            @else
-                                <span class="badge bg-danger">Chưa thanh toán</span>
-                            @endif
-                        </div>
-                    </div>
-                    
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            @if($appointment->status == 'pending')
-                                <form action="{{ route('appointments.cancel', $appointment->id) }}" 
-                                      method="POST" 
-                                      class="d-inline"
-                                      onsubmit="return confirm('{{ $appointment->payment_status === 'success' ? ('Lịch hẹn đã được thanh toán. Khi hủy sẽ hoàn tiền ' . number_format($finalPrice, 0, ',', '.') . ' đ. Bạn có chắc chắn muốn hủy?') : 'Bạn có chắc chắn muốn hủy lịch hẹn này?' }}')">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="btn btn-danger">
-                                        <i class="fas fa-times me-1"></i> Hủy lịch hẹn
-                                    </button>
-                                </form>
-                                
-                                @if($appointment->payment_status != 'success')
-                                    <a href="{{ route('payment.checkout', $appointment->id) }}" class="btn btn-primary">
-                                        <i class="fas fa-credit-card me-1"></i> Thanh toán ngay
-                                    </a>
-                                @endif
-                            @endif
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

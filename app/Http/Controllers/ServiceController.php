@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Service;
 use App\Models\Department;
 use App\Models\Appointment;
+use App\Models\ServiceSymptom;
 
 class ServiceController extends Controller
 {
@@ -15,7 +16,7 @@ class ServiceController extends Controller
      */
     public function index()
     {
-        $services = Service::with('department')->get();
+        $services = Service::with(['department', 'symptoms'])->get();
         return view('admin.services.index', compact('services'));
     }
 
@@ -39,6 +40,8 @@ class ServiceController extends Controller
             'price'         => 'required|numeric|min:0',
             'department_id' => 'required|exists:departments,id',
             'image'         => 'nullable|image|max:2048',
+            'symptoms'      => 'nullable|array',
+            'symptoms.*'    => 'nullable|string',
         ]);
 
         $data = $request->only('name', 'description', 'price', 'department_id');
@@ -47,7 +50,21 @@ class ServiceController extends Controller
             $data['image'] = $request->file('image')->store('services', 'public');
         }
 
-        Service::create($data);
+        $service = Service::create($data);
+
+        // Lưu triệu chứng
+        if ($request->has('symptoms')) {
+            $symptoms = array_filter($request->input('symptoms', []), function($symptom) {
+                return !empty(trim($symptom));
+            });
+            
+            foreach ($symptoms as $symptomName) {
+                ServiceSymptom::create([
+                    'service_id' => $service->id,
+                    'symptom_name' => trim($symptomName),
+                ]);
+            }
+        }
 
         return redirect()->route('admin.services.index')
                          ->with('success', 'Thêm dịch vụ thành công!');
@@ -59,6 +76,8 @@ class ServiceController extends Controller
     public function edit(Service $service)
     {
         $departments = Department::all();
+        // Load triệu chứng hiện có
+        $service->load('symptoms');
         return view('admin.services.edit', compact('service', 'departments'));
     }
 
@@ -73,6 +92,8 @@ class ServiceController extends Controller
             'price'         => 'required|numeric|min:0',
             'department_id' => 'required|exists:departments,id',
             'image'         => 'nullable|image|max:2048',
+            'symptoms'      => 'nullable|array',
+            'symptoms.*'    => 'nullable|string|max:255',
         ]);
 
         $data = $request->only('name', 'description', 'price', 'department_id');
@@ -82,6 +103,22 @@ class ServiceController extends Controller
         }
 
         $service->update($data);
+
+        // Xóa tất cả triệu chứng cũ và thêm lại
+        ServiceSymptom::where('service_id', $service->id)->delete();
+        
+        if ($request->has('symptoms')) {
+            $symptoms = array_filter($request->input('symptoms', []), function($symptom) {
+                return !empty(trim($symptom));
+            });
+            
+            foreach ($symptoms as $symptomName) {
+                ServiceSymptom::create([
+                    'service_id' => $service->id,
+                    'symptom_name' => trim($symptomName),
+                ]);
+            }
+        }
 
         return redirect()->route('admin.services.index')
                          ->with('success', 'Cập nhật dịch vụ thành công!');

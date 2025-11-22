@@ -1,58 +1,152 @@
 @extends('layouts.profile')
 
 @section('content')
-<div class="container-fluid">
-
-    <!-- Tiêu đề -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">
-            <i class="fas fa-notes-medical"></i> Hồ sơ khám bệnh
-        </h1>
-        <a href="{{ route('appointments.index') }}" class="btn btn-sm btn-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Quay lại 
-        </a>
-    </div>
-
-    <!-- Hồ sơ khám bệnh -->
-    <div class="card shadow mb-4" id="printable">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <span><i class="fas fa-user-md"></i> Thông tin hồ sơ khám bệnh</span>
-            <button type="button" class="btn btn-light btn-sm text-primary" onclick="window.print()">
-                <i class="fas fa-file-invoice me-1"></i> Xuất hồ sơ khám bệnh
+<div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+        <div>
+            <p class="text-uppercase text-primary fw-semibold mb-1" style="letter-spacing: .08em; font-size: 0.85rem;">HỒ SƠ KHÁM BỆNH</p>
+            <h1 class="h3 mb-0 fw-bold text-dark">
+                <i class="fas fa-notes-medical me-2 text-primary"></i>Hồ sơ khám bệnh
+            </h1>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ route('appointments.index') }}" class="btn btn-outline-primary rounded-pill px-4 shadow-sm">
+                <i class="fas fa-arrow-left me-2"></i>Quay lại
+            </a>
+            <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="window.print()">
+                <i class="fas fa-file-invoice me-2"></i>Xuất hồ sơ khám bệnh
             </button>
         </div>
-        <div class="card-body">
+    </div>
+
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden" id="printable">
+        <div class="card-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <h6 class="m-0 font-weight-bold text-white d-flex align-items-center">
+                <i class="fas fa-user-md me-2"></i>Thông tin hồ sơ khám bệnh
+            </h6>
+        </div>
+        <div class="card-body p-4">
 
             <!-- Thông tin bệnh nhân -->
-            <h5 class="text-primary mb-3"><i class="fas fa-user"></i> Thông tin bệnh nhân</h5>
-            <div class="row">
-                <div class="col-md-4 mb-3"><strong>Họ và tên:</strong> {{ optional($patient)->name ?? 'Không rõ' }}</div>
-                <div class="col-md-2 mb-3">
-                    <strong>Ngày sinh:</strong>
-                    {{ optional($patient)->birthdate ? \Carbon\Carbon::parse(optional($patient)->birthdate)->format('d/m/Y') : 'N/A' }}
+            <div class="bg-light rounded-4 p-4 mb-4">
+                <h5 class="text-primary mb-4 fw-bold d-flex align-items-center">
+                    <i class="fas fa-user me-2"></i>Thông tin bệnh nhân
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-id-card text-primary me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Họ và tên</small>
+                                <strong class="text-dark">{{ optional($patient)->name ?? 'Không rõ' }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-birthday-cake text-primary me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Ngày sinh</small>
+                                <strong class="text-dark">{{ optional($patient)->birthdate ? \Carbon\Carbon::parse(optional($patient)->birthdate)->format('d/m/Y') : 'N/A' }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-venus-mars text-primary me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Giới tính</small>
+                                <strong class="text-dark">
+                                    @if(optional($patient)->gender === 'male') Nam
+                                    @elseif(optional($patient)->gender === 'female') Nữ
+                                    @else Không rõ
+                                    @endif
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-phone text-primary me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Số điện thoại</small>
+                                <strong class="text-dark">{{ optional($patient)->phone ?? 'N/A' }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-shield-alt text-primary me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Số bảo hiểm</small>
+                                <strong class="text-dark">{{ optional($patient)->insurance_number ?? 'Không có' }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Địa chỉ</small>
+                                <strong class="text-dark">{{ optional($patient)->address ?? 'Không rõ' }}</strong>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-3 mb-3">
-                    <strong>Giới tính:</strong>
-                    @if(optional($patient)->gender === 'male') Nam
-                    @elseif(optional($patient)->gender === 'female') Nữ
-                    @else Không rõ
-                    @endif
-                </div>
-                <div class="col-md-3 mb-3"><strong>Số điện thoại:</strong> {{ optional($patient)->phone ?? 'N/A' }}</div>
-                <div class="col-md-4 mb-3"><strong>Số bảo hiểm:</strong> {{ optional($patient)->insurance_number ?? 'Không có' }}</div>
-                <div class="col-md-8 mb-3"><strong>Địa chỉ:</strong> {{ optional($patient)->address ?? 'Không rõ' }}</div>
             </div>
 
-            <hr>
-
             <!-- Thông tin khám bệnh -->
-            <h5 class="text-info mb-3"><i class="fas fa-stethoscope"></i> Thông tin khám bệnh</h5>
-            <div class="row">
-                <div class="col-md-4 mb-3"><strong>Bác sĩ phụ trách:</strong> {{ optional(optional($appointment->doctor)->user)->name ?? 'Không rõ' }}</div>
-                <div class="col-md-4 mb-3"><strong>Dịch vụ khám:</strong> {{ optional($appointment->service)->name ?? 'Không rõ' }}</div>
-                <div class="col-md-4 mb-3"><strong>Ngày khám:</strong> {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d/m/Y') }}</div>
-                <div class="col-md-4 mb-3"><strong>Ca khám:</strong> {{ $appointment->medical_examination ?? 'Không xác định' }}</div>
-                <div class="col-md-8 mb-3"><strong>Ghi chú:</strong> {{ $appointment->note ?? 'Không có ghi chú' }}</div>
+            <div class="bg-light rounded-4 p-4 mb-4">
+                <h5 class="text-info mb-4 fw-bold d-flex align-items-center">
+                    <i class="fas fa-stethoscope me-2"></i>Thông tin khám bệnh
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-user-md text-info me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Bác sĩ phụ trách</small>
+                                <strong class="text-dark">{{ optional(optional($appointment->doctor)->user)->name ?? 'Không rõ' }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-heartbeat text-info me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Dịch vụ khám</small>
+                                <span class="badge bg-info-subtle text-info rounded-pill px-3 py-1">{{ optional($appointment->service)->name ?? 'Không rõ' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-calendar-alt text-info me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Ngày khám</small>
+                                <strong class="text-dark">{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d/m/Y') }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-clock text-info me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Ca khám</small>
+                                <strong class="text-dark">{{ $appointment->medical_examination ?? 'Không xác định' }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-sticky-note text-info me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Ghi chú</small>
+                                <strong class="text-dark">{{ $appointment->note ?? 'Không có ghi chú' }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             @php
@@ -66,18 +160,23 @@
                         return trim($line) !== '';
                     }));
                 @endphp
-                <div class="mt-2 mb-3">
-                    <h6 class="text-primary mb-2"><i class="fas fa-list-ul"></i> Gói dịch vụ bệnh nhân đã chọn</h6>
-                    <div class="border rounded p-2">
-                        <div class="fw-bold mb-1">{{ $svc->name }}</div>
+                <div class="mb-4">
+                    <h5 class="text-primary mb-3 fw-bold d-flex align-items-center">
+                        <i class="fas fa-list-ul me-2"></i>Gói dịch vụ bệnh nhân đã chọn
+                    </h5>
+                    <div class="bg-primary-subtle border-0 rounded-4 p-4 shadow-sm">
+                        <div class="fw-bold mb-3 text-primary fs-5">{{ $svc->name }}</div>
                         @if(!empty($descLines))
-                            <ul class="mb-0 small">
+                            <ul class="mb-0">
                                 @foreach($descLines as $line)
-                                    <li>{{ trim($line) }}</li>
+                                    <li class="mb-2 d-flex align-items-start">
+                                        <i class="fas fa-check-circle text-primary me-2 mt-1"></i>
+                                        <span class="text-dark">{{ trim($line) }}</span>
+                                    </li>
                                 @endforeach
                             </ul>
                         @else
-                            <div class="small text-muted">Chưa có mô tả gói dịch vụ.</div>
+                            <div class="text-muted">Chưa có mô tả gói dịch vụ.</div>
                         @endif
                     </div>
                 </div>
@@ -93,74 +192,93 @@
                     ->get();
             @endphp
             @if(!empty($record->image) || (!empty($record->images) && is_array($record->images) && count($record->images)) || ($labTests && $labTests->count()))
-            <h5 class="text-warning mb-3"><i class="fas fa-clipboard-list"></i> Ảnh xét nghiệm nếu có</h5>
-                <!-- Ảnh từ xét nghiệm (admin cập nhật) -->
-                @if($labTests && $labTests->count())
-                    <div class="mb-2">
-                        @foreach($labTests as $t)
-                            @if(!empty($t->image))
-                                <div class="mt-3">
-                                    <label class="form-label fw-bold">{{ $t->test_name }} - Ảnh chính:</label>
-                                    <div class="mt-2">
-                                        <img src="{{ asset('storage/'.$t->image) }}" alt="{{ $t->test_name }}" class="thumb">
+                <div class="mb-4">
+                    <h5 class="text-warning mb-3 fw-bold d-flex align-items-center">
+                        <i class="fas fa-clipboard-list me-2"></i>Ảnh xét nghiệm nếu có
+                    </h5>
+                    @if($labTests && $labTests->count())
+                        <div class="mb-2">
+                            @foreach($labTests as $t)
+                                @if(!empty($t->image))
+                                    <div class="mt-3">
+                                        <label class="form-label fw-bold mb-2">{{ $t->test_name }} - Ảnh chính:</label>
+                                        <div class="mt-2">
+                                            <img src="{{ asset('storage/'.$t->image) }}" alt="{{ $t->test_name }}" class="thumb">
+                                        </div>
                                     </div>
-                                </div>
-                            @endif
-                            @if(!empty($t->images) && is_array($t->images))
-                                <div class="mt-3">
-                                    <label class="form-label fw-bold">{{ $t->test_name }} - Ảnh phụ:</label>
-                                    <div class="mt-2 d-flex flex-wrap gap-2">
-                                        @foreach($t->images as $img)
-                                            <img src="{{ asset('storage/'.$img) }}" alt="{{ $t->test_name }}" class="thumb">
-                                        @endforeach
+                                @endif
+                                @if(!empty($t->images) && is_array($t->images))
+                                    <div class="mt-3">
+                                        <label class="form-label fw-bold mb-2">{{ $t->test_name }} - Ảnh phụ:</label>
+                                        <div class="mt-2 d-flex flex-wrap gap-2">
+                                            @foreach($t->images as $img)
+                                                <img src="{{ asset('storage/'.$img) }}" alt="{{ $t->test_name }}" class="thumb">
+                                            @endforeach
+                                        </div>
                                     </div>
-                                </div>
-                            @endif
-                        @endforeach
-                    </div>
-                @endif
+                                @endif
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
             @endif
-            <hr>
             
             <!-- Chuẩn đoán -->
-            <h5 class="text-success mb-3"><i class="fas fa-diagnoses"></i> Chuẩn đoán & Kết luận</h5>
+                <div class="bg-light rounded-4 p-4 mb-4">
+                    <h5 class="text-success mb-4 fw-bold d-flex align-items-center">
+                        <i class="fas fa-diagnoses me-2"></i>Chuẩn đoán & Kết luận
+                    </h5>
 
-                <!-- Chuẩn đoán -->
-                <div class="mb-3">
-                    <label for="diagnosis" class="form-label fw-bold">Chuẩn đoán ban đầu:</label>
-                    <textarea id="diagnosis" name="diagnosis" class="form-control" rows="3" placeholder="Nhập chuẩn đoán..." readonly disabled>{{ old('diagnosis', optional($record)->diagnosis ?? '') }}</textarea>
-                </div>
+                    <div class="mb-4">
+                        <label for="diagnosis" class="form-label fw-semibold mb-2">
+                            <i class="fas fa-file-medical text-success me-2"></i>Chuẩn đoán ban đầu:
+                        </label>
+                        <textarea id="diagnosis" name="diagnosis" class="form-control rounded-3 border-2 bg-light" rows="3" placeholder="Nhập chuẩn đoán..." readonly disabled>{{ old('diagnosis', optional($record)->diagnosis ?? '') }}</textarea>
+                    </div>
 
-                <!-- Kết luận -->
-                <div class="mb-3">
-                    <label for="doctor_conclusion" class="form-label fw-bold">Kết luận bác sĩ:</label>
-                    <textarea id="doctor_conclusion" name="doctor_conclusion" class="form-control" rows="3" placeholder="Nhập kết luận bác sĩ..." readonly disabled>{{ old('doctor_conclusion', optional($record)->doctor_conclusion ?? '') }}</textarea>
-                </div>
+                    <div class="mb-4">
+                        <label for="doctor_conclusion" class="form-label fw-semibold mb-2">
+                            <i class="fas fa-clipboard-check text-success me-2"></i>Kết luận bác sĩ:
+                        </label>
+                        <textarea id="doctor_conclusion" name="doctor_conclusion" class="form-control rounded-3 border-2 bg-light" rows="3" placeholder="Nhập kết luận bác sĩ..." readonly disabled>{{ old('doctor_conclusion', optional($record)->doctor_conclusion ?? '') }}</textarea>
+                    </div>
 
-                <!-- Trạng thái lịch hẹn -->
-                <div class="mb-3">
-                    <label for="status" class="form-label fw-bold">Trạng thái lịch hẹn:</label>
-                    <select id="status" name="status" class="form-select" disabled>
-                        <option value="confirmed" {{ ($appointment->status ?? '') === 'confirmed' ? 'selected' : '' }}>Đã duyệt</option>
-                        <option value="completed" {{ ($appointment->status ?? '') === 'completed' ? 'selected' : '' }}>Đã khám</option>
-                    </select>
-                </div>
-
-                <!-- Toa thuốc -->
-                <div class="mb-3">
-                    <label for="prescription" class="form-label fw-bold">Toa thuốc (mỗi dòng 1 loại thuốc):</label>
-                    <textarea id="prescription" name="prescription" class="form-control" rows="4" placeholder="Ví dụ: Paracetamol 500mg - Uống 2 lần/ngày
-            Vitamin C 1000mg - Sáng 1 viên" readonly disabled>{{ old('prescription', isset($record->prescription) ? (is_array($record->prescription) ? implode("\n", $record->prescription) : ( $record->prescription ? implode("\n", (array) json_decode($record->prescription, true)) : '')) : '') }}</textarea>
+                    <div class="mb-4">
+                        <label for="prescription" class="form-label fw-semibold mb-2">
+                            <i class="fas fa-pills text-success me-2"></i>Toa thuốc:
+                        </label>
+                        <textarea id="prescription" name="prescription" class="form-control rounded-3 border-2 bg-light" rows="4" placeholder="Ví dụ: Paracetamol 500mg - Uống 2 lần/ngày&#10;Vitamin C 1000mg - Sáng 1 viên" readonly disabled>{{ old('prescription', isset($record->prescription) ? (is_array($record->prescription) ? implode("\n", $record->prescription) : ( $record->prescription ? implode("\n", (array) json_decode($record->prescription, true)) : '')) : '') }}</textarea>
+                    </div>
                 </div>
             @else
-                <div class="alert alert-info">Chưa có hồ sơ khám bệnh.</div>
+                <div class="alert alert-info rounded-4 border-0 shadow-sm">
+                    <div class="text-center py-4">
+                        <i class="fas fa-info-circle fa-3x mb-3 text-primary" style="opacity: 0.5;"></i>
+                        <p class="mb-0 fw-semibold">Chưa có hồ sơ khám bệnh.</p>
+                    </div>
+                </div>
             @endif
 
         </div>
     </div>
 </div>
 <style>
-    .thumb { width: 300px; height: 300px; object-fit: cover; border-radius: 6px; border: 1px solid #e5e7eb; }
-    #imagesPreview img, #imagePreview img { margin-right: 8px; margin-bottom: 8px; }
+    .thumb { 
+        width: 200px; 
+        height: 200px; 
+        object-fit: cover; 
+        border-radius: 12px; 
+        border: 2px solid #e5e7eb;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    .thumb:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    #imagesPreview img, #imagePreview img { 
+        margin-right: 8px; 
+        margin-bottom: 8px; 
+    }
 </style>
 @endsection

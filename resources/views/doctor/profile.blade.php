@@ -3,18 +3,25 @@
 @section('content')
 <div class="container-fluid">
 
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800"><i class="fas fa-user-md"></i> Hồ sơ bác sĩ</h1>
-        <a href="{{ route('doctor.dashboard') }}" class="btn btn-sm btn-secondary">
-            <i class="fas fa-arrow-left"></i> Quay lại
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+        <div>
+            <p class="text-uppercase text-primary fw-semibold mb-1" style="letter-spacing: .08em; font-size: 0.85rem;">HỒ SƠ BÁC SĨ</p>
+            <h1 class="h3 mb-0 fw-bold text-dark">
+                <i class="fas fa-user-md me-2 text-primary"></i>Hồ sơ bác sĩ
+            </h1>
+        </div>
+        <a href="{{ route('doctor.dashboard') }}" class="btn btn-outline-primary rounded-pill px-4 shadow-sm">
+            <i class="fas fa-arrow-left me-2"></i>Quay lại
         </a>
     </div>
 
-    <div class="card shadow mb-4">
-        <div class="card-header bg-primary text-white">
-            <i class="fas fa-id-card-alt"></i> Thông tin cá nhân & chuyên môn
+    <div class="card border-0 shadow-lg mb-4 rounded-4 overflow-hidden">
+        <div class="card-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <h6 class="m-0 font-weight-bold text-white d-flex align-items-center">
+                <i class="fas fa-id-card-alt me-2"></i>Thông tin cá nhân & chuyên môn
+            </h6>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
 
             <form action="{{ route('doctor.profile.update') }}" method="POST" enctype="multipart/form-data">
                 @csrf
@@ -24,34 +31,52 @@
 
                     <!-- Ảnh đại diện -->
                     <div class="col-md-3 text-center mb-3">
-                        <label class="fw-bold d-block">Ảnh đại diện:</label>
-                        <img id="avatarPreview" src="{{ $doctor->avatar ? asset('storage/' . $doctor->avatar) : asset('images/default-avatar.png') }}" 
-                             class="img-thumbnail rounded mb-2" width="180" height="180">
-                        <input type="file" name="avatar" id="avatar" accept="image/*" class="form-control mt-2">
+                        <label class="fw-bold d-block mb-3 text-primary">
+                            <i class="fas fa-image me-2"></i>Ảnh đại diện
+                        </label>
+                        <div class="position-relative d-inline-block">
+                            <img id="avatarPreview" src="{{ $doctor->avatar ? asset('storage/' . $doctor->avatar) : asset('images/default-avatar.png') }}" 
+                                 class="rounded-4 shadow-lg mb-3 border border-3 border-primary" 
+                                 width="180" height="180" 
+                                 style="object-fit: cover;">
+                        </div>
+                        <input type="file" name="avatar" id="avatar" accept="image/*" class="form-control rounded-3 border-2 mt-2">
                     </div>
 
                     <div class="col-md-9">
-                        <h5 class="text-primary mb-3"><i class="fas fa-user"></i> Thông tin cá nhân</h5>
+                        <div class="bg-light rounded-4 p-4 mb-4">
+                            <h5 class="text-primary mb-4 fw-bold d-flex align-items-center">
+                                <i class="fas fa-user me-2"></i>Thông tin cá nhân
+                            </h5>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Họ và tên:</label>
-                            <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}" required>
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold mb-2">
+                                    <i class="fas fa-id-card text-primary me-2"></i>Họ và tên:
+                                </label>
+                                <input type="text" name="name" class="form-control rounded-3 border-2" value="{{ old('name', $user->name) }}" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold mb-2">
+                                        <i class="fas fa-envelope text-primary me-2"></i>Email:
+                                    </label>
+                                    <input type="email" name="email" class="form-control rounded-3 border-2 bg-light" value="{{ $user->email }}" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold mb-2">
+                                        <i class="fas fa-phone text-primary me-2"></i>Số điện thoại:
+                                    </label>
+                                    <input type="text" name="phone" class="form-control rounded-3 border-2" value="{{ old('phone', $user->phone) }}" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Email:</label>
-                                <input type="email" name="email" class="form-control" value="{{ $user->email }}" readonly>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Số điện thoại:</label>
-                                <input type="text" name="phone" class="form-control" value="{{ old('phone', $user->phone) }}">
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Ngày sinh:</label>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold mb-2">
+                                    <i class="fas fa-birthday-cake text-primary me-2"></i>Ngày sinh:
+                                </label>
                                 @php
                                     $birthDate = optional($doctor->birth_date);
                                     $birthDay = old('birth_day', $birthDate ? $birthDate->format('d') : null);
@@ -59,25 +84,27 @@
                                     $birthYear = old('birth_year', $birthDate ? $birthDate->format('Y') : null);
                                 @endphp
                                 <div class="d-flex gap-2">
-                                    <select name="birth_day" id="birth_day" class="form-select">
+                                    <select name="birth_day" id="birth_day" class="form-select rounded-3 border-2">
                                         <option value="">Ngày</option>
                                         @for ($d = 1; $d <= 31; $d++)
                                             <option value="{{ sprintf('%02d', $d) }}" {{ $birthDay == sprintf('%02d', $d) ? 'selected' : '' }}>{{ $d }}</option>
                                         @endfor
                                     </select>
-                                    <select name="birth_month" id="birth_month" class="form-select">
+                                    <select name="birth_month" id="birth_month" class="form-select rounded-3 border-2">
                                         <option value="">Tháng</option>
                                         @for ($m = 1; $m <= 12; $m++)
                                             <option value="{{ sprintf('%02d', $m) }}" {{ $birthMonth == sprintf('%02d', $m) ? 'selected' : '' }}>Tháng {{ $m }}</option>
                                         @endfor
                                     </select>
-                                    <input type="text" name="birth_year" id="birth_year" class="form-control" placeholder="Năm" value="{{ $birthYear }}">
+                                    <input type="text" name="birth_year" id="birth_year" class="form-control rounded-3 border-2" placeholder="Năm" value="{{ $birthYear }}">
                                 </div>
                                 <input type="hidden" name="birth_date" id="birth_date" value="{{ old('birth_date', optional($doctor->birth_date)->format('Y-m-d')) }}">
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Giới tính:</label>
-                                <select name="gender" class="form-select">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold mb-2">
+                                    <i class="fas fa-venus-mars text-primary me-2"></i>Giới tính:
+                                </label>
+                                <select name="gender" class="form-select rounded-3 border-2" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
                                     <option value="male" {{ $user->gender == 'male' ? 'selected' : '' }}>Nam</option>
                                     <option value="female" {{ $user->gender == 'female' ? 'selected' : '' }}>Nữ</option>
                                     <option value="other" {{ $user->gender == 'other' ? 'selected' : '' }}>Khác</option>
@@ -85,114 +112,139 @@
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Địa chỉ:</label>
-                            <textarea name="address" class="form-control" rows="2">{{ old('address', $user->address) }}</textarea>
-                        </div>
-
-                        <hr>
-                        <h5 class="text-success mb-3"><i class="fas fa-briefcase-medical"></i> Thông tin chuyên môn</h5>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Khoa:</label>
-                                <select name="department_id" class="form-select" required>
-                                    @foreach($departments as $dept)
-                                        <option value="{{ $dept->id }}" {{ $doctor->department_id == $dept->id ? 'selected' : '' }}>
-                                            {{ $dept->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Chuyên môn:</label>
-                                <input type="text" name="specialization" class="form-control" value="{{ old('specialization', $doctor->specialization) }}">
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Số giấy phép hành nghề:</label>
-                            <input type="text" name="license_number" class="form-control" value="{{ old('license_number', $doctor->license_number) }}">
-                        </div>
-
-                        <!-- Ảnh giấy phép hành nghề -->
                         <div class="mb-4">
-                            <label class="form-label fw-bold">Ảnh giấy phép hành nghề:</label>
-                            @if($doctor->license_image)
-                                <div class="mb-2">
-                                    <img src="{{ asset('storage/' . $doctor->license_image) }}" alt="License" class="img-fluid rounded border" width="300" id="licensePreview">
-                                </div>
-                            @else
-                                <img src="{{ asset('images/license-placeholder.png') }}" alt="License" class="img-fluid rounded border mb-2" width="300" id="licensePreview">
-                            @endif
-                            <input type="file" name="license_image" id="license_image" accept="image/*" class="form-control mt-2">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Mô tả bản thân:</label>
-                            <textarea name="description" class="form-control" rows="4">{{ old('description', $doctor->description) }}</textarea>
+                            <label class="form-label fw-semibold mb-2">
+                                <i class="fas fa-map-marker-alt text-primary me-2"></i>Địa chỉ:
+                            </label>
+                            <textarea name="address" class="form-control rounded-3 border-2" rows="2" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">{{ old('address', $user->address) }}</textarea>
                         </div>
                     </div>
                 </div>
 
+                <div class="bg-light rounded-4 p-4 mb-4">
+                    <h5 class="text-success mb-4 fw-bold d-flex align-items-center">
+                        <i class="fas fa-briefcase-medical me-2"></i>Thông tin chuyên môn
+                    </h5>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold mb-2">
+                                <i class="fas fa-building text-success me-2"></i>Khoa:
+                            </label>
+                            <select name="department_id" class="form-select rounded-3 border-2" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                                @foreach($departments as $dept)
+                                    <option value="{{ $dept->id }}" {{ $doctor->department_id == $dept->id ? 'selected' : '' }}>
+                                        {{ $dept->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold mb-2">
+                                <i class="fas fa-award text-success me-2"></i>Chuyên môn:
+                            </label>
+                            <input type="text" name="specialization" class="form-control rounded-3 border-2" value="{{ old('specialization', $doctor->specialization) }}" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold mb-2">
+                            <i class="fas fa-id-badge text-success me-2"></i>Số giấy phép hành nghề:
+                        </label>
+                        <input type="text" name="license_number" class="form-control rounded-3 border-2" value="{{ old('license_number', $doctor->license_number) }}" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                    </div>
+
+                    <!-- Ảnh giấy phép hành nghề -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold mb-2">
+                            <i class="fas fa-file-image text-success me-2"></i>Ảnh giấy phép hành nghề:
+                        </label>
+                        @if($doctor->license_image)
+                            <div class="mb-3">
+                                <img src="{{ asset('storage/' . $doctor->license_image) }}" alt="License" class="img-fluid rounded-4 shadow-sm border border-2" style="max-width: 400px;" id="licensePreview">
+                            </div>
+                        @else
+                            <div class="mb-3">
+                                <img src="{{ asset('images/license-placeholder.png') }}" alt="License" class="img-fluid rounded-4 shadow-sm border border-2" style="max-width: 400px;" id="licensePreview">
+                            </div>
+                        @endif
+                        <input type="file" name="license_image" id="license_image" accept="image/*" class="form-control rounded-3 border-2">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold mb-2">
+                            <i class="fas fa-file-alt text-success me-2"></i>Mô tả bản thân:
+                        </label>
+                        <textarea name="description" class="form-control rounded-3 border-2" rows="6" placeholder="Nhập mô tả về bản thân, kinh nghiệm, chuyên môn... (không giới hạn số ký tự)" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">{{ old('description', $doctor->description) }}</textarea>
+                    </div>
+                </div>
+
                 <div class="text-end">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-save"></i> Lưu thông tin
+                    <button type="submit" class="btn btn-lg rounded-pill shadow-lg text-white fw-bold" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(102, 126, 234, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(102, 126, 234, 0.3)';">
+                        <i class="fas fa-save me-2"></i>Lưu thông tin
                     </button>
                 </div>
             </form>
         </div>
     </div>
     <!-- Cập nhật mật khẩu -->
-<div class="card shadow mb-4 mt-4">
-    <div class="card-header bg-warning text-dark">
-        <i class="fas fa-lock"></i> Thay đổi mật khẩu
+<div class="card border-0 shadow-lg mb-4 mt-4 rounded-4 overflow-hidden">
+    <div class="card-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+        <h6 class="m-0 font-weight-bold text-white d-flex align-items-center">
+            <i class="fas fa-lock me-2"></i>Thay đổi mật khẩu
+        </h6>
     </div>
-    <div class="card-body">
+    <div class="card-body p-4">
         <form action="{{ route('doctor.password.update') }}" method="POST">
             @csrf
             @method('PUT')
 
-            <div class="row">
+            <div class="row g-3">
                 <!-- Mật khẩu hiện tại -->
-                    <div class="col-md-4 mb-3 position-relative">
-                        <label class="form-label fw-bold">Mật khẩu hiện tại:</label>
-                        <div class="input-group">
-                            <input type="password" name="current_password" id="current_password" class="form-control" required>
-                            <button type="button" class="btn btn-outline-secondary toggle-password" data-target="#current_password">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Mật khẩu mới -->
-                    <div class="col-md-4 mb-3 position-relative">
-                        <label class="form-label fw-bold">Mật khẩu mới:</label>
-                        <div class="input-group">
-                            <input type="password" name="new_password" id="new_password" class="form-control" required minlength="6">
-                            <button type="button" class="btn btn-outline-secondary toggle-password" data-target="#new_password">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Xác nhận mật khẩu mới -->
-                    <div class="col-md-4 mb-3 position-relative">
-                        <label class="form-label fw-bold">Xác nhận mật khẩu mới:</label>
-                        <div class="input-group">
-                            <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="form-control" required minlength="6">
-                            <button type="button" class="btn btn-outline-secondary toggle-password" data-target="#new_password_confirmation">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
+                <div class="col-md-4 position-relative">
+                    <label class="form-label fw-semibold mb-2">
+                        <i class="fas fa-key text-warning me-2"></i>Mật khẩu hiện tại:
+                    </label>
+                    <div class="input-group">
+                        <input type="password" name="current_password" id="current_password" class="form-control rounded-3 border-2" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                        <button type="button" class="btn btn-outline-secondary rounded-end-3 toggle-password" data-target="#current_password">
+                            <i class="fas fa-eye"></i>
+                        </button>
                     </div>
                 </div>
 
-                <div class="text-end">
-                    <button type="submit" class="btn btn-warning">
-                        <i class="fas fa-key"></i> Cập nhật mật khẩu
-                    </button>
+                <!-- Mật khẩu mới -->
+                <div class="col-md-4 position-relative">
+                    <label class="form-label fw-semibold mb-2">
+                        <i class="fas fa-lock text-warning me-2"></i>Mật khẩu mới:
+                    </label>
+                    <div class="input-group">
+                        <input type="password" name="new_password" id="new_password" class="form-control rounded-3 border-2" required minlength="6" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                        <button type="button" class="btn btn-outline-secondary rounded-end-3 toggle-password" data-target="#new_password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
+
+                <!-- Xác nhận mật khẩu mới -->
+                <div class="col-md-4 position-relative">
+                    <label class="form-label fw-semibold mb-2">
+                        <i class="fas fa-lock-open text-warning me-2"></i>Xác nhận mật khẩu mới:
+                    </label>
+                    <div class="input-group">
+                        <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="form-control rounded-3 border-2" required minlength="6" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                        <button type="button" class="btn btn-outline-secondary rounded-end-3 toggle-password" data-target="#new_password_confirmation">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-end mt-4">
+                <button type="submit" class="btn btn-lg rounded-pill shadow-lg text-white fw-bold" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(245, 87, 108, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(245, 87, 108, 0.3)';">
+                    <i class="fas fa-key me-2"></i>Cập nhật mật khẩu
+                </button>
+            </div>
             </form>
         </div>
     </div>

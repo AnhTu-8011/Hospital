@@ -169,5 +169,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Tự cập nhật lần đầu khi trang load
+    const hasPreselectedService = !!serviceSelect.value;
+    const hasPreselectedDept = !!departmentSelect.value;
+
+    if (hasPreselectedDept && !hasPreselectedService) {
+        // Nếu đã có khoa được chọn sẵn nhưng chưa chọn dịch vụ → lọc options theo khoa
+        const event = new Event('change');
+        departmentSelect.dispatchEvent(event);
+    }
+
+    // Nếu có dịch vụ được chọn sẵn → cập nhật chi tiết và đồng bộ khoa, bác sĩ
     updateServiceDetails();
 });

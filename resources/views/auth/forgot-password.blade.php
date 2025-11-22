@@ -15,19 +15,22 @@
     </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
+<body class="min-h-screen flex items-center justify-center" style="background: linear-gradient(135deg, #e3f2ff 0%, #f6fbff 40%, #ffffff 100%);">
 
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8" style="border: none;">
 
         <!-- Header -->
         <div class="text-center mb-6">
-            <h1 class="text-2xl font-bold text-blue-600">BỆNH VIỆN PHÚC AN</h1>
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <i class="fa-solid fa-hospital text-white text-2xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">BỆNH VIỆN PHÚC AN</h1>
             <p class="text-gray-500 text-sm mt-1">Chăm sóc sức khỏe tận tâm</p>
         </div>
 
         <!-- Title -->
-        <h2 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-6 text-center">
-            Quên mật khẩu
+        <h2 class="text-lg font-semibold text-gray-700 border-b-2 pb-3 mb-6 text-center" style="border-color: #e3f2ff;">
+            <i class="fa-solid fa-key mr-2" style="color: #667eea;"></i>Quên mật khẩu
         </h2>
 
         <!-- Status message -->
@@ -60,8 +63,9 @@
 
             <!-- Submit -->
             <button type="submit"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg py-2.5 transition duration-200">
-                Gửi link đặt lại mật khẩu
+                class="w-full text-white font-semibold rounded-full py-3 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <i class="fa-solid fa-paper-plane mr-1"></i>Gửi link đặt lại mật khẩu
             </button>
         </form>
 

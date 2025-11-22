@@ -20,4 +20,9 @@ class Service extends Model
     {
         return $this->belongsTo(Department::class);
     }
+
+    public function symptoms()
+    {
+        return $this->hasMany(ServiceSymptom::class);
+    }
 }

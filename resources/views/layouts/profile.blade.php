@@ -10,6 +10,7 @@
     
     <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     
@@ -24,25 +25,27 @@
         body {
             font-family: 'Roboto', sans-serif;
             color: #333;
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, #e3f2ff 0%, #f6fbff 40%, #ffffff 100%);
+            min-height: 100vh;
         }
         
         .top-bar {
-            background-color: var(--primary-color);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 8px 0;
             font-size: 14px;
         }
         
         .top-bar a {
-            color: white;
+            color: rgba(255,255,255,0.9);
             text-decoration: none;
             margin-right: 15px;
             transition: all 0.3s;
         }
         
         .top-bar a:hover {
-            color: #ffc107;
+            color: white;
+            transform: translateX(3px);
         }
         
         .top-bar i {
@@ -51,47 +54,60 @@
         
         .navbar {
             padding: 15px 0;
-            background-color: white !important;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
         }
         
         .navbar-brand {
             font-weight: 700;
             font-size: 24px;
-            color: var(--primary-color) !important;
+            color: white !important;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-brand:hover {
+            transform: scale(1.05);
         }
         
         .navbar-brand span {
-            color: var(--secondary-color);
+            color: rgba(255,255,255,0.9);
         }
         
         .nav-link {
             font-weight: 500;
-            color: var(--dark-color) !important;
-            padding: 8px 15px !important;
-            margin: 0 5px;
-            border-radius: 4px;
-            transition: all 0.3s;
+            color: rgba(255,255,255,0.9) !important;
+            padding: 10px 16px !important;
+            margin: 0 3px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
         }
         
-        .nav-link:hover, .nav-link.active {
-            background-color: var(--primary-color);
+        .nav-link:hover {
+            background-color: rgba(255,255,255,0.15);
             color: white !important;
+            transform: translateY(-2px);
+        }
+        
+        .nav-link.active {
+            background-color: rgba(255,255,255,0.25);
+            color: white !important;
+            font-weight: 600;
         }
         
         .btn-appointment {
-            background-color: var(--primary-color);
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white !important;
             border-radius: 30px;
-            padding: 8px 20px !important;
-            font-weight: 500;
-            transition: all 0.3s;
+            padding: 10px 24px !important;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.3);
         }
         
         .btn-appointment:hover {
-            background-color: #0b5ed7;
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
         }
         
         .user-dropdown .dropdown-toggle::after {
@@ -104,32 +120,36 @@
             border-radius: 50%;
             object-fit: cover;
             margin-right: 8px;
-            border: 2px solid var(--primary-color);
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
         
         .dropdown-menu {
             border: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            padding: 10px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-radius: 12px;
+            padding: 8px 0;
             margin-top: 10px;
         }
         
         .dropdown-item {
-            padding: 8px 20px;
+            padding: 10px 20px;
             font-size: 14px;
             color: var(--dark-color);
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            margin: 2px 8px;
         }
         
         .dropdown-item:hover {
-            background-color: var(--light-color);
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
             color: var(--primary-color);
+            transform: translateX(5px);
         }
         
         .dropdown-divider {
             border-top: 1px solid #eee;
-            margin: 5px 0;
+            margin: 8px 0;
         }
         
         /* Hide admin navigation */
@@ -189,22 +209,31 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="{{ url('/') }}">BỆNH VIỆN <span>PHÚC AN</span></a>
+            <a class="navbar-brand d-flex align-items-center" href="{{ url('/') }}" style="transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
+                <div class="d-inline-flex align-items-center gap-2">
+                    <span class="d-inline-flex align-items-center justify-content-center rounded-3 bg-white text-primary shadow-sm" style="width: 40px; height: 40px;">
+                        <i class="bi bi-hospital fs-5"></i>
+                    </span>
+                    <span class="text-white">BỆNH VIỆN <span class="text-white-50">PHÚC AN</span></span>
+                </div>
+            </a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation" style="border: 2px solid rgba(255,255,255,0.3) !important;">
                 <span class="navbar-toggler-icon"></span>
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-lg-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url('/') }}">Trang chủ</a>
+                        <a class="nav-link {{ request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}">
+                            <i class="fas fa-home me-1"></i> Trang chủ
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('profile.edit') }}">
+                        <a class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}" href="{{ route('profile.edit') }}">
                             <i class="fas fa-user-circle me-1"></i> Hồ sơ cá nhân
                         </a>
                     </li>
@@ -218,10 +247,10 @@
                         }
                     @endphp
                     <li class="nav-item">
-                        <a class="nav-link position-relative" href="{{ route('appointments.index') }}">
+                        <a class="nav-link position-relative {{ request()->routeIs('appointments.*') ? 'active' : '' }}" href="{{ route('appointments.index') }}">
                             <i class="fas fa-calendar-alt me-1"></i> Lịch hẹn
                             @if($pendingAppointmentsCount > 0)
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.7rem;">
                                     {{ $pendingAppointmentsCount }}
                                 </span>
                             @endif
@@ -232,26 +261,43 @@
                             $patient = Auth::user()->patient ?? null;
                             $avatarUrl = ($patient && !empty($patient->avatar))
                                 ? asset('storage/' . $patient->avatar)
-                                : asset('images/default-avatar.png');
+                                : 'https://cdn-icons-png.flaticon.com/512/147/147144.png';
                         @endphp
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" 
-                           role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center btn btn-light rounded-pill shadow-sm" href="#" id="userDropdown" 
+                           role="button" data-bs-toggle="dropdown" aria-expanded="false" style="transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';">
                             <img src="{{ $avatarUrl }}" 
                                  alt="User" class="user-avatar">
-                            <span>{{ Auth::user()->name }}</span>
+                            <span class="fw-semibold text-dark">{{ Auth::user()->name }}</span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="{{ route('profile.edit') }}">
-                                <i class="fas fa-user-circle me-2"></i> Hồ sơ cá nhân
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg rounded-4 border-0" aria-labelledby="userDropdown" style="margin-top: 10px;">
+                            <li class="dropdown-header bg-light rounded-top-4 p-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <img src="{{ $avatarUrl }}" alt="User" class="user-avatar" width="48" height="48">
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ Auth::user()->name }}</div>
+                                        <small class="text-muted">
+                                            {{ Auth::user()->role ? ucfirst(Auth::user()->role->name) : 'Thành viên' }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider my-2"></li>
+                            <li><a class="dropdown-item rounded-3 mx-2" href="{{ route('profile.edit') }}" style="transition: all 0.3s ease;" onmouseover="this.style.background='#f8f9ff'; this.style.paddingLeft='20px';" onmouseout="this.style.background='transparent'; this.style.paddingLeft='16px';">
+                                <i class="fas fa-user-circle me-2 text-primary"></i> Hồ sơ cá nhân
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ route('appointments.index') }}">
-                                <i class="fas fa-calendar-alt me-2"></i> Lịch hẹn
+                            <li><a class="dropdown-item rounded-3 mx-2 position-relative" href="{{ route('appointments.index') }}" style="transition: all 0.3s ease;" onmouseover="this.style.background='#f8f9ff'; this.style.paddingLeft='20px';" onmouseout="this.style.background='transparent'; this.style.paddingLeft='16px';">
+                                <i class="fas fa-calendar-alt me-2 text-primary"></i> Lịch hẹn
+                                @if($pendingAppointmentsCount > 0)
+                                    <span class="badge bg-danger rounded-pill ms-2">{{ $pendingAppointmentsCount }}</span>
+                                @endif
                             </a></li>
-                            <li><hr class="dropdown-divider"></li>
+                            <li><hr class="dropdown-divider my-2"></li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <button type="submit" class="dropdown-item">
+                                    <button type="submit" class="dropdown-item text-danger rounded-3 mx-2 w-100 text-start" style="transition: all 0.3s ease;" onmouseover="this.style.background='#fff5f5'; this.style.paddingLeft='20px';" onmouseout="this.style.background='transparent'; this.style.paddingLeft='16px';">
                                         <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
                                     </button>
                                 </form>
@@ -264,7 +310,7 @@
     </nav>
 
     {{-- Nội dung --}}
-    <main class="container py-4">
+    <main class="container py-4" style="min-height: calc(100vh - 200px);">
         @yield('content')
     </main>
 

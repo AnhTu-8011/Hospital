@@ -6,26 +6,27 @@
     @csrf
     @method('patch')
 
-    <div class="card">
-        <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>Thông tin cá nhân</h5>
-        </div>
-        <div class="card-body">
+    <div>
             <div class="row g-3">
                 {{-- Avatar --}}
                 <div class="text-center mb-4">
-                    <img id="avatarPreview"
-                        src="{{ $user->patient->avatar ? Storage::url($user->patient->avatar) : 'https://cdn-icons-png.flaticon.com/512/147/147144.png' }}"
-                        alt="avatar"
-                        class="rounded-circle mb-2"
-                        width="120" height="120"
-                        style="object-fit: cover;">
+                    <div class="position-relative d-inline-block">
+                        <img id="avatarPreview"
+                            src="{{ $user->patient->avatar ? Storage::url($user->patient->avatar) : 'https://cdn-icons-png.flaticon.com/512/147/147144.png' }}"
+                            alt="avatar"
+                            class="rounded-circle mb-3 border border-3 shadow-lg"
+                            width="150" height="150"
+                            style="object-fit: cover; border-color: #667eea !important;">
+                    </div>
                     <div class="col-md-6 mx-auto">
                         <input type="file"
                             name="avatar"
                             id="avatar"
                             accept="image/*"
-                            class="form-control mt-2 @error('avatar') is-invalid @enderror">
+                            class="form-control rounded-3 border-2 mt-2 @error('avatar') is-invalid @enderror"
+                            style="transition: all 0.3s ease;" 
+                            onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" 
+                            onblur="this.style.borderColor=''; this.style.boxShadow='';">
                     </div>
                     @error('avatar')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -36,16 +37,19 @@
                 <div class="col-md-6">
                     <label for="name" class="form-label">Họ và tên <span class="text-danger">*</span></label>
                     <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="fas fa-user text-muted"></i></span>
+                        <span class="input-group-text bg-white rounded-start-3 border-2"><i class="fas fa-user text-muted"></i></span>
                         <input type="text"
                             id="name"
                             name="name"
-                            class="form-control @error('name') is-invalid @enderror"
+                            class="form-control rounded-3 border-2 @error('name') is-invalid @enderror"
                             value="{{ old('name', $user->patient->name ?? $user->name) }}"
                             required 
                             autofocus 
                             autocomplete="name"
-                            placeholder="Nhập họ và tên">
+                            placeholder="Nhập họ và tên"
+                            style="transition: all 0.3s ease;" 
+                            onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" 
+                            onblur="this.style.borderColor=''; this.style.boxShadow='';">
                     </div>
                     @error('name')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -56,16 +60,19 @@
                 <div class="col-md-6">
                     <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
                     <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="fas fa-envelope text-muted"></i></span>
+                        <span class="input-group-text bg-white rounded-start-3 border-2"><i class="fas fa-envelope text-muted"></i></span>
                         <input type="email"
                             id="email"
                             name="email"
-                            class="form-control @error('email') is-invalid @enderror"
+                            class="form-control rounded-3 border-2 @error('email') is-invalid @enderror"
                             value="{{ old('email', $user->email) }}"
                             required 
                             autocomplete="username"
                             placeholder="example@email.com"
-                            {{ $user->hasVerifiedEmail() ? 'readonly' : '' }}>
+                            {{ $user->hasVerifiedEmail() ? 'readonly' : '' }}
+                            style="transition: all 0.3s ease;" 
+                            onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" 
+                            onblur="this.style.borderColor=''; this.style.boxShadow='';">
                     </div>
                     @error('email')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -92,13 +99,16 @@
                 <div class="col-md-6">
                     <label for="phone" class="form-label">Số điện thoại</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="fas fa-phone text-muted"></i></span>
+                        <span class="input-group-text bg-white rounded-start-3 border-2"><i class="fas fa-phone text-muted"></i></span>
                         <input type="tel"
                             id="phone"
                             name="phone"
-                            class="form-control @error('phone') is-invalid @enderror"
+                            class="form-control rounded-end-3 border-2 @error('phone') is-invalid @enderror"
                             value="{{ old('phone', $user->patient->phone ?? $user->phone) }}"
-                            placeholder="Nhập số điện thoại">
+                            placeholder="Nhập số điện thoại"
+                            style="transition: all 0.3s ease;" 
+                            onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" 
+                            onblur="this.style.borderColor=''; this.style.boxShadow='';">
                     </div>
                     @error('phone')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -121,8 +131,8 @@
                     <div class="row g-2 align-items-center">
                         <div class="col-4">
                             <div class="input-group">
-                                <span class="input-group-text bg-white"><i class="fas fa-calendar text-muted"></i></span>
-                                <select id="profile_birth_day" class="form-select">
+                                <span class="input-group-text bg-white rounded-start-3 border-2"><i class="fas fa-calendar text-muted"></i></span>
+                                <select id="profile_birth_day" class="form-select rounded-end-3 border-2" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
                                     <option value="">Ngày</option>
                                     @for ($d = 1; $d <= 31; $d++)
                                         <option value="{{ $d }}" {{ old('birth_day') == $d ? 'selected' : '' }}>{{ $d }}</option>
@@ -131,7 +141,7 @@
                             </div>
                         </div>
                         <div class="col-4">
-                            <select id="profile_birth_month" class="form-select">
+                            <select id="profile_birth_month" class="form-select rounded-3 border-2" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
                                 <option value="">Tháng</option>
                                 @for ($m = 1; $m <= 12; $m++)
                                     <option value="{{ $m }}" {{ old('birth_month') == $m ? 'selected' : '' }}>Tháng {{ $m }}</option>
@@ -139,7 +149,7 @@
                             </select>
                         </div>
                         <div class="col-4">
-                            <input id="profile_birth_year" type="number" min="1900" max="{{ now()->year }}" placeholder="Năm" class="form-control" value="{{ old('birth_year') }}">
+                            <input id="profile_birth_year" type="number" min="1900" max="{{ now()->year }}" placeholder="Năm" class="form-control rounded-3 border-2" value="{{ old('birth_year') }}" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
                         </div>
                     </div>
                     <input type="hidden" id="birthdate" name="birthdate" value="{{ old('birthdate', $formattedBirthdate) }}">
@@ -153,10 +163,13 @@
                 <div class="col-md-6">
                     <label for="gender" class="form-label">Giới tính</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="fas fa-venus-mars text-muted"></i></span>
+                        <span class="input-group-text bg-white rounded-start-3 border-2"><i class="fas fa-venus-mars text-muted"></i></span>
                         <select id="gender" 
                                 name="gender" 
-                                class="form-select @error('gender') is-invalid @enderror">
+                                class="form-select rounded-end-3 border-2 @error('gender') is-invalid @enderror"
+                                style="transition: all 0.3s ease;" 
+                                onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" 
+                                onblur="this.style.borderColor=''; this.style.boxShadow='';">
                             <option value="">-- Chọn giới tính --</option>
                             <option value="male" {{ old('gender', $user->patient->gender ?? $user->gender) == 'male' ? 'selected' : '' }}>Nam</option>
                             <option value="female" {{ old('gender', $user->patient->gender ?? $user->gender) == 'female' ? 'selected' : '' }}>Nữ</option>
@@ -172,13 +185,16 @@
                 <div class="col-md-6">
                     <label for="insurance_number" class="form-label">Số thẻ BHYT</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="fas fa-id-card text-muted"></i></span>
+                        <span class="input-group-text bg-white rounded-start-3 border-2"><i class="fas fa-id-card text-muted"></i></span>
                         <input type="text"
                             id="insurance_number"
                             name="insurance_number"
-                            class="form-control @error('insurance_number') is-invalid @enderror"
+                            class="form-control rounded-end-3 border-2 @error('insurance_number') is-invalid @enderror"
                             value="{{ old('insurance_number', $user->patient->insurance_number ?? $user->insurance_number) }}"
-                            placeholder="Nhập số thẻ BHYT (nếu có)">
+                            placeholder="Nhập số thẻ BHYT (nếu có)"
+                            style="transition: all 0.3s ease;" 
+                            onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" 
+                            onblur="this.style.borderColor=''; this.style.boxShadow='';">
                     </div>
                     @error('insurance_number')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -189,13 +205,16 @@
                 <div class="col-12">
                     <label for="address" class="form-label">Địa chỉ</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="fas fa-map-marker-alt text-muted"></i></span>
+                        <span class="input-group-text bg-white rounded-start-3 border-2"><i class="fas fa-map-marker-alt text-muted"></i></span>
                         <textarea 
                             id="address"
                             name="address"
-                            class="form-control @error('address') is-invalid @enderror"
+                            class="form-control rounded-end-3 border-2 @error('address') is-invalid @enderror"
                             rows="2"
-                            placeholder="Nhập địa chỉ đầy đủ">{{ old('address', $user->patient->address ?? $user->address) }}</textarea>
+                            placeholder="Nhập địa chỉ đầy đủ"
+                            style="transition: all 0.3s ease;" 
+                            onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" 
+                            onblur="this.style.borderColor=''; this.style.boxShadow='';">{{ old('address', $user->patient->address ?? $user->address) }}</textarea>
                     </div>
                     @error('address')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -205,14 +224,13 @@
 
             {{-- Action Buttons --}}
             <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                <button type="reset" class="btn btn-outline-secondary">
-                    <i class="fas fa-undo me-1"></i> Đặt lại
+                <button type="reset" class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="fas fa-undo me-1"></i>Đặt lại
                 </button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-1"></i> Lưu thay đổi
+                <button type="submit" class="btn btn-lg rounded-pill shadow-lg text-white fw-bold" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(102, 126, 234, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(102, 126, 234, 0.3)';">
+                    <i class="fas fa-save me-2"></i>Lưu thay đổi
                 </button>
             </div>
-        </div>
     </div>
 </form>
 
