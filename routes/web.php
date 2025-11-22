@@ -16,7 +16,9 @@ use App\Http\Controllers\{
     UserController,
     AppointmentController,
     PaymentController,
-    ChatController
+    ChatController,
+    ForgotPasswordController,
+    ResetPasswordController
 };
 use App\Http\Controllers\Doctor\{
     DoctorDashboardController,
@@ -228,6 +230,12 @@ Route::get('/admin/doctors/{doctor}/schedule', [AdminDoctorController::class, 's
 // 👩‍💻 Doanh thu (Dashboard admin)
 Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
+// Quên MK
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+
+Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.store');
 /*
 |--------------------------------------------------------------------------
 | 🔑 Auth Routes (Laravel Breeze / Jetstream / Fortify)

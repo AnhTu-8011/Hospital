@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Mail;
 
 class SendAppointmentReminders extends Command
 {
-        /**
+    /**    
      *
      * Để gửi email nhắc lịch trước 1 ngày, cách chuẩn nhất trong Laravel là:
      * Tạo Mailable cho nội dung email.
