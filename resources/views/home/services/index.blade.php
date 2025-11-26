@@ -242,6 +242,11 @@
                             </div>
                         @endforeach
                     </div>
+                    @if($services instanceof \Illuminate\Pagination\AbstractPaginator)
+                        <div class="d-flex justify-content-center mt-4">
+                            {{ $services->onEachSide(1)->links() }}
+                        </div>
+                    @endif
                 @else
                     <div class="alert alert-info text-center mb-0 rounded-4 border-0 shadow-sm">
                         <i class="bi bi-info-circle me-2"></i>Chưa có dịch vụ nào được hiển thị.

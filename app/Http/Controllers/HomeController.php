@@ -25,10 +25,18 @@ class HomeController extends Controller
     }
 
     // Trang danh sách bác sĩ (frontend)
-    public function doctorsPage()
+    public function doctorsPage(Request $request)
     {
-        $doctors = Doctor::with(['user', 'department'])->get();
-        return view('home.doctors.index', compact('doctors'));
+        $q = trim((string) $request->input('q'));
+        $doctors = Doctor::with(['user', 'department'])
+            ->when($q !== '', function ($query) use ($q) {
+                $query->whereHas('user', function ($sub) use ($q) {
+                    $sub->where('name', 'like', "%{$q}%");
+                });
+            })
+            ->paginate(8)
+            ->withQueryString();
+        return view('home.doctors.index', compact('doctors', 'q'));
     }
 
     // Trang danh sách chuyên khoa (frontend)
@@ -53,7 +61,7 @@ class HomeController extends Controller
             }
         }
         
-        $departments = $departments->get();
+        $departments = $departments->paginate(6)->withQueryString();
         $services = Service::with('department')->get();
         
         return view('home.departments.index', compact('departments', 'services', 'query'));
@@ -171,7 +179,8 @@ class HomeController extends Controller
                 ->when($selectedDepartmentId, function ($q) use ($selectedDepartmentId) {
                     $q->where('department_id', $selectedDepartmentId);
                 })
-                ->get();
+                ->paginate(6)
+                ->withQueryString();
         }
 
         return view('home.services.index', compact(

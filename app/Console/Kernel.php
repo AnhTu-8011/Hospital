@@ -17,16 +17,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // Gửi nhắc lịch mỗi ngày lúc 07:00
-        $schedule->command('appointments:send-reminders')->dailyAt('07:00');
+        $schedule->command('app:send-appointment-reminder')->dailyAt('12:43');
     }
 
-    /**
-     * Register the commands for the application.
-     */
-    protected function commands(): void
-    {
-        $this->load(__DIR__.'/Commands');
-
-        require base_path('routes/console.php');
-    }
 }

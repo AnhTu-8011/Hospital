@@ -157,6 +157,11 @@
                             </div>
                         @endforeach
                     </div>
+                    @if($departments instanceof \Illuminate\Pagination\AbstractPaginator)
+                        <div class="d-flex justify-content-center mt-4">
+                            {{ $departments->onEachSide(1)->links() }}
+                        </div>
+                    @endif
                 @else
                     <div class="alert alert-warning text-center mb-0 rounded-4 border-0 shadow-sm">
                         <i class="bi bi-exclamation-triangle me-2"></i>

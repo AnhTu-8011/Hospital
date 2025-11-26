@@ -11,6 +11,23 @@
                 <p class="text-muted mb-0">Các chuyên gia hàng đầu, tận tâm và giàu kinh nghiệm tại Bệnh viện Phúc An.</p>
             </div>
 
+            <div class="mb-4">
+                <form action="{{ route('doctors.index') }}" method="get" class="row g-2 justify-content-center">
+                    <div class="col-12 col-md-6">
+                        <input type="text" name="q" value="{{ $q ?? '' }}" class="form-control form-control-lg rounded-pill"
+                               placeholder="Tìm kiếm theo tên bác sĩ...">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4">
+                            <i class="bi bi-search me-1"></i>Tìm kiếm
+                        </button>
+                    </div>
+                </form>
+                @if(!empty($q))
+                    <p class="text-center text-muted mt-2">Kết quả cho từ khóa: <strong>"{{ $q }}"</strong></p>
+                @endif
+            </div>
+
             <div>
                 @if(isset($doctors) && $doctors->count())
                     <div class="row g-4 g-lg-4">
@@ -147,6 +164,11 @@
                             </div>
                         @endforeach
                     </div>
+                    @if($doctors instanceof \Illuminate\Pagination\AbstractPaginator)
+                        <div class="d-flex justify-content-center mt-4">
+                            {{ $doctors->onEachSide(1)->links() }}
+                        </div>
+                    @endif
                 @else
                     <div class="alert alert-info text-center mb-0 rounded-4 border-0 shadow-sm">
                         <i class="bi bi-info-circle me-2"></i>Chưa có bác sĩ nào được hiển thị.

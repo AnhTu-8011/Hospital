@@ -1,21 +1,23 @@
-    <!-- /**
-     *
-     * Để gửi email nhắc lịch trước 1 ngày, cách chuẩn nhất trong Laravel là:
-     * Tạo Mailable cho nội dung email. 
-     * Tạo Console Command chạy mỗi ngày, quét các lịch hẹn ngày mai và gửi mail.
-     * Đăng ký command trong Kernel để Laravel Scheduler gọi tự động.
-     */ -->
-<p>Chào {{ $appointment->patient->name ?? 'Quý bệnh nhân' }},</p>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Nhắc nhở lịch hẹn</title>
+</head>
+<body>
+    <p>Chào {{ optional($appointment->patient)->name ?? 'Quý khách' }},</p>
 
-<p>Đây là email nhắc lịch khám của bạn tại <strong>Bệnh viện PHÚC AN</strong>:</p>
+    <p>Đây là email nhắc nhở rằng bạn có lịch hẹn vào ngày mai.</p>
 
-<ul>
-    <li><strong>Ngày khám:</strong> {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d/m/Y') }}</li>
-    <li><strong>Ca khám:</strong> {{ $appointment->medical_examination ?? 'Không xác định' }}</li>
-    <li><strong>Dịch vụ:</strong> {{ $appointment->service->name ?? '-' }}</li>
-    <li><strong>Bác sĩ:</strong> {{ optional(optional($appointment->doctor)->user)->name ?? '-' }}</li>
-</ul>
+    <ul>
+        <li><strong>Thời gian:</strong> {{ optional($appointment->appointment_date)->format('d/m/Y H:i') }}</li>
+        <li><strong>Bác sĩ:</strong> {{ optional(optional($appointment->doctor)->user)->name }}</li>
+        <li><strong>Dịch vụ:</strong> {{ optional($appointment->service)->name }}</li>
+        <li><strong>Trạng thái:</strong> {{ $appointment->status }}</li>
+    </ul>
 
-<p>Vui lòng đến sớm 10–15 phút để làm thủ tục.</p>
+    <p>Nếu bạn không thể tham dự, vui lòng liên hệ sớm để được hỗ trợ.</p>
 
-<p>Trân trọng,<br>Bệnh viện PHÚC AN</p>
+    <p>Trân trọng,<br>Phòng khám</p>
+</body>
+</html>
