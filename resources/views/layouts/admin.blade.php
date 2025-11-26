@@ -80,6 +80,12 @@
                 </a>
             </li>
             <li class="nav-item mb-1">
+                <a href="{{ route('admin.diseases.index') }}"
+                   class="nav-link d-flex align-items-center {{ request()->routeIs('admin.diseases.*') ? 'active' : '' }}">
+                    <i class="fas fa-virus me-3"></i> <span>Bệnh</span>
+                </a>
+            </li>
+            <li class="nav-item mb-1">
                 <a href="{{ route('admin.test-types.index') }}"
                 class="nav-link d-flex align-items-center {{ request()->routeIs('admin.test-types.*') ? 'active' : '' }}">
                     <i class="fas fa-tags me-3"></i> <span>Loại xét nghiệm</span>
@@ -101,7 +107,7 @@
                 </a>
             </li>
             <!-- Logout -->
-            <li class="nav-item mt-auto mb-3">
+            <li class="nav-item mb-1">
                 <a href="#" class="nav-link logout-link d-flex align-items-center"
                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <i class="fas fa-sign-out-alt me-3"></i> <span>Đăng xuất</span>
@@ -202,14 +208,18 @@
     
     /* Logout Link */
     .sidebar .logout-link {
-        color: rgba(255, 200, 200, 0.9) !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        padding-top: 16px;
+        color: rgba(255, 255, 255, 0.85) !important; /* đồng bộ màu với các mục khác */
+        border-top: none;
+        padding: 12px 16px; /* cùng padding với .nav-link */
+        border-radius: 12px;
+        display: flex;
+        align-items: center; /* căn giữa theo chiều dọc */
     }
     
     .sidebar .logout-link:hover {
-        background: rgba(220, 53, 69, 0.2);
+        background: rgba(255, 255, 255, 0.15); /* giống .nav-link:hover */
         color: #fff !important;
+        transform: translateX(5px);
     }
     
     /* Sidebar Animation */

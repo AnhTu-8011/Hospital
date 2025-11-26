@@ -36,9 +36,6 @@
                             <p class="text-white-50 text-uppercase fw-semibold small mb-2" style="opacity: 0.9;">{{ $card['title'] }}</p>
                             <h2 class="fw-bold text-white mb-0" style="font-size: 2.5rem;">{{ $card['value'] }}</h2>
                         </div>
-                        <div class="bg-white bg-opacity-20 rounded-3 p-3" style="backdrop-filter: blur(10px);">
-                            <i class="fas {{ $card['icon'] }} fa-2x text-white"></i>
-                        </div>
                     </div>
                 </div>
                 <div class="position-absolute bottom-0 end-0" style="opacity: 0.1; z-index: 1;">

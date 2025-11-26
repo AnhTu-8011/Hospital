@@ -7,6 +7,8 @@ use App\Models\Department;
 use App\Models\Doctor;   // nếu cần cho modal
 use App\Models\Service;  // nếu cần cho modal
 use App\Models\ServiceSymptom;
+use App\Models\Disease;
+use App\Models\DiseaseSymptom;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -22,6 +24,128 @@ class HomeController extends Controller
         $services = Service::with('department')->get();
 
         return view('welcome', compact('departments', 'doctors', 'services'));
+    }
+
+    // Trang tư vấn theo triệu chứng (frontend)
+    public function advisorPage(Request $request)
+    {
+        $symptomQuery = (string) $request->input('symptom');
+        $selectedDepartmentId = null; // không lọc theo khoa ở trang tư vấn
+        $suggestedServices = collect();
+        $suggestedDepartments = collect();
+        $suggestedDoctors = collect();
+        $suggestedDiseases = collect();
+        $departments = Department::all();
+
+        if ($symptomQuery) {
+            // Chuẩn hóa từ khóa: cắt khoảng trắng, lower, bỏ trùng, bỏ từ quá ngắn
+            $keywords = collect(explode(',', $symptomQuery))
+                ->map(fn($s) => trim($s))
+                ->filter(fn($s) => $s !== '')
+                ->map(fn($s) => mb_strtolower($s))
+                ->unique()
+                ->filter(fn($s) => mb_strlen($s) >= 2)
+                ->values();
+
+            $serviceIds = collect();
+            $diseaseIds = collect();
+
+            foreach ($keywords as $keyword) {
+                $matchedServiceIds = ServiceSymptom::whereRaw('LOWER(symptom_name) LIKE ?', ['%' . strtolower($keyword) . '%'])
+                    ->pluck('service_id');
+                $serviceIds = $serviceIds->merge($matchedServiceIds);
+
+                $matchedDiseaseIds = DiseaseSymptom::whereRaw('LOWER(symptom_name) LIKE ?', ['%' . strtolower($keyword) . '%'])
+                    ->pluck('disease_id');
+                $diseaseIds = $diseaseIds->merge($matchedDiseaseIds);
+            }
+
+            $serviceIds = $serviceIds->unique();
+            $diseaseIds = $diseaseIds->unique();
+
+            // Gợi ý dịch vụ: tính điểm theo số triệu chứng khớp, sau đó sắp xếp
+            if ($serviceIds->isNotEmpty()) {
+                $suggestedServices = Service::with(['department', 'symptoms'])
+                    ->whereIn('id', $serviceIds)
+                    ->get()
+                    ->map(function ($service) use ($keywords) {
+                        $matched = [];
+                        foreach ($service->symptoms as $symptom) {
+                            foreach ($keywords as $kw) {
+                                if (stripos($symptom->symptom_name, $kw) !== false) { $matched[] = $symptom->symptom_name; break; }
+                            }
+                        }
+                        $matched = array_values(array_unique($matched));
+                        $service->matched_symptoms_count = count($matched);
+                        return $service;
+                    })
+                    ->sortByDesc('matched_symptoms_count')
+                    ->take(6)
+                    ->values();
+            }
+
+            // Gợi ý bệnh: tính điểm theo số triệu chứng khớp, sắp xếp, giới hạn
+            if ($diseaseIds->isNotEmpty()) {
+                $suggestedDiseases = Disease::with(['department', 'symptoms'])
+                    ->whereIn('id', $diseaseIds)
+                    ->get()
+                    ->map(function ($disease) use ($keywords) {
+                        $matched = [];
+                        foreach ($disease->symptoms as $symptom) {
+                            foreach ($keywords as $kw) {
+                                if (stripos($symptom->symptom_name, $kw) !== false) { $matched[] = $symptom->symptom_name; break; }
+                            }
+                        }
+                        $matched = array_values(array_unique($matched));
+                        $disease->matched_symptoms_count = count($matched);
+                        return $disease;
+                    })
+                    ->sortByDesc('matched_symptoms_count')
+                    ->take(6)
+                    ->values();
+            }
+
+            // Khoa gợi ý: ưu tiên khoa từ BỆNH nếu có bệnh; nếu không có bệnh thì dùng khoa từ DỊCH VỤ
+            if ($suggestedDiseases->isNotEmpty()) {
+                $departmentIds = $suggestedDiseases->pluck('department_id')
+                    ->filter()
+                    ->unique()
+                    ->values();
+            } else {
+                $departmentIds = $suggestedServices->pluck('department_id')
+                    ->filter()
+                    ->unique()
+                    ->values();
+            }
+            if ($departmentIds->isNotEmpty()) {
+                $suggestedDepartments = Department::whereIn('id', $departmentIds)
+                    ->take(4)
+                    ->get();
+                $suggestedDoctors = Doctor::with(['user', 'department'])
+                    ->whereIn('department_id', $departmentIds)
+                    ->take(8)
+                    ->get();
+
+                // Chỉ hiển thị dịch vụ thuộc các khoa đã gợi ý
+                if ($suggestedServices->isNotEmpty()) {
+                    $suggestedServices = $suggestedServices
+                        ->filter(fn($s) => $departmentIds->contains($s->department_id))
+                        ->sortByDesc('matched_symptoms_count')
+                        ->take(6)
+                        ->values();
+                }
+            }
+        }
+
+        return view('home.advisor.index', compact(
+            'symptomQuery',
+            'selectedDepartmentId',
+            'departments',
+            'suggestedDiseases',
+            'suggestedDepartments',
+            'suggestedDoctors',
+            'suggestedServices'
+        ));
     }
 
     // Trang danh sách bác sĩ (frontend)
@@ -91,24 +215,31 @@ class HomeController extends Controller
         $suggestedServices = collect();
         $suggestedDepartments = collect();
         $suggestedDoctors = collect();
+        $suggestedDiseases = collect();
         $departments = Department::all();
         $symptomSuggestions = collect();
 
-        // Tìm kiếm dịch vụ dựa trên triệu chứng
+        // Tìm kiếm dịch vụ và bệnh dựa trên triệu chứng
         if ($symptomQuery) {
             // Tách từ khóa tìm kiếm thành mảng (hỗ trợ tìm nhiều triệu chứng)
             $keywords = array_filter(array_map('trim', explode(',', $symptomQuery)));
             
             // Tìm các dịch vụ có triệu chứng khớp (không phân biệt hoa thường)
             $serviceIds = collect();
+            $diseaseIds = collect();
             
             foreach ($keywords as $keyword) {
                 $matchedIds = ServiceSymptom::whereRaw('LOWER(symptom_name) LIKE ?', ['%' . strtolower($keyword) . '%'])
                     ->pluck('service_id');
                 $serviceIds = $serviceIds->merge($matchedIds);
+
+                $matchedDiseaseIds = DiseaseSymptom::whereRaw('LOWER(symptom_name) LIKE ?', ['%' . strtolower($keyword) . '%'])
+                    ->pluck('disease_id');
+                $diseaseIds = $diseaseIds->merge($matchedDiseaseIds);
             }
             
             $serviceIds = $serviceIds->unique();
+            $diseaseIds = $diseaseIds->unique();
 
             if ($serviceIds->isNotEmpty()) {
                 // Lấy các dịch vụ phù hợp cùng với khoa
@@ -146,6 +277,30 @@ class HomeController extends Controller
                         ->whereIn('department_id', $departmentIds)
                         ->get();
                 }
+            }
+
+            if ($diseaseIds->isNotEmpty()) {
+                // Lấy các bệnh phù hợp và tính điểm khớp triệu chứng
+                $suggestedDiseases = Disease::with(['department', 'symptoms'])
+                    ->whereIn('id', $diseaseIds)
+                    ->when($selectedDepartmentId, function ($q) use ($selectedDepartmentId) {
+                        $q->where('department_id', $selectedDepartmentId);
+                    })
+                    ->get()
+                    ->map(function ($disease) use ($keywords) {
+                        $matchedSymptomsCount = $disease->symptoms->filter(function ($symptom) use ($keywords) {
+                            foreach ($keywords as $keyword) {
+                                if (stripos($symptom->symptom_name, $keyword) !== false) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        })->count();
+                        $disease->matched_symptoms_count = $matchedSymptomsCount;
+                        return $disease;
+                    })
+                    ->sortByDesc('matched_symptoms_count')
+                    ->values();
             }
         }
 
@@ -189,6 +344,7 @@ class HomeController extends Controller
             'suggestedServices', 
             'suggestedDepartments', 
             'suggestedDoctors',
+            'suggestedDiseases',
             'departments',
             'selectedDepartmentId',
             'symptomSuggestions'

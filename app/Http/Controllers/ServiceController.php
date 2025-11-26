@@ -16,7 +16,10 @@ class ServiceController extends Controller
      */
     public function index()
     {
-        $services = Service::with(['department', 'symptoms'])->get();
+        $services = Service::with(['department', 'symptoms'])
+            ->orderByDesc('id')
+            ->paginate(10)
+            ->withQueryString();
         return view('admin.services.index', compact('services'));
     }
 

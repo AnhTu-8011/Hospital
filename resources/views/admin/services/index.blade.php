@@ -46,7 +46,14 @@
             <tbody>
                 @forelse ($services as $service)
                         <tr class="table-row-hover" style="transition: all 0.2s ease;">
-                        <td class="text-center fw-medium">{{ $loop->iteration }}</td>
+                        <td class="text-center fw-medium">
+                            @php
+                                $stt = (method_exists($services, 'firstItem') && $services->firstItem())
+                                    ? $services->firstItem() + $loop->index
+                                    : $loop->iteration;
+                            @endphp
+                            {{ $stt }}
+                        </td>
                             <td class="text-center">
                                 <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
                                     #{{ str_pad($service->id, 6, '0', STR_PAD_LEFT) }}
@@ -131,6 +138,13 @@
             </tbody>
         </table>
     </div>
+    @if(method_exists($services, 'links'))
+        <div class="card-footer bg-white border-0 py-3 px-4">
+            <div class="d-flex justify-content-end">
+                {{ $services->onEachSide(1)->links('pagination::bootstrap-5') }}
+            </div>
+        </div>
+    @endif
 </div>
 </div>
 

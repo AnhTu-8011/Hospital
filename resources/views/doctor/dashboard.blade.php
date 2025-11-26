@@ -48,9 +48,7 @@
                                 </span>
                             </small>
                         </div>
-                        <div class="bg-white bg-opacity-20 rounded-3 p-3" style="backdrop-filter: blur(10px);">
-                            <i class="fas fa-calendar-day fa-2x text-white"></i>
-                        </div>
+                        
                     </div>
                     <p class="text-white-50 small mb-0">Ngày {{ \Carbon\Carbon::parse($selectedDate ?? now())->format('d/m/Y') }}</p>
                 </div>
@@ -74,9 +72,7 @@
                                 {{ $appointments->where('status', 'confirmed')->count() }}
                             </h2>
                         </div>
-                        <div class="bg-white bg-opacity-20 rounded-3 p-3" style="backdrop-filter: blur(10px);">
-                            <i class="fas fa-hourglass-half fa-2x text-white"></i>
-                        </div>
+                        
                     </div>
                 </div>
                 <div class="position-absolute bottom-0 end-0" style="opacity: 0.1; z-index: 1;">
@@ -99,9 +95,7 @@
                                 {{ $appointments->where('status', 'completed')->count() }}
                             </h2>
                         </div>
-                        <div class="bg-white bg-opacity-20 rounded-3 p-3" style="backdrop-filter: blur(10px);">
-                            <i class="fas fa-check-circle fa-2x text-white"></i>
-                        </div>
+                        
                     </div>
                 </div>
                 <div class="position-absolute bottom-0 end-0" style="opacity: 0.1; z-index: 1;">

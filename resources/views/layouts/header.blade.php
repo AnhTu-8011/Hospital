@@ -27,6 +27,9 @@
                         <a class="nav-link text-white {{ request()->routeIs('introduces.index') ? 'active fw-semibold' : '' }}" href="{{ route('introduces.index') }}" style="color: #ffffff !important; padding: 10px 14px; border-radius: 8px; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.15)';" onmouseout="this.style.background='transparent';">Giới thiệu</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link text-white {{ request()->routeIs('advisor.index') ? 'active fw-semibold' : '' }}" href="{{ route('advisor.index') }}" style="color: #ffffff !important; padding: 10px 14px; border-radius: 8px; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.15)';" onmouseout="this.style.background='transparent';">Tư vấn triệu chứng</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link text-white {{ request()->routeIs('services.index') ? 'active fw-semibold' : '' }}" href="{{ route('services.index') }}" style="color: #ffffff !important; padding: 10px 14px; border-radius: 8px; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.15)';" onmouseout="this.style.background='transparent';">Dịch vụ</a>
                     </li>
                     <li class="nav-item">

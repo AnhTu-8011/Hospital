@@ -7,7 +7,8 @@ use App\Http\Controllers\Admin\{
     DepartmentController as AdminDepartmentController,
     ReportController,
     DoctorController as AdminDoctorController,
-    AppointmentController as AdminAppointmentController
+    AppointmentController as AdminAppointmentController,
+    DiseaseController as AdminDiseaseController
 };
 use App\Http\Controllers\{
     AIChatController,
@@ -38,6 +39,9 @@ Route::get('/doctors', [HomeController::class, 'doctorsPage'])->name('doctors.in
 Route::get('/departments', [HomeController::class, 'departmentsPage'])->name('departments.index');
 Route::get('/services', [HomeController::class, 'servicesPage'])->name('services.index');
 Route::view('/introduces', 'home.introduces.index')->name('introduces.index');
+
+// 🔎 Trang tư vấn theo triệu chứng
+Route::get('/advisor', [HomeController::class, 'advisorPage'])->name('advisor.index');
 
 // 📅 Trang / popup đặt lịch hẹn
 Route::get('/appointment/modal', function () {
@@ -79,6 +83,7 @@ Route::middleware(['auth', 'role:admin'])
         Route::resource('doctors', AdminDoctorController::class);
         Route::resource('appointments', AdminAppointmentController::class);
         Route::resource('services', ServiceController::class);
+        Route::resource('diseases', AdminDiseaseController::class);
         Route::resource('patients', PatientController::class);
         Route::resource('users', UserController::class)->only(['index', 'edit', 'update', 'destroy']);
 

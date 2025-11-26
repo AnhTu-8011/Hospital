@@ -43,7 +43,14 @@
             <tbody>
                 @forelse ($departments as $department)
                         <tr class="table-row-hover" style="transition: all 0.2s ease;">
-                        <td class="text-center fw-medium">{{ $loop->iteration }}</td>
+                        <td class="text-center fw-medium">
+                            @php
+                                $stt = (method_exists($departments, 'firstItem') && $departments->firstItem())
+                                    ? $departments->firstItem() + $loop->index
+                                    : $loop->iteration;
+                            @endphp
+                            {{ $stt }}
+                        </td>
                             <td class="text-center">
                                 <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
                                     #{{ str_pad($department->id, 6, '0', STR_PAD_LEFT) }}
@@ -100,6 +107,13 @@
             </tbody>
         </table>
     </div>
+    @if(method_exists($departments, 'links'))
+        <div class="card-footer bg-white border-0 py-3 px-4">
+            <div class="d-flex justify-content-end">
+                {{ $departments->onEachSide(1)->links('pagination::bootstrap-5') }}
+            </div>
+        </div>
+    @endif
 </div>
 </div>
 
