@@ -63,7 +63,7 @@ class HomeController extends Controller
             $serviceIds = $serviceIds->unique();
             $diseaseIds = $diseaseIds->unique();
 
-            // Gợi ý dịch vụ: tính điểm theo số triệu chứng khớp, sau đó sắp xếp
+            // Gợi ý dịch vụ: tính điểm theo số triệu chứng khớp, chỉ giữ dịch vụ có ít nhất 1 triệu chứng khớp, sau đó sắp xếp
             if ($serviceIds->isNotEmpty()) {
                 $suggestedServices = Service::with(['department', 'symptoms'])
                     ->whereIn('id', $serviceIds)
@@ -72,19 +72,26 @@ class HomeController extends Controller
                         $matched = [];
                         foreach ($service->symptoms as $symptom) {
                             foreach ($keywords as $kw) {
-                                if (stripos($symptom->symptom_name, $kw) !== false) { $matched[] = $symptom->symptom_name; break; }
+                                if (stripos($symptom->symptom_name, $kw) !== false) {
+                                    $matched[] = $symptom->symptom_name;
+                                    break;
+                                }
                             }
                         }
                         $matched = array_values(array_unique($matched));
                         $service->matched_symptoms_count = count($matched);
                         return $service;
                     })
+                    // Đảm bảo chỉ giữ lại các dịch vụ thực sự có triệu chứng khớp từ khóa
+                    ->filter(function ($service) {
+                        return ($service->matched_symptoms_count ?? 0) > 0;
+                    })
                     ->sortByDesc('matched_symptoms_count')
                     ->take(6)
                     ->values();
             }
 
-            // Gợi ý bệnh: tính điểm theo số triệu chứng khớp, sắp xếp, giới hạn
+            // Gợi ý bệnh: tính điểm theo số triệu chứng khớp, chỉ giữ bệnh có ít nhất 1 triệu chứng khớp, sau đó sắp xếp, giới hạn
             if ($diseaseIds->isNotEmpty()) {
                 $suggestedDiseases = Disease::with(['department', 'symptoms'])
                     ->whereIn('id', $diseaseIds)
@@ -93,12 +100,19 @@ class HomeController extends Controller
                         $matched = [];
                         foreach ($disease->symptoms as $symptom) {
                             foreach ($keywords as $kw) {
-                                if (stripos($symptom->symptom_name, $kw) !== false) { $matched[] = $symptom->symptom_name; break; }
+                                if (stripos($symptom->symptom_name, $kw) !== false) {
+                                    $matched[] = $symptom->symptom_name;
+                                    break;
+                                }
                             }
                         }
                         $matched = array_values(array_unique($matched));
                         $disease->matched_symptoms_count = count($matched);
                         return $disease;
+                    })
+                    // Đảm bảo chỉ giữ lại các bệnh thực sự có triệu chứng khớp từ khóa
+                    ->filter(function ($disease) {
+                        return ($disease->matched_symptoms_count ?? 0) > 0;
                     })
                     ->sortByDesc('matched_symptoms_count')
                     ->take(6)

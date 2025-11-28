@@ -140,8 +140,15 @@
                     <div class="card-body text-center p-4">
                       <div class="mb-3 d-flex justify-content-center">
                         <div style="width: 160px; height: 160px; overflow:hidden; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                          @if($service->department && !empty($service->department->image))
-                            <img src="{{ asset('storage/'.$service->department->image) }}" alt="{{ $service->department->name }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform .3s;"
+                          @php
+                            $serviceImage = $service->image ?? null;
+                            $departmentImage = $service->department->image ?? null;
+                          @endphp
+                          @if(!empty($serviceImage))
+                            <img src="{{ asset('storage/'.$serviceImage) }}" alt="{{ $service->name }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform .3s;"
+                                 onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)';">
+                          @elseif(!empty($departmentImage))
+                            <img src="{{ asset('storage/'.$departmentImage) }}" alt="{{ $service->department->name ?? $service->name }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform .3s;"
                                  onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)';">
                           @else
                             <div class="d-flex align-items-center justify-content-center bg-primary-subtle h-100">
@@ -171,8 +178,14 @@
                       <div class="modal-body p-4">
                         <div class="text-center mb-4">
                           <div style="width: 200px; height: 200px; margin: 0 auto; overflow:hidden; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                            @if($service->department && !empty($service->department->image))
-                              <img src="{{ asset('storage/'.$service->department->image) }}" alt="{{ $service->department->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            @php
+                              $serviceImage = $service->image ?? null;
+                              $departmentImage = $service->department->image ?? null;
+                            @endphp
+                            @if(!empty($serviceImage))
+                              <img src="{{ asset('storage/'.$serviceImage) }}" alt="{{ $service->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            @elseif(!empty($departmentImage))
+                              <img src="{{ asset('storage/'.$departmentImage) }}" alt="{{ $service->department->name ?? $service->name }}" style="width: 100%; height: 100%; object-fit: cover;">
                             @else
                               <div class="d-flex align-items-center justify-content-center bg-primary-subtle h-100">
                                 <i class="bi bi-hospital text-primary" style="font-size: 4rem;"></i>
