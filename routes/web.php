@@ -43,6 +43,9 @@ Route::view('/introduces', 'home.introduces.index')->name('introduces.index');
 // 🔎 Trang tư vấn theo triệu chứng
 Route::get('/advisor', [HomeController::class, 'advisorPage'])->name('advisor.index');
 
+// 🔬 Trang test multi-tab dùng token (Sanctum)
+Route::view('/multi-tab-test', 'multi-tab-test')->name('multi_tab.test');
+
 // 📅 Trang / popup đặt lịch hẹn
 Route::get('/appointment/modal', function () {
     $departments = \App\Models\Department::all();

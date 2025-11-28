@@ -54,4 +54,14 @@ class User extends Authenticatable
     {
         return $this->hasOne(Doctor::class, 'user_id');
     }
+
+    // Kiểm tra user có vai trò cụ thể hay không
+    public function hasRole(string $roleName): bool
+    {
+        if (!$this->role) {
+            return false;
+        }
+
+        return strtolower(trim($this->role->name)) === strtolower(trim($roleName));
+    }
 }

@@ -35,7 +35,7 @@
         </h2>
 
         <!-- Form -->
-        <form method="POST" action="{{ route('login') }}" class="space-y-4">
+        <form id="api-login-form" method="POST" action="{{ route('login') }}" class="space-y-4">
             @csrf
 
             <!-- Email -->
@@ -93,6 +93,8 @@
                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <i class="fa-solid fa-right-to-bracket mr-1"></i> Đăng nhập
             </button>
+
+            <p id="login-error" class="text-red-500 text-sm mt-2"></p>
         </form>
 
         <!-- Divider -->
@@ -114,6 +116,9 @@
     <!-- Font Awesome -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
     <!-- Toggle password -->
     <script>
         function togglePassword(id) {
@@ -127,6 +132,91 @@
                 icon.classList.replace('fa-eye-slash', 'fa-eye');
             }
         }
+    </script>
+
+    <!-- API login with token per tab -->
+    <script>
+        (function () {
+            const TOKEN_KEY = 'tab_auth_token';
+            const loginForm = document.getElementById('api-login-form');
+            const errorEl = document.getElementById('login-error');
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            if (!window.axios) {
+                return;
+            }
+
+            // set CSRF header (nếu Sanctum cấu hình stateful)
+            window.axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+            function setAuthToken(token) {
+                if (!token) return;
+                sessionStorage.setItem(TOKEN_KEY, token);
+                window.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+            }
+
+            // load token khi tab reload
+            const existingToken = sessionStorage.getItem(TOKEN_KEY);
+            if (existingToken) {
+                window.axios.defaults.headers.common['Authorization'] = 'Bearer ' + existingToken;
+            }
+
+            if (loginForm) {
+                loginForm.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+
+                    if (errorEl) {
+                        errorEl.textContent = '';
+                    }
+
+                    const email = document.getElementById('email').value;
+                    const password = document.getElementById('password').value;
+                    const remember = document.getElementById('remember').checked;
+
+                    const submitBtn = loginForm.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                    }
+
+                    try {
+                        const response = await window.axios.post('/api/login', {
+                            email: email,
+                            password: password,
+                            remember: remember,
+                        });
+
+                        const data = response.data || {};
+                        setAuthToken(data.token);
+
+                        const user = data.user || {};
+                        const role = (user.role && user.role.name ? String(user.role.name) : '').toLowerCase();
+
+                        var redirectUrl = '/';
+                        if (role === 'admin') {
+                            redirectUrl = '{{ route('admin.dashboard') }}';
+                        } else if (role === 'doctor') {
+                            redirectUrl = '{{ route('doctor.dashboard') }}';
+                        } else if (role === 'patient') {
+                            redirectUrl = '{{ route('home') }}';
+                        }
+
+                        window.location.href = redirectUrl;
+                    } catch (error) {
+                        if (errorEl) {
+                            if (error.response && error.response.data && error.response.data.message) {
+                                errorEl.textContent = error.response.data.message;
+                            } else {
+                                errorEl.textContent = 'Đăng nhập thất bại. Vui lòng thử lại.';
+                            }
+                        }
+                    } finally {
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                        }
+                    }
+                });
+            }
+        })();
     </script>
 </body>
 </html>
