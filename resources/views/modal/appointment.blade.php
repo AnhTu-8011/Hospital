@@ -26,7 +26,10 @@
                     </div>
                     <div class="d-none" id="sd_content">
                         <div class="bg-white bg-opacity-20 rounded-3 p-3 mb-3" style="backdrop-filter: blur(10px);">
-                            <h5 class="card-title mb-3 fw-bold text-white" id="sd_name"></h5>
+                            <div class="rounded-3 mb-3 overflow-hidden" style="height: 140px;">
+                                <img id="sd_image" src="" alt="Hình dịch vụ" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                            </div>
+                            <h5 class="card-title mb-0 fw-bold text-white" id="sd_name"></h5>
                         </div>
                         <div class="mb-3">
                             <div class="d-flex align-items-center mb-2">
@@ -139,7 +142,7 @@
                     <select name="service_id" id="service_id" class="form-select form-select-lg rounded-3 border-2" required @guest disabled @endguest style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
                         <option value="">-- Chọn dịch vụ --</option>
                         @foreach($services as $service)
-                            <option value="{{ $service->id }}" data-department-id="{{ $service->department_id }}" data-price="{{ $service->price }}" data-description="{{ $service->description }}" {{ request('service_id') == $service->id ? 'selected' : '' }}>
+                            <option value="{{ $service->id }}" data-department-id="{{ $service->department_id }}" data-price="{{ $service->price }}" data-description="{{ $service->description }}" data-image="{{ $service->image ? asset('storage/' . $service->image) : '' }}" {{ request('service_id') == $service->id ? 'selected' : '' }}>
                                 {{ $service->name }} ({{ number_format($service->price, 0, ',', '.') }} đ)
                             </option>
                         @endforeach

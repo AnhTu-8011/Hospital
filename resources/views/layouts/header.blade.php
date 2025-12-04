@@ -100,23 +100,78 @@
                     @else
                         @php
                             $pendingAppointmentsCount = 0;
+                            $upcomingAppointments = collect();
                             if (Auth::check() && Auth::user()->patient) {
-                                $pendingAppointmentsCount = \App\Models\Appointment::where('patient_id', Auth::user()->patient->id)
+                                $upcomingAppointments = \App\Models\Appointment::with(['doctor.user', 'doctor.department', 'service'])
+                                    ->where('patient_id', Auth::user()->patient->id)
                                     ->whereDate('appointment_date', '>=', \Carbon\Carbon::today())
                                     ->whereIn('status', ['pending','confirmed'])
-                                    ->count();
+                                    ->orderBy('appointment_date', 'asc')
+                                    ->limit(5)
+                                    ->get();
+                                $pendingAppointmentsCount = $upcomingAppointments->count();
                             }
                         @endphp
 
                         {{-- Notifications --}}
-                        <a href="{{ route('appointments.index') }}" class="btn btn-link position-relative me-2 d-none d-lg-inline text-white" title="Lịch hẹn của tôi" style="color: #ffffff !important; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)';" onmouseout="this.style.transform='scale(1)';">
-                            <i class="fas fa-bell fa-lg" style="color: #ffffff !important;"></i>
+                        <div class="position-relative me-2 d-none d-lg-inline"
+                             onmouseover="var d=this.querySelector('.notification-dropdown'); if(d){d.style.display='block';} this.querySelector('a').style.transform='scale(1.1)';"
+                             onmouseout="var d=this.querySelector('.notification-dropdown'); if(d){d.style.display='none';} this.querySelector('a').style.transform='scale(1)';">
+                            <a href="{{ route('appointments.index') }}" class="btn btn-link position-relative text-white" title="Lịch hẹn của tôi" style="color: #ffffff !important; transition: all 0.3s ease;">
+                                <i class="fas fa-bell fa-lg" style="color: #ffffff !important;"></i>
+                                @if($pendingAppointmentsCount > 0)
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.7rem;">
+                                        {{ $pendingAppointmentsCount }}
+                                    </span>
+                                @endif
+                            </a>
+
                             @if($pendingAppointmentsCount > 0)
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.7rem;">
-                                    {{ $pendingAppointmentsCount }}
-                                </span>
+                                <div class="notification-dropdown position-absolute end-0 mt-2 bg-white text-dark rounded-3 shadow-lg p-3"
+                                     style="min-width: 260px; display: none; z-index: 1050;">
+                                    <div class="fw-semibold mb-2">Lịch hẹn sắp tới</div>
+                                    <ul class="list-unstyled mb-0 small">
+                                        @foreach($upcomingAppointments as $appointment)
+                                            <li class="mb-2">
+                                                <a href="{{ route('appointments.show', $appointment->id) }}" class="text-decoration-none text-dark d-block">
+                                                    <div class="fw-semibold">
+                                                        Ngày khám: {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d/m/Y') }}
+                                                    </div>
+                                                    @if($appointment->created_at)
+                                                        <div>
+                                                            Ngày giờ đặt: {{ \Carbon\Carbon::parse($appointment->created_at)->format('d/m/Y H:i') }}
+                                                        </div>
+                                                    @endif
+                                                    @if(!empty($appointment->medical_examination))
+                                                        <div>Ca đã đặt: {{ $appointment->medical_examination }}</div>
+                                                    @endif
+                                                    @if($appointment->doctor)
+                                                        @if($appointment->doctor->user)
+                                                            <div>Bác sĩ: {{ $appointment->doctor->user->name }}</div>
+                                                        @endif
+                                                        @if($appointment->doctor->department)
+                                                            <div>Khoa: {{ $appointment->doctor->department->name }}</div>
+                                                        @endif
+                                                    @endif
+                                                    @if($appointment->service)
+                                                        <div>Dịch vụ: {{ $appointment->service->name }}</div>
+                                                    @endif
+                                                    @if(!empty($appointment->reason))
+                                                        <div class="text-muted">Lý do: {{ Str::limit($appointment->reason, 40) }}</div>
+                                                    @endif
+                                                    @if(!$loop->last)
+                                                        <hr class="my-2" style="border-top: 1px solid #eee;">
+                                                    @endif
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                    <div class="mt-2 text-end">
+                                        <a href="{{ route('appointments.index') }}" class="text-primary small">Xem tất cả</a>
+                                    </div>
+                                </div>
                             @endif
-                        </a>
+                        </div>
 
                         {{-- Desktop user dropdown --}}
                         <div class="dropdown d-none d-lg-block">

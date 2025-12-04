@@ -18,8 +18,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // Gửi nhắc lịch mỗi ngày lúc 07:00
-        //$schedule->command('app:send-appointment-reminder')->dailyAt('03:46');
-        $schedule->command('app:send-appointment-reminder')->everyMinute();
+        $schedule->command('app:send-appointment-reminder')->dailyAt('11:40');
+        //$schedule->command('app:send-appointment-reminder')->everyMinute();
     }
 
     /**

@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sdPrice = document.getElementById('sd_price');
     const sdDept = document.getElementById('sd_dept');
     const sdDesc = document.getElementById('sd_desc');
+    const sdImage = document.getElementById('sd_image');
 
     // 🔹 Giới hạn ngày đặt lịch trong 7 ngày (cả cuối tuần)
     const today = new Date();
@@ -67,6 +68,18 @@ document.addEventListener('DOMContentLoaded', () => {
             sdPrice.textContent = price && !Number.isNaN(price)
                 ? price.toLocaleString('vi-VN') + ' đ'
                 : '-';
+        }
+
+        // 🔹 Ảnh dịch vụ
+        if (sdImage) {
+            const imageUrl = opt.dataset.image || '';
+            if (imageUrl) {
+                sdImage.src = imageUrl;
+                sdImage.style.display = 'block';
+            } else {
+                sdImage.src = '';
+                sdImage.style.display = 'none';
+            }
         }
 
         // 🔹 Tên khoa

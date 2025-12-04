@@ -198,6 +198,14 @@
                             @endif
                         </div>
                     @endif
+
+                    @if($appointment->status == 'completed')
+                        <div class="mt-4">
+                            <a href="{{ route('appointments.record', $appointment->id) }}" class="btn btn-lg btn-outline-primary rounded-pill px-4 shadow-sm">
+                                <i class="fas fa-notes-medical me-2"></i>Xem bệnh án
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
