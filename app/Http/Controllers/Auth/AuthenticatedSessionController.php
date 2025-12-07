@@ -13,7 +13,6 @@ class AuthenticatedSessionController extends Controller
 {
     /**
      * Hiển thị trang đăng nhập.
-     * 
      * Phương thức này chỉ đơn giản là trả về view "auth.login"
      * chứa form đăng nhập cho người dùng nhập email/mật khẩu.
      */
@@ -21,43 +20,23 @@ class AuthenticatedSessionController extends Controller
     {
         return view('auth.login');
     }
-
     /**
      * Xử lý yêu cầu đăng nhập.
-     * 
-     * Đây là nơi xử lý logic đăng nhập người dùng:
-     * - Xác thực thông tin người dùng.
-     * - Kiểm tra quyền/role.
-     * - Điều hướng đến trang phù hợp sau khi đăng nhập.
      */
     public function store(LoginRequest $request): RedirectResponse
     {
         try {
-            // Gọi phương thức authenticate() từ LoginRequest để xác thực người dùng.
-            // Nếu thông tin không hợp lệ, hàm này sẽ tự động ném ra ValidationException.
             $request->authenticate();
-
-            // Sau khi đăng nhập thành công, regenerate session ID để tránh session fixation attack.
             $request->session()->regenerate();
-            
-            // Lấy thông tin người dùng hiện tại từ Auth
             $user = Auth::user();
-    
-            // Kiểm tra xem người dùng có role (vai trò) hay chưa
             if (!$user->role) {
-                // Nếu chưa có, đăng xuất ngay và báo lỗi
                 Auth::logout();
                 return back()->withErrors([
                     'email' => 'Tài khoản chưa được gán vai trò. Vui lòng liên hệ quản trị viên.',
                 ])->withInput();
             }
-    
-            // Lấy tên vai trò (role name) và chuyển về chữ thường để so sánh dễ hơn
-            $roleName = strtolower(trim($user->role->name));
-    
-            // Nếu là bác sĩ (doctor) thì kiểm tra xem có bản ghi bác sĩ liên kết không
-            if ($roleName === 'doctor' && !$user->doctor) {
-                // Nếu không có thông tin bác sĩ tương ứng, đăng xuất và báo lỗi
+                $roleName = strtolower(trim($user->role->name));
+                if ($roleName === 'doctor' && !$user->doctor) {
                 Auth::logout();
                 return back()->withErrors([
                     'email' => 'Không tìm thấy thông tin bác sĩ. Vui lòng liên hệ quản trị viên.',

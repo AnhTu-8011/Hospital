@@ -36,8 +36,8 @@
                             <th class="fw-semibold py-3">Ngày yêu cầu</th>
                             <th class="fw-semibold py-3">Bác sĩ</th>
                             <th class="text-center fw-semibold py-3">Trạng thái</th>
-                            <th class="text-center fw-semibold py-3">Ảnh chính</th>
-                            <th class="text-center fw-semibold py-3">Ảnh phụ</th>
+                            <th class="text-center fw-semibold py-3">Ảnh kết quả</th>
+                            <th class="text-center fw-semibold py-3">Ảnh kết quả phụ</th>
                             <th class="fw-semibold py-3">Ghi chú</th>
                             <th class="text-center fw-semibold py-3" style="width: 180px;">Thao tác</th>
             </tr>
@@ -70,22 +70,22 @@
                         @endif
                     </td>
                                 <td class="text-center">
-                        @if($test->image)
-                                        <img src="{{ asset('storage/'.$test->image) }}" width="80" height="80" class="rounded-3 shadow-sm border border-2" style="object-fit: cover;">
-                        @else
+    @if($test->image)
+                                        <img src="{{ asset('storage/'.$test->image) }}" width="80" height="80" class="rounded-3 shadow-sm border border-2 preview-image" style="object-fit: cover; cursor: pointer;" data-full-src="{{ asset('storage/'.$test->image) }}">
+    @else
                                         <span class="text-muted">---</span>
-                        @endif
+    @endif
                     </td>
                                 <td class="text-center">
-                        @if(!empty($test->images) && is_array($test->images) && count($test->images))
+    @if(!empty($test->images) && is_array($test->images) && count($test->images))
                                         <div class="d-flex flex-wrap gap-2 justify-content-center">
                                 @foreach($test->images as $img)
-                                                <img src="{{ asset('storage/'.$img) }}" width="60" height="60" style="object-fit:cover" class="rounded-3 border border-2 shadow-sm">
+                                                <img src="{{ asset('storage/'.$img) }}" width="60" height="60" style="object-fit:cover; cursor: pointer;" class="rounded-3 border border-2 shadow-sm preview-image" data-full-src="{{ asset('storage/'.$img) }}">
                                 @endforeach
                             </div>
-                        @else
+    @else
                                         <span class="text-muted">---</span>
-                        @endif
+    @endif
                     </td>
                                 <td class="text-muted small">{{ $test->note ?? '---' }}</td>
                                 <td class="text-center">
@@ -120,4 +120,39 @@
         transform: scale(1.01);
     }
     </style>
+
+    <!-- Modal xem ảnh lớn -->
+    <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-0">
+                    <h6 class="modal-title">Xem ảnh kết quả</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex justify-content-center">
+                    <img id="previewImage" src="" alt="Ảnh kết quả" class="img-fluid rounded-3 shadow-sm">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const images = document.querySelectorAll('.preview-image');
+            const modalEl = document.getElementById('imagePreviewModal');
+            if (!modalEl || !images.length) return;
+
+            const modalImage = document.getElementById('previewImage');
+            const bsModal = new bootstrap.Modal(modalEl);
+
+            images.forEach(function (img) {
+                img.addEventListener('click', function () {
+                    const src = this.getAttribute('data-full-src') || this.getAttribute('src');
+                    if (!src) return;
+                    modalImage.setAttribute('src', src);
+                    bsModal.show();
+                });
+            });
+        });
+    </script>
 @endsection

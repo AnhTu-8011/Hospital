@@ -94,7 +94,7 @@
             <li class="nav-item mb-1">
                 <a href="{{ route('admin.lab_tests.index') }}"
                 class="nav-link d-flex align-items-center {{ request()->routeIs('admin.lab_tests.*') ? 'active' : '' }}">
-                    <i class="fas fa-vials me-3"></i> <span>Xét nghiệm</span>
+                    <i class="fas fa-vials me-3"></i> <span>Yêu cầu xét nghiệm</span>
                     @if(isset($newLabTestsCount) && $newLabTestsCount > 0)
                         <span class="badge bg-danger rounded-pill ms-auto">{{ $newLabTestsCount }}</span>
                     @endif
