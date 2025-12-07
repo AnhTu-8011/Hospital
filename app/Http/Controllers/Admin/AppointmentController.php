@@ -148,6 +148,7 @@ class AppointmentController extends Controller
         // Cập nhật trạng thái lịch hẹn trong DB
         $appointment->update(['status' => $newStatus]);
 
+        // Nếu chuyển sang trạng thái confirmed và trước đó chưa confirmed → gửi mail xác nhận
         if ($newStatus === Appointment::STATUS_CONFIRMED && $previous !== Appointment::STATUS_CONFIRMED) {
             $appointment->loadMissing(['patient', 'doctor.user', 'service']);
             $to = optional($appointment->patient)->email;
@@ -156,7 +157,59 @@ class AppointmentController extends Controller
             }
         }
 
+        // Nếu admin đổi trạng thái sang "canceled" (và trước đó chưa hủy) → gửi mail thông báo hủy
+        if ($newStatus === Appointment::STATUS_CANCELLED && $previous !== Appointment::STATUS_CANCELLED) {
+            $this->sendCancellationMail($appointment->fresh(['patient.user', 'service']));
+        }
+
         // Trả thông báo và quay lại trang trước
         return back()->with('success', 'Cập nhật trạng thái thành công.');
+    }
+
+    private function sendCancellationMail(Appointment $appointment)
+    {
+        $appointment->loadMissing(['patient.user', 'service']);
+
+        $wasPaid = $appointment->payment_status === Appointment::PAYMENT_SUCCESS;
+
+        // Lấy thông tin email bệnh nhân
+        $patientEmail = optional($appointment->patient)->email ?? optional(optional($appointment->patient)->user)->email;
+        $patientName  = optional($appointment->patient)->name ?? optional(optional($appointment->patient)->user)->name;
+
+        // Tính số tiền sau giảm (giống logic hiển thị ở phía bệnh nhân)
+        $basePrice = $appointment->total ?? ($appointment->service->price ?? 0);
+        $birthdate = optional($appointment->patient)->birthdate;
+
+        $discount = 0.8; // mặc định giảm 20%
+        if ($birthdate && \Carbon\Carbon::parse($birthdate)->format('m') == now()->format('m')) {
+            $discount = 0.7; // nếu sinh trong tháng hiện tại → giảm thêm 10%
+        }
+
+        $finalPrice = $basePrice * $discount;
+
+        if ($patientEmail) {
+            $subject = 'Thông báo hủy lịch hẹn từ bệnh viện #' . str_pad($appointment->id, 6, '0', STR_PAD_LEFT);
+
+            $bodyLines = [];
+            $bodyLines[] = 'Xin chào ' . ($patientName ?: 'Quý khách') . ',';
+            $bodyLines[] = '';
+            $bodyLines[] = 'Lịch hẹn #' . str_pad($appointment->id, 6, '0', STR_PAD_LEFT) . ' của bạn tại bệnh viện đã được hủy bởi bộ phận quản trị.';
+            $bodyLines[] = 'Ngày khám dự kiến: ' . $appointment->appointment_date->format('d/m/Y') . '.';
+
+            if ($wasPaid && $finalPrice > 0) {
+                $bodyLines[] = '';
+                $bodyLines[] = 'Lịch hẹn đã được hủy và bạn đã được hoàn tiền với số tiền khoảng: ' . number_format($finalPrice, 0, ',', '.') . ' đ.';
+                $bodyLines[] = 'Thời gian tiền về tài khoản có thể mất vài ngày làm việc tùy ngân hàng/đơn vị thanh toán.';
+            }
+
+            $bodyLines[] = '';
+            $bodyLines[] = 'Nếu bạn có thắc mắc, vui lòng liên hệ lại bệnh viện để được hỗ trợ thêm.';
+
+            $body = implode("\n", $bodyLines);
+
+            Mail::raw($body, function ($message) use ($patientEmail, $subject, $patientName) {
+                $message->to($patientEmail, $patientName ?: null)->subject($subject);
+            });
+        }
     }
 }

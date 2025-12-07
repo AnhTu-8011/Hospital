@@ -8,9 +8,41 @@
 {{-- Bảng lịch hẹn --}}
 <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
     <div class="card-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-        <h6 class="m-0 font-weight-bold text-white d-flex align-items-center">
-            <i class="fas fa-list me-2"></i>Danh sách lịch hẹn
-        </h6>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h6 class="m-0 font-weight-bold text-white d-flex align-items-center">
+                <i class="fas fa-list me-2"></i>Danh sách lịch hẹn
+            </h6>
+            @php
+                $currentStatus = request('status');
+                $pendingCount = \App\Models\Appointment::where('status', \App\Models\Appointment::STATUS_PENDING)->count();
+            @endphp
+            <ul class="nav nav-pills nav-fill bg-white rounded-pill px-1 py-1 mb-0" style="font-size: 0.9rem;">
+                <li class="nav-item">
+                    <a class="nav-link rounded-pill px-3 py-1 {{ $currentStatus === null ? 'active text-white' : 'text-primary' }}"
+                       href="{{ route('admin.appointments.index') }}">
+                        Tất cả
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link rounded-pill px-3 py-1 {{ $currentStatus === 'pending' ? 'active text-white' : 'text-primary' }}"
+                       href="{{ route('admin.appointments.index', array_merge(request()->except('page'), ['status' => 'pending'])) }}">
+                        Chờ duyệt @if($pendingCount > 0) ({{ $pendingCount }}) @endif
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link rounded-pill px-3 py-1 {{ $currentStatus === 'confirmed' ? 'active text-white' : 'text-primary' }}"
+                       href="{{ route('admin.appointments.index', array_merge(request()->except('page'), ['status' => 'confirmed'])) }}">
+                        Đã duyệt
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link rounded-pill px-3 py-1 {{ $currentStatus === 'canceled' ? 'active text-white' : 'text-primary' }}"
+                       href="{{ route('admin.appointments.index', array_merge(request()->except('page'), ['status' => 'canceled'])) }}">
+                        Đã hủy
+                    </a>
+                </li>
+            </ul>
+        </div>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
