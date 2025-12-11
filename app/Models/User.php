@@ -37,6 +37,31 @@ class User extends Authenticatable
         'birthdate' => 'date',
     ];
 
+    /**
+     * Kiểm tra người dùng có role nhất định hay không.
+     *
+     * @param  string|array  $roles
+     * @return bool
+     */
+    public function hasRole($roles): bool
+    {
+        if (!$this->role) {
+            return false;
+        }
+
+        $userRole = strtolower(trim($this->role->name));
+
+        if (is_array($roles)) {
+            $normalized = array_map(function ($r) {
+                return strtolower(trim($r));
+            }, $roles);
+
+            return in_array($userRole, $normalized, true);
+        }
+
+        return $userRole === strtolower(trim($roles));
+    }
+
     // Quan hệ với bệnh nhân
     public function patient()
     {

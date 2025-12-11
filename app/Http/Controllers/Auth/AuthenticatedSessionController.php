@@ -16,9 +16,11 @@ class AuthenticatedSessionController extends Controller
      * Phương thức này chỉ đơn giản là trả về view "auth.login"
      * chứa form đăng nhập cho người dùng nhập email/mật khẩu.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('auth.login');
+        $role = $request->query('role');
+
+        return view('auth.login', compact('role'));
     }
     /**
      * Xử lý yêu cầu đăng nhập.
@@ -28,15 +30,28 @@ class AuthenticatedSessionController extends Controller
         try {
             $request->authenticate();
             $request->session()->regenerate();
+
             $user = Auth::user();
+
             if (!$user->role) {
                 Auth::logout();
                 return back()->withErrors([
                     'email' => 'Tài khoản chưa được gán vai trò. Vui lòng liên hệ quản trị viên.',
                 ])->withInput();
             }
-                $roleName = strtolower(trim($user->role->name));
-                if ($roleName === 'doctor' && !$user->doctor) {
+
+            $roleName = strtolower(trim($user->role->name));
+
+            // Kiểm tra trường hợp đăng nhập bằng link role cụ thể (admin / doctor / patient)
+            $requestedRole = strtolower((string) $request->input('requested_role'));
+            if ($requestedRole && $requestedRole !== $roleName) {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Bạn đang dùng link đăng nhập ' . $requestedRole . ' nhưng tài khoản là ' . $roleName . '.',
+                ])->withInput();
+            }
+
+            if ($roleName === 'doctor' && !$user->doctor) {
                 Auth::logout();
                 return back()->withErrors([
                     'email' => 'Không tìm thấy thông tin bác sĩ. Vui lòng liên hệ quản trị viên.',
@@ -49,17 +64,17 @@ class AuthenticatedSessionController extends Controller
                     // Nếu là admin, chuyển đến trang admin.dashboard
                     return redirect()->intended(route('admin.dashboard'))
                         ->with('success', 'Đăng nhập quản trị viên thành công!');
-                    
+
                 case 'doctor':
                     // Nếu là doctor, chuyển đến trang doctor.dashboard
                     return redirect()->intended(route('doctor.dashboard'))
                         ->with('success', 'Đăng nhập bác sĩ thành công!');
-                    
+
                 case 'patient':
-                    // Nếu là bệnh nhân (patient), chuyển đến trang home
-                    return redirect()->intended(route('home'))
+                    // Nếu là bệnh nhân (patient), chuyển đến trang patient.dashboard
+                    return redirect()->intended(route('patient.dashboard'))
                         ->with('success', 'Đăng nhập thành công!');
-                    
+
                 default:
                     // Nếu vai trò không nằm trong danh sách trên, đăng xuất và báo lỗi
                     Auth::logout();
@@ -67,7 +82,7 @@ class AuthenticatedSessionController extends Controller
                         'email' => 'Vai trò người dùng không hợp lệ.',
                     ])->withInput();
             }
-    
+
         } catch (\Exception $e) {
             // Nếu có lỗi bất ngờ trong quá trình xử lý (vd: lỗi DB, logic, ...)
             // thì đăng xuất và hiển thị thông báo lỗi chi tiết.

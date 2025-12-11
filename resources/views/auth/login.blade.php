@@ -30,13 +30,36 @@
         </div>
 
         <!-- Title -->
-        <h2 class="text-lg font-semibold text-gray-700 border-b-2 pb-3 mb-6 text-center" style="border-color: #e3f2ff;">
+        <h2 class="text-lg font-semibold text-gray-700 border-b-2 pb-3 mb-4 text-center" style="border-color: #e3f2ff;">
             <i class="fa-solid fa-right-to-bracket mr-2" style="color: #667eea;"></i>Đăng nhập tài khoản
         </h2>
+
+        @php
+            $role = $role ?? null; // admin | doctor | patient | null
+        @endphp
+
+        <!-- Role tabs -->
+        <div class="flex justify-center space-x-2 mb-4 text-sm">
+            <a href="{{ route('login', ['role' => 'admin']) }}"
+               class="px-3 py-1 rounded-full border text-xs md:text-sm {{ $role === 'admin' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50' }}">
+                Admin
+            </a>
+            <a href="{{ route('login', ['role' => 'doctor']) }}"
+               class="px-3 py-1 rounded-full border text-xs md:text-sm {{ $role === 'doctor' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50' }}">
+                Bác sĩ
+            </a>
+            <a href="{{ route('login', ['role' => 'patient']) }}"
+               class="px-3 py-1 rounded-full border text-xs md:text-sm {{ $role === 'patient' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50' }}">
+                Bệnh nhân
+            </a>
+        </div>
 
         <!-- Form -->
         <form method="POST" action="{{ route('login') }}" class="space-y-4">
             @csrf
+
+            <!-- Hidden requested role -->
+            <input type="hidden" name="requested_role" value="{{ $role }}">
 
             <!-- Email -->
             <div>
@@ -91,7 +114,16 @@
             <button type="submit"
                 class="w-full text-white font-semibold rounded-full py-3 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <i class="fa-solid fa-right-to-bracket mr-1"></i> Đăng nhập
+                <i class="fa-solid fa-right-to-bracket mr-1"></i>
+                @if($role === 'admin')
+                    Đăng nhập Admin
+                @elseif($role === 'doctor')
+                    Đăng nhập Bác sĩ
+                @elseif($role === 'patient')
+                    Đăng nhập Bệnh nhân
+                @else
+                    Đăng nhập
+                @endif
             </button>
         </form>
 
