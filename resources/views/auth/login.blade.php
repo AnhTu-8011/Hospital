@@ -36,26 +36,43 @@
 
         @php
             $role = $role ?? null; // admin | doctor | patient | null
+
+            // Nếu chưa truyền role (truy cập /login trực tiếp) thì mặc định là patient
+            if ($role === null) {
+                $role = 'patient';
+            }
+
+            // Xác định route submit form theo role
+            if ($role === 'admin') {
+                $loginAction = route('admin.login.submit');
+            } elseif ($role === 'doctor') {
+                $loginAction = route('doctor.login.submit');
+            } elseif ($role === 'patient') {
+                $loginAction = route('patient.login.submit');
+            } else {
+                // Mặc định: dùng route login chung (guard web hoặc cấu hình sẵn)
+                $loginAction = route('login');
+            }
         @endphp
 
         <!-- Role tabs -->
         <div class="flex justify-center space-x-2 mb-4 text-sm">
-            <a href="{{ route('login', ['role' => 'admin']) }}"
+            <a href="{{ route('admin.login') }}"
                class="px-3 py-1 rounded-full border text-xs md:text-sm {{ $role === 'admin' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50' }}">
                 Admin
             </a>
-            <a href="{{ route('login', ['role' => 'doctor']) }}"
+            <a href="{{ route('doctor.login') }}"
                class="px-3 py-1 rounded-full border text-xs md:text-sm {{ $role === 'doctor' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50' }}">
                 Bác sĩ
             </a>
-            <a href="{{ route('login', ['role' => 'patient']) }}"
+            <a href="{{ route('patient.login') }}"
                class="px-3 py-1 rounded-full border text-xs md:text-sm {{ $role === 'patient' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50' }}">
                 Bệnh nhân
             </a>
         </div>
 
         <!-- Form -->
-        <form method="POST" action="{{ route('login') }}" class="space-y-4">
+        <form method="POST" action="{{ $loginAction }}" class="space-y-4">
             @csrf
 
             <!-- Hidden requested role -->

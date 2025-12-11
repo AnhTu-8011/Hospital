@@ -28,6 +28,9 @@ use App\Http\Controllers\Doctor\{
     DoctorRecordController,
     HistoryController
 };
+use App\Http\Controllers\Auth\AdminAuthController;
+use App\Http\Controllers\Auth\DoctorAuthController;
+use App\Http\Controllers\Auth\PatientAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,25 +55,44 @@ Route::get('/appointment/modal', function () {
 })->name('modal.appointment');
 
 /*
-|--------------------------------------------------------------------------
-| 📊 Dashboard mặc định (Redirect theo vai trò)
-|--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+| Dashboard mặc định: nếu là admin/doctor thì chuyển sang dashboard riêng,
+| còn lại (patient/user thường) thì tới patient.dashboard
+//--------------------------------------------------------------------------
 */
-Route::get('/dashboard', function () {
-    if (auth()->user()->hasRole('admin')) {
-        return redirect()->route('admin.dashboard');
-    } elseif (auth()->user()->hasRole('doctor')) {
-        return redirect()->route('doctor.dashboard');
+Route::middleware(['auth'])->get('/dashboard', function () {
+    $user = auth()->user();
+
+    if ($user && method_exists($user, 'hasRole')) {
+        if ($user->hasRole('admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        if ($user->hasRole('doctor')) {
+            return redirect()->route('doctor.dashboard');
+        }
     }
-    return view('dashboard');
-})->middleware(['auth'])->name('dashboard');
+
+    return redirect()->route('patient.dashboard');
+})->name('dashboard');
 
 /*
-|--------------------------------------------------------------------------
-| 🧑‍💼 ADMIN ROUTES
-|--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+| ADMIN AUTH
+//--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:admin'])
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+});
+
+/*
+//--------------------------------------------------------------------------
+| 🧑‍💼 ADMIN ROUTES
+//--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:web_admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
@@ -113,11 +135,22 @@ Route::middleware(['auth', 'role:admin'])
     });
 
 /*
-|--------------------------------------------------------------------------
-| 🩺 DOCTOR ROUTES
-|--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+| 🔐 DOCTOR AUTH
+//--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:doctor'])
+Route::prefix('doctor')->name('doctor.')->group(function () {
+    Route::get('/login', [DoctorAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [DoctorAuthController::class, 'login'])->name('login.submit');
+    Route::post('/logout', [DoctorAuthController::class, 'logout'])->name('logout');
+});
+
+/*
+//--------------------------------------------------------------------------
+| 🩺 DOCTOR ROUTES
+//--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:web_doctor'])
     ->prefix('doctor')
     ->name('doctor.')
     ->group(function () {
@@ -156,15 +189,29 @@ Route::middleware(['auth', 'role:doctor'])
     });
 
 /*
-|--------------------------------------------------------------------------
-| 👩‍🦰 PATIENT ROUTES
-|--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+| 🔐 PATIENT AUTH
+//--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:patient'])
+Route::prefix('patient')->name('patient.')->group(function () {
+    Route::get('/login', [PatientAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [PatientAuthController::class, 'login'])->name('login.submit');
+    Route::post('/logout', [PatientAuthController::class, 'logout'])->name('logout');
+});
+
+/*
+//--------------------------------------------------------------------------
+| 👩‍🦰 PATIENT ROUTES (guard mặc định web)
+| Hiện tại không dùng dashboard riêng, bệnh nhân sau khi đăng nhập sẽ
+| sử dụng trang chính (route 'home'). Nếu sau này cần, có thể thêm lại
+| route patient.dashboard tại đây.
+//--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])
     ->prefix('patient')
     ->name('patient.')
     ->group(function () {
-        Route::get('/dashboard', [PatientController::class, 'index'])->name('dashboard');
+        // Các route riêng cho bệnh nhân (nếu có) thêm tại đây
     });
 
 /*
@@ -212,6 +259,26 @@ Route::middleware(['auth'])->group(function () {
 */
 Route::post('/vnpay_payment', [PaymentController::class, 'vnpay_payment'])->name('vnpay_payment');
 Route::get('/vnpay_return', [PaymentController::class, 'vnpay_return'])->name('vnpay.return');
+
+/*
+|--------------------------------------------------------------------------
+| 🔓 Simple GET Logout (logs out all guards)
+|--------------------------------------------------------------------------
+*/
+Route::get('/logout', function () {
+    foreach (['web', 'web_admin', 'web_doctor', 'web_patient'] as $guard) {
+        try {
+            \Illuminate\Support\Facades\Auth::guard($guard)->logout();
+        } catch (\Throwable $e) {
+            // ignore
+        }
+    }
+
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+
+    return redirect()->route('login');
+});
 
 /*
 |--------------------------------------------------------------------------

@@ -14,6 +14,7 @@ return [
     */
 
     'defaults' => [
+        // Guard mặc định: dùng cho patient / user thường
         'guard' => 'web',
         'passwords' => 'users',
     ],
@@ -36,7 +37,20 @@ return [
     */
 
     'guards' => [
+        // Guard mặc định cho patient / user thường
         'web' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
+
+        // Guard riêng cho khu vực quản trị (admin)
+        'web_admin' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
+
+        // Guard riêng cho khu vực bác sĩ
+        'web_doctor' => [
             'driver' => 'session',
             'provider' => 'users',
         ],
