@@ -36,16 +36,16 @@ class MedicalRecordController extends Controller
         return view('admin.medical-records.index', compact('records'));
     }
 
-    public function create(Request $request)
-    {
-        $appointment = null;
-        if ($request->filled('appointment_id')) {
-            $appointment = Appointment::with(['patient', 'doctor.user'])
-                ->find($request->appointment_id);
-        }
+    // public function create(Request $request)
+    // {
+    //     $appointment = null;
+    //     if ($request->filled('appointment_id')) {
+    //         $appointment = Appointment::with(['patient', 'doctor.user'])
+    //             ->find($request->appointment_id);
+    //     }
 
-        return view('admin.medical-records.create', compact('appointment'));
-    }
+    //     return view('admin.medical-records.create', compact('appointment'));
+    // }
 
     public function store(Request $request)
     {
@@ -78,36 +78,43 @@ class MedicalRecordController extends Controller
 
     public function show(MedicalRecord $medicalRecord)
     {
-        $medicalRecord->loadMissing(['patient.user', 'appointment.doctor.user', 'appointment.service']);
-
-        return view('admin.medical-records.show', compact('medicalRecord'));
-    }
-
-    public function edit(MedicalRecord $medicalRecord)
-    {
-        $medicalRecord->loadMissing(['patient', 'appointment']);
-
-        return view('admin.medical-records.edit', compact('medicalRecord'));
-    }
-
-    public function update(Request $request, MedicalRecord $medicalRecord)
-    {
-        $data = $request->validate([
-            'description' => ['nullable', 'string'],
-            'diagnosis' => ['nullable', 'string', 'max:1000'],
-            'doctor_conclusion' => ['nullable', 'string'],
-            'prescription' => ['nullable'],
+        $medicalRecord->loadMissing([
+            'patient.user',
+            'appointment.doctor.user',
+            'appointment.service',
+            'prescriptionItems.medicine',
         ]);
 
-        if (is_string($data['prescription'] ?? null)) {
-            $decoded = json_decode($data['prescription'], true);
-            $data['prescription'] = json_last_error() === JSON_ERROR_NONE ? $decoded : null;
-        }
+        $items = $medicalRecord->prescriptionItems ?? collect();
 
-        $medicalRecord->update($data);
-
-        return redirect()
-            ->route('admin.medical-records.show', $medicalRecord)
-            ->with('success', 'Cập nhật hồ sơ bệnh án thành công.');
+        return view('admin.medical-records.show', compact('medicalRecord', 'items'));
     }
+
+    // public function edit(MedicalRecord $medicalRecord)
+    // {
+    //     $medicalRecord->loadMissing(['patient', 'appointment']);
+
+    //     return view('admin.medical-records.edit', compact('medicalRecord'));
+    // }
+
+    // public function update(Request $request, MedicalRecord $medicalRecord)
+    // {
+    //     $data = $request->validate([
+    //         'description' => ['nullable', 'string'],
+    //         'diagnosis' => ['nullable', 'string', 'max:1000'],
+    //         'doctor_conclusion' => ['nullable', 'string'],
+    //         'prescription' => ['nullable'],
+    //     ]);
+
+    //     if (is_string($data['prescription'] ?? null)) {
+    //         $decoded = json_decode($data['prescription'], true);
+    //         $data['prescription'] = json_last_error() === JSON_ERROR_NONE ? $decoded : null;
+    //     }
+
+    //     $medicalRecord->update($data);
+
+    //     return redirect()
+    //         ->route('admin.medical-records.show', $medicalRecord)
+    //         ->with('success', 'Cập nhật hồ sơ bệnh án thành công.');
+    // }
 }

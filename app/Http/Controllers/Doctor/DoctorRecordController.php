@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\{Appointment, Patient, MedicalRecord, Service};
+use App\Models\{Appointment, Patient, MedicalRecord, Service, PrescriptionItem};
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -42,12 +42,20 @@ class DoctorRecordController extends Controller
         $request->validate([
             'diagnosis' => 'nullable|string|max:1000',
             'doctor_conclusion' => 'nullable|string|max:1000',
-            'prescription' => 'nullable|string|max:2000',
             'image' => 'nullable|image|max:5120',
             'images.*' => 'nullable|image|max:5120',
             'status' => 'nullable|in:pending,confirmed,completed',
             'service_items' => 'nullable|array',
             'service_items.*' => 'nullable|string',
+            'prescription_items' => 'nullable|array',
+            'prescription_items.*.medicine_id' => 'nullable|integer|exists:medicines,id',
+            'prescription_items.*.dosage' => 'nullable|string|max:255',
+            'prescription_items.*.frequency' => 'nullable|string|max:255',
+            'prescription_items.*.duration' => 'nullable|string|max:255',
+            'prescription_items.*.quantity' => 'nullable|integer|min:0',
+            'prescription_items.*.unit' => 'nullable|string|max:255',
+            'prescription_items.*.usage' => 'nullable|string',
+            'prescription_items.*.note' => 'nullable|string',
         ]);
 
         try {
@@ -69,9 +77,43 @@ class DoctorRecordController extends Controller
                 ? implode("\n", $items)
                 : null;
 
-            // Xử lý toa thuốc (mỗi dòng là một thuốc)
-            $prescriptions = array_filter(preg_split('/\r\n|\r|\n/', $request->input('prescription', '')));
-            $record->prescription = $prescriptions; // cast to array
+            // Xử lý toa thuốc chi tiết theo bảng prescription_items
+            $items = $request->input('prescription_items', []);
+
+            // Xóa các dòng toa thuốc cũ
+            if (method_exists($record, 'prescriptionItems')) {
+                $record->prescriptionItems()->delete();
+            }
+
+            if (is_array($items)) {
+                foreach ($items as $item) {
+                    // Bỏ qua dòng trống (không chọn thuốc và không nhập gì)
+                    $hasContent = !empty($item['medicine_id'])
+                        || !empty($item['dosage'])
+                        || !empty($item['frequency'])
+                        || !empty($item['duration'])
+                        || !empty($item['quantity'])
+                        || !empty($item['unit'])
+                        || !empty($item['usage'])
+                        || !empty($item['note']);
+
+                    if (!$hasContent) {
+                        continue;
+                    }
+
+                    PrescriptionItem::create([
+                        'prescription_id' => $record->id,
+                        'medicine_id' => $item['medicine_id'] ?? null,
+                        'dosage' => $item['dosage'] ?? null,
+                        'frequency' => $item['frequency'] ?? null,
+                        'duration' => $item['duration'] ?? null,
+                        'quantity' => $item['quantity'] ?? 0,
+                        'unit' => $item['unit'] ?? null,
+                        'usage' => $item['usage'] ?? null,
+                        'note' => $item['note'] ?? null,
+                    ]);
+                }
+            }
 
             // Ảnh đơn
             if ($request->hasFile('image')) {

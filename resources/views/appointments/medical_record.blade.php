@@ -244,10 +244,80 @@
                     </div>
 
                     <div class="mb-4">
-                        <label for="prescription" class="form-label fw-semibold mb-2">
+                        <label class="form-label fw-semibold mb-2">
                             <i class="fas fa-pills text-success me-2"></i>Toa thuốc:
                         </label>
-                        <textarea id="prescription" name="prescription" class="form-control rounded-3 border-2 bg-light" rows="4" placeholder="Ví dụ: Paracetamol 500mg - Uống 2 lần/ngày&#10;Vitamin C 1000mg - Sáng 1 viên" readonly disabled>{{ old('prescription', isset($record->prescription) ? (is_array($record->prescription) ? implode("\n", $record->prescription) : ( $record->prescription ? implode("\n", (array) json_decode($record->prescription, true)) : '')) : '') }}</textarea>
+
+                        @php
+                            $items = ($record && method_exists($record, 'prescriptionItems'))
+                                ? $record->prescriptionItems
+                                : null;
+                        @endphp
+
+                        @if($items && $items->count())
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Thuốc</th>
+                                            <th>Liều dùng</th>
+                                            <th>Số lần/ngày</th>
+                                            <th>Thời gian</th>
+                                            <th>Số lượng</th>
+                                            <th>Đơn vị</th>
+                                            <th>Cách dùng</th>
+                                            <th>Ghi chú</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($items as $item)
+                                            <tr>
+                                                <td>{{ optional($item->medicine)->name ?? '-' }}</td>
+                                                <td>{{ $item->dosage ?? '-' }}</td>
+                                                <td>{{ $item->frequency ?? '-' }}</td>
+                                                <td>{{ $item->duration ?? '-' }}</td>
+                                                <td>{{ $item->quantity ?? '-' }}</td>
+                                                <td>{{ $item->unit ?? '-' }}</td>
+                                                <td>{{ $item->usage ?? '-' }}</td>
+                                                <td>{{ $item->note ?? '-' }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            @php($prescription = $record->prescription ?? [])
+                            @if(is_string($prescription))
+                                <textarea class="form-control rounded-3 border-2 bg-light" rows="4" readonly disabled>{!! nl2br(e($prescription)) !!}</textarea>
+                            @elseif(is_array($prescription) && count($prescription))
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Thuốc</th>
+                                                <th>Liều dùng</th>
+                                                <th>Số lần/ngày</th>
+                                                <th>Thời gian</th>
+                                                <th>Ghi chú</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($prescription as $item)
+                                                <tr>
+                                                    <td>{{ $item['drug_name'] ?? '-' }}</td>
+                                                    <td>{{ $item['dosage'] ?? '-' }}</td>
+                                                    <td>{{ $item['frequency'] ?? '-' }}</td>
+                                                    <td>{{ $item['duration'] ?? '-' }}</td>
+                                                    <td>{{ $item['note'] ?? '-' }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="mb-0 text-muted">Chưa có toa thuốc.</p>
+                            @endif
+                        @endif
                     </div>
                 </div>
             @else

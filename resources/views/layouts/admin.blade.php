@@ -80,6 +80,12 @@
                 </a>
             </li>
             <li class="nav-item mb-1">
+                <a href="{{ route('admin.medicines.index') }}"
+                   class="nav-link d-flex align-items-center {{ request()->routeIs('admin.medicines.*') ? 'active' : '' }}">
+                    <i class="fas fa-pills me-3"></i> <span>Thuốc</span>
+                </a>
+            </li>
+            <li class="nav-item mb-1">
                 <a href="{{ route('admin.diseases.index') }}"
                    class="nav-link d-flex align-items-center {{ request()->routeIs('admin.diseases.*') ? 'active' : '' }}">
                     <i class="fas fa-virus me-3"></i> <span>Bệnh</span>

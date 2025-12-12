@@ -9,7 +9,8 @@ use App\Http\Controllers\Admin\{
     DoctorController as AdminDoctorController,
     AppointmentController as AdminAppointmentController,
     DiseaseController as AdminDiseaseController,
-    MedicalRecordController as AdminMedicalRecordController
+    MedicalRecordController as AdminMedicalRecordController,
+    MedicineController as AdminMedicineController,
 };
 use App\Http\Controllers\{
     AIChatController,
@@ -106,6 +107,7 @@ Route::middleware(['auth:web_admin'])
         Route::resource('doctors', AdminDoctorController::class);
         Route::resource('appointments', AdminAppointmentController::class);
         Route::resource('services', ServiceController::class);
+        Route::resource('medicines', AdminMedicineController::class);
         Route::resource('diseases', AdminDiseaseController::class);
         Route::resource('patients', PatientController::class);
         Route::resource('users', UserController::class)->only(['index', 'edit', 'update', 'destroy']);

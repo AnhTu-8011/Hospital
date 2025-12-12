@@ -265,10 +265,123 @@
 
                 <!-- Toa thuốc -->
                 <div class="mb-4">
-                    <label for="prescription" class="form-label fw-semibold mb-2">
-                        <i class="fas fa-pills text-success me-2"></i>Toa thuốc (mỗi dòng 1 loại thuốc):
+                    <label class="form-label fw-semibold mb-2">
+                        <i class="fas fa-pills text-success me-2"></i>Toa thuốc:
                     </label>
-                    <textarea id="prescription" name="prescription" class="form-control rounded-3 border-2" rows="4" placeholder="Ví dụ: Paracetamol 500mg - Uống 2 lần/ngày&#10;Vitamin C 1000mg - Sáng 1 viên" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">{{ old('prescription', isset($record->prescription) ? (is_array($record->prescription) ? implode("\n", $record->prescription) : ( $record->prescription ? implode("\n", (array) json_decode($record->prescription, true)) : '')) : '') }}</textarea>
+
+                    @php
+                        $medicines = \App\Models\Medicine::orderBy('name')->get();
+                        $existingItems = method_exists($record, 'prescriptionItems')
+                            ? $record->prescriptionItems
+                            : collect();
+                    @endphp
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 220px;">Thuốc</th>
+                                    <th>Liều dùng</th>
+                                    <th>Số lần/ngày</th>
+                                    <th>Thời gian</th>
+                                    <th style="width: 90px;">Số lượng</th>
+                                    <th>Đơn vị</th>
+                                    <th>Cách dùng</th>
+                                    <th>Ghi chú</th>
+                                    <th class="text-center" style="width: 40px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="prescription-items-body">
+                                @php $rowIndex = 0; @endphp
+                                @if($existingItems && $existingItems->count())
+                                    @foreach($existingItems as $pi)
+                                        <tr class="prescription-row">
+                                            <td>
+                                                <select name="prescription_items[{{ $rowIndex }}][medicine_id]" class="form-select form-select-sm rounded-3">
+                                                    <option value="">-- Chọn thuốc --</option>
+                                                    @foreach($medicines as $m)
+                                                        <option value="{{ $m->id }}" {{ $pi->medicine_id == $m->id ? 'selected' : '' }}>
+                                                            {{ $m->name }} @if($m->strength) ({{ $m->strength }}) @endif
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input type="text" name="prescription_items[{{ $rowIndex }}][dosage]" class="form-control form-control-sm rounded-3" placeholder="1 viên" value="{{ $pi->dosage }}">
+                                            </td>
+                                            <td>
+                                                <input type="text" name="prescription_items[{{ $rowIndex }}][frequency]" class="form-control form-control-sm rounded-3" placeholder="2 lần/ngày" value="{{ $pi->frequency }}">
+                                            </td>
+                                            <td>
+                                                <input type="text" name="prescription_items[{{ $rowIndex }}][duration]" class="form-control form-control-sm rounded-3" placeholder="5 ngày" value="{{ $pi->duration }}">
+                                            </td>
+                                            <td>
+                                                <input type="number" name="prescription_items[{{ $rowIndex }}][quantity]" class="form-control form-control-sm rounded-3" min="0" value="{{ $pi->quantity }}">
+                                            </td>
+                                            <td>
+                                                <input type="text" name="prescription_items[{{ $rowIndex }}][unit]" class="form-control form-control-sm rounded-3" placeholder="viên, hộp..." value="{{ $pi->unit }}">
+                                            </td>
+                                            <td>
+                                                <input type="text" name="prescription_items[{{ $rowIndex }}][usage]" class="form-control form-control-sm rounded-3" placeholder="Uống sau ăn..." value="{{ $pi->usage }}">
+                                            </td>
+                                            <td>
+                                                <input type="text" name="prescription_items[{{ $rowIndex }}][note]" class="form-control form-control-sm rounded-3" placeholder="Ghi chú thêm" value="{{ $pi->note }}">
+                                            </td>
+                                            <td class="text-center">
+                                                <button type="button" class="btn btn-sm btn-outline-danger rounded-circle remove-prescription-row" title="Xóa dòng">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        @php $rowIndex++; @endphp
+                                    @endforeach
+                                @else
+                                    <tr class="prescription-row">
+                                        <td>
+                                            <select name="prescription_items[0][medicine_id]" class="form-select form-select-sm rounded-3">
+                                                <option value="">-- Chọn thuốc --</option>
+                                                @foreach($medicines as $m)
+                                                    <option value="{{ $m->id }}">{{ $m->name }} @if($m->strength) ({{ $m->strength }}) @endif</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="text" name="prescription_items[0][dosage]" class="form-control form-control-sm rounded-3" placeholder="1 viên">
+                                        </td>
+                                        <td>
+                                            <input type="text" name="prescription_items[0][frequency]" class="form-control form-control-sm rounded-3" placeholder="2 lần/ngày">
+                                        </td>
+                                        <td>
+                                            <input type="text" name="prescription_items[0][duration]" class="form-control form-control-sm rounded-3" placeholder="5 ngày">
+                                        </td>
+                                        <td>
+                                            <input type="number" name="prescription_items[0][quantity]" class="form-control form-control-sm rounded-3" min="0" value="0">
+                                        </td>
+                                        <td>
+                                            <input type="text" name="prescription_items[0][unit]" class="form-control form-control-sm rounded-3" placeholder="viên, hộp...">
+                                        </td>
+                                        <td>
+                                            <input type="text" name="prescription_items[0][usage]" class="form-control form-control-sm rounded-3" placeholder="Uống sau ăn...">
+                                        </td>
+                                        <td>
+                                            <input type="text" name="prescription_items[0][note]" class="form-control form-control-sm rounded-3" placeholder="Ghi chú thêm">
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-sm btn-outline-danger rounded-circle remove-prescription-row" title="Xóa dòng">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-2">
+                        <button type="button" id="add-prescription-row" class="btn btn-sm btn-outline-success rounded-pill">
+                            <i class="fas fa-plus me-1"></i>Thêm thuốc
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Nút lưu -->
@@ -363,5 +476,45 @@
 </style>
 @push('scripts')
 <script src="{{ asset('js/patient_record.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let prescriptionIndex = {{ ($existingItems && $existingItems->count()) ? $existingItems->count() : 1 }};
+        const body = document.getElementById('prescription-items-body');
+        const addBtn = document.getElementById('add-prescription-row');
+
+        if (addBtn && body) {
+            addBtn.addEventListener('click', function () {
+                const firstRow = body.querySelector('.prescription-row');
+                if (!firstRow) return;
+
+                const newRow = firstRow.cloneNode(true);
+
+                // Cập nhật name với index mới và xóa giá trị cũ
+                newRow.querySelectorAll('input, select').forEach(function (el) {
+                    if (el.name) {
+                        el.name = el.name.replace(/prescription_items\[[0-9]+\]/, 'prescription_items[' + prescriptionIndex + ']');
+                    }
+                    if (el.tagName === 'SELECT') {
+                        el.selectedIndex = 0;
+                    } else {
+                        el.value = '';
+                    }
+                });
+
+                body.appendChild(newRow);
+                prescriptionIndex++;
+            });
+
+            body.addEventListener('click', function (e) {
+                if (e.target.closest('.remove-prescription-row')) {
+                    const rows = body.querySelectorAll('.prescription-row');
+                    if (rows.length <= 1) return; // luôn giữ ít nhất 1 dòng
+                    const row = e.target.closest('.prescription-row');
+                    if (row) row.remove();
+                }
+            });
+        }
+    });
+</script>
 @endpush
 @endsection
