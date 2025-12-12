@@ -8,7 +8,8 @@ use App\Http\Controllers\Admin\{
     ReportController,
     DoctorController as AdminDoctorController,
     AppointmentController as AdminAppointmentController,
-    DiseaseController as AdminDiseaseController
+    DiseaseController as AdminDiseaseController,
+    MedicalRecordController as AdminMedicalRecordController
 };
 use App\Http\Controllers\{
     AIChatController,
@@ -108,6 +109,7 @@ Route::middleware(['auth:web_admin'])
         Route::resource('diseases', AdminDiseaseController::class);
         Route::resource('patients', PatientController::class);
         Route::resource('users', UserController::class)->only(['index', 'edit', 'update', 'destroy']);
+        Route::resource('medical-records', AdminMedicalRecordController::class)->only(['index', 'show']);
 
         // 🧪 Loại xét nghiệm (Danh mục)
         Route::resource('test-types', \App\Http\Controllers\Admin\TestTypeController::class)->except(['show']);

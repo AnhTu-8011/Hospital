@@ -86,6 +86,12 @@
                 </a>
             </li>
             <li class="nav-item mb-1">
+                <a href="{{ route('admin.medical-records.index') }}"
+                   class="nav-link d-flex align-items-center {{ request()->routeIs('admin.medical-records.*') ? 'active' : '' }}">
+                    <i class="fas fa-notes-medical me-3"></i> <span>Hồ sơ bệnh án</span>
+                </a>
+            </li>
+            <li class="nav-item mb-1">
                 <a href="{{ route('admin.test-types.index') }}"
                 class="nav-link d-flex align-items-center {{ request()->routeIs('admin.test-types.*') ? 'active' : '' }}">
                     <i class="fas fa-tags me-3"></i> <span>Loại xét nghiệm</span>
