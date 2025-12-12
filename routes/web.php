@@ -188,6 +188,9 @@ Route::middleware(['auth:web_doctor'])
             return redirect()->route('doctor.patient.record', $record->appointment_id)
                 ->with('error', 'Vui lòng gửi yêu cầu bằng biểu mẫu.');
         });
+
+        // 🩻 Lịch sử khám bệnh của bác sĩ
+        Route::get('/patient-history', [HistoryController::class, 'history'])->name('patient.history');
     });
 
 /*
@@ -289,7 +292,6 @@ Route::get('/logout', function () {
 */
 Route::get('/doctor/patient-record/{appointment}', [DoctorRecordController::class, 'showPatientRecord'])->name('doctor.patient.record');
 Route::put('/doctor/records/{record}', [DoctorRecordController::class, 'update'])->name('doctor.records.update');
-Route::get('/doctor/patient-history', [HistoryController::class, 'history'])->name('doctor.patient.history');
 
 /*
 |--------------------------------------------------------------------------

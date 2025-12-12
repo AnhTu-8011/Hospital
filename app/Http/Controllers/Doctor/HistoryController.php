@@ -15,7 +15,8 @@ class HistoryController extends Controller
      */
     public function history(Request $request)
     {
-        $doctorId = optional($request->user()->doctor)->id;
+        $user = $request->user();
+        $doctorId = optional(optional($user)->doctor)->id;
 
         $medicalRecords = MedicalRecord::with(['appointment.patient', 'appointment.service'])
             ->when($doctorId, function ($query) use ($doctorId) {

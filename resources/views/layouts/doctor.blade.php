@@ -154,15 +154,21 @@
                     <!-- User -->
                     <li class="nav-item dropdown">
                         @php
-                            $doctor = \App\Models\Doctor::where('user_id', Auth::id())->first();
+                            $authUser = Auth::user();
+                            $doctor = optional($authUser)->doctor;
+
                             $avatarUrl = $doctor && $doctor->avatar 
                                 ? asset('storage/' . $doctor->avatar) 
                                 : 'https://cdn-icons-png.flaticon.com/512/147/147144.png';
+
+                            $displayName = $doctor && $doctor->user && $doctor->user->name
+                                ? $doctor->user->name
+                                : ($authUser->name ?? 'Bác sĩ');
                         @endphp
 
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
                             <img src="{{ $avatarUrl }}" alt="avatar" width="40" height="40" class="rounded-circle me-2 border border-white border-2" style="object-fit: cover;">
-                            <span class="fw-semibold">{{ Auth::user()->name ?? 'Bác sĩ' }}</span>
+                            <span class="fw-semibold">{{ $displayName }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow-lg">
                             <li>
