@@ -297,7 +297,7 @@
                                     @foreach($existingItems as $pi)
                                         <tr class="prescription-row">
                                             <td>
-                                                <select name="prescription_items[{{ $rowIndex }}][medicine_id]" class="form-select form-select-sm rounded-3">
+                                                <select name="prescription_items[{{ $rowIndex }}][medicine_id]" class="form-select form-select-sm rounded-3 medicine-select">
                                                     <option value="">-- Chọn thuốc --</option>
                                                     @foreach($medicines as $m)
                                                         <option value="{{ $m->id }}" {{ $pi->medicine_id == $m->id ? 'selected' : '' }}>
@@ -338,7 +338,7 @@
                                 @else
                                     <tr class="prescription-row">
                                         <td>
-                                            <select name="prescription_items[0][medicine_id]" class="form-select form-select-sm rounded-3">
+                                            <select name="prescription_items[0][medicine_id]" class="form-select form-select-sm rounded-3 medicine-select">
                                                 <option value="">-- Chọn thuốc --</option>
                                                 @foreach($medicines as $m)
                                                     <option value="{{ $m->id }}">{{ $m->name }} @if($m->strength) ({{ $m->strength }}) @endif</option>
@@ -474,7 +474,14 @@
         margin-bottom: 8px; 
     }
 </style>
+@push('styles')
+    {{-- Select2 for searchable medicine dropdowns --}}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+@endpush
+
 @push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="{{ asset('js/patient_record.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -482,10 +489,28 @@
         const body = document.getElementById('prescription-items-body');
         const addBtn = document.getElementById('add-prescription-row');
 
+        // Khởi tạo Select2 cho các dropdown thuốc hiện có
+        if (window.jQuery) {
+            $('.medicine-select').select2({
+                width: '100%',
+                placeholder: '-- Chọn thuốc --',
+                allowClear: true
+            });
+        }
+
         if (addBtn && body) {
             addBtn.addEventListener('click', function () {
                 const firstRow = body.querySelector('.prescription-row');
                 if (!firstRow) return;
+
+                // Hủy select2 trên tất cả dropdown thuốc hiện tại để tránh clone markup của select2
+                if (window.jQuery) {
+                    $('.medicine-select').each(function () {
+                        if ($(this).hasClass('select2-hidden-accessible')) {
+                            $(this).select2('destroy');
+                        }
+                    });
+                }
 
                 const newRow = firstRow.cloneNode(true);
 
@@ -502,6 +527,16 @@
                 });
 
                 body.appendChild(newRow);
+
+                // Khởi tạo lại select2 cho TẤT CẢ dropdown thuốc
+                if (window.jQuery) {
+                    $('.medicine-select').select2({
+                        width: '100%',
+                        placeholder: '-- Chọn thuốc --',
+                        allowClear: true
+                    });
+                }
+
                 prescriptionIndex++;
             });
 

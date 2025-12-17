@@ -154,16 +154,27 @@
                     <!-- User -->
                     <li class="nav-item dropdown">
                         @php
-                            $authUser = Auth::user();
-                            $doctor = optional($authUser)->doctor;
-
-                            $avatarUrl = $doctor && $doctor->avatar 
+                            // Use the web_doctor guard for doctor-related pages
+                            $user = Auth::guard('web_doctor')->user();
+                            
+                            // Get the doctor profile for the authenticated user
+                            $doctor = $user->doctor ?? null;
+                            
+                            // Debug information (uncomment if needed)
+                            // dd([
+                            //     'user' => $user,
+                            //     'doctor' => $doctor,
+                            //     'doctor_avatar' => $doctor?->avatar,
+                            //     'avatar_url' => $doctor ? asset('storage/' . $doctor->avatar) : null
+                            // ]);
+                            
+                            // Get avatar URL - fallback to default if not set
+                            $avatarUrl = $doctor && !empty($doctor->avatar) 
                                 ? asset('storage/' . $doctor->avatar) 
                                 : 'https://cdn-icons-png.flaticon.com/512/147/147144.png';
-
-                            $displayName = $doctor && $doctor->user && $doctor->user->name
-                                ? $doctor->user->name
-                                : ($authUser->name ?? 'Bác sĩ');
+                            
+                            // Get display name with fallback to user's name or default
+                            $displayName = $user->name ?? ($doctor?->name ?? 'Bác sĩ');
                         @endphp
 
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
