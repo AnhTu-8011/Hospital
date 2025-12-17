@@ -118,6 +118,13 @@
                     <i class="fas fa-users me-3"></i> <span>Người dùng</span>
                 </a>
             </li>
+            <li class="nav-item mb-1">
+                <a href="{{ route('admin.chat.index') }}" 
+                   class="nav-link d-flex align-items-center {{ request()->routeIs('admin.chat.*') ? 'active' : '' }}">
+                    <i class="fas fa-comments me-3"></i> <span>Chat với người dùng</span>
+                    <span id="chat-notification-badge" class="badge bg-danger rounded-pill ms-auto d-none"></span>
+                </a>
+            </li>
             <!-- Logout -->
             <li class="nav-item mb-1">
                 <a href="#" class="nav-link logout-link d-flex align-items-center"
@@ -306,6 +313,40 @@
         }
     });
   </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var badge = document.getElementById('chat-notification-badge');
+        if (!badge) return;
+
+        function updateChatBadge() {
+            fetch("{{ route('admin.chat.unread_count') }}", {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    var count = (data && typeof data.count !== 'undefined') ? Number(data.count) : 0;
+                    if (count > 0) {
+                        badge.textContent = String(count);
+                        badge.classList.remove('d-none');
+                    } else {
+                        badge.textContent = '';
+                        badge.classList.add('d-none');
+                    }
+                })
+                .catch(function () {
+                    badge.textContent = '';
+                    badge.classList.add('d-none');
+                });
+        }
+
+        updateChatBadge();
+        setInterval(updateChatBadge, 3000);
+    });
+</script>
 @stack('scripts')
 </body>
 </html>

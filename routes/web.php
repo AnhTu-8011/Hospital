@@ -136,6 +136,26 @@ Route::middleware(['auth:web_admin'])
             ->name('lab_tests.saveUpload');
         Route::delete('/lab-tests/{id}', [\App\Http\Controllers\Admin\LabTestController::class, 'destroy'])
             ->name('lab_tests.destroy');
+
+        // 💬 Chat
+        Route::get('/chat', [\App\Http\Controllers\ChatController::class, 'index'])
+            ->name('chat.index');
+            
+        Route::post('/chat/send', [\App\Http\Controllers\ChatController::class, 'sendMessage'])
+            ->name('chat.send');
+            
+        Route::get('/chat/messages/{receiverId}', [\App\Http\Controllers\ChatController::class, 'getMessages'])
+            ->name('chat.messages');
+
+        Route::get('/chat/unread-count', [\App\Http\Controllers\ChatController::class, 'adminUnreadCount'])
+            ->name('chat.unread_count');
+
+        Route::get('/chat/unread-by-user', [\App\Http\Controllers\ChatController::class, 'adminUnreadByUser'])
+            ->name('chat.unread_by_user');
+            
+        // Admin chat interface
+        Route::get('/chat-interface', [\App\Http\Controllers\ChatController::class, 'adminChat'])
+            ->name('chat.admin');
     });
 
 /*
@@ -257,6 +277,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::get('/chat/{receiverId}', [ChatController::class, 'getMessages'])->name('chat.get');
     Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.send');
+
+    Route::get('/chat/unread-count/{senderId}', [ChatController::class, 'userUnreadCount'])->name('chat.unread_count');
 });
 
 /*

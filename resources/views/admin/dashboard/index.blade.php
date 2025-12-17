@@ -84,13 +84,13 @@
         </div>
     </div>
 
-    @auth
+    <!-- @auth
         @php
             // Lấy danh sách user là bệnh nhân để admin có thể chọn và chat
             $users = \App\Models\User::whereHas('patient')->get();
         @endphp
         @include('chat.admin', ['users' => $users])
-    @endauth
+    @endauth -->
 
 </div>
 

@@ -2,7 +2,7 @@
     <!-- Bong bóng tròn nhỏ -->
     <div id="chat-toggle" class="chat-bubble shadow position-relative">
         💬
-        <span id="chat-notify" class="notify-dot d-none"></span>
+        <span id="chat-notify" class="notify-badge d-none"></span>
     </div>
 
     <!-- Hộp chat -->
@@ -68,15 +68,22 @@
     padding: 12px 16px !important;
 }
 
-.notify-dot {
+.notify-badge {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 14px;
-    height: 14px;
+    top: 6px;
+    right: 6px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
     background: #f5576c;
-    border-radius: 50%;
+    border-radius: 999px;
     border: 2px solid white;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     animation: pulse 2s infinite;
 }
 
@@ -97,6 +104,8 @@ $(document).ready(function () {
     const notifyDot = $('#chat-notify');
     let lastMessageCount = 0;
 
+    const unreadUrlTemplate = "{{ route('chat.unread_count', ['senderId' => '__SID__']) }}";
+
     // Cho phép hiển thị thông báo trình duyệt
     if (Notification.permission !== "granted") {
         Notification.requestPermission();
@@ -105,7 +114,10 @@ $(document).ready(function () {
     // Toggle chat box
     toggleBtn.on('click', () => {
         chatBox.toggleClass('hidden');
-        notifyDot.addClass('d-none'); // ẩn chấm đỏ khi mở chat
+        notifyDot.text('').addClass('d-none');
+        if (!chatBox.hasClass('hidden')) {
+            loadMessages();
+        }
     });
 
     closeBtn.on('click', () => chatBox.addClass('hidden'));
@@ -128,6 +140,18 @@ $(document).ready(function () {
         });
     });
 
+    function updateUnreadBadge() {
+        const url = unreadUrlTemplate.replace('__SID__', receiverId);
+        $.get(url, function (res) {
+            const count = res && typeof res.count !== 'undefined' ? Number(res.count) : 0;
+            if (count > 0 && chatBox.hasClass('hidden')) {
+                notifyDot.text(String(count)).removeClass('d-none');
+            } else {
+                notifyDot.text('').addClass('d-none');
+            }
+        });
+    }
+
     // Load tin nhắn
     function loadMessages() {
         $.ajax({
@@ -135,8 +159,8 @@ $(document).ready(function () {
             method: "GET",
             success: function(messages) {
                 // Kiểm tra tin nhắn mới
-                if (messages.length > lastMessageCount && !chatBox.is(':visible')) {
-                    notifyDot.removeClass('d-none'); // hiện chấm đỏ
+                if (messages.length > lastMessageCount && chatBox.hasClass('hidden')) {
+                    updateUnreadBadge();
                     playNotificationSound();
                     showBrowserNotification('Bạn có tin nhắn mới từ Admin!');
                 }
@@ -168,8 +192,15 @@ $(document).ready(function () {
         }
     }
 
-    // Tải tin nhắn định kỳ
-    setInterval(loadMessages, 2000);
-    loadMessages();
+    // Tải tin nhắn / unread định kỳ
+    setInterval(function () {
+        if (!chatBox.hasClass('hidden')) {
+            loadMessages();
+        } else {
+            updateUnreadBadge();
+        }
+    }, 2000);
+
+    updateUnreadBadge();
 });
 </script>
