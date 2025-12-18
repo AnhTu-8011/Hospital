@@ -19,12 +19,12 @@ class ChatController extends Controller
      */
     private function authUser(): ?User
     {
-        if (Auth::guard('web_admin')->check()) {
-            return Auth::guard('web_admin')->user();
-        }
-
         if (Auth::check()) {
             return Auth::user();
+        }
+
+        if (Auth::guard('web_admin')->check()) {
+            return Auth::guard('web_admin')->user();
         }
 
         return null;

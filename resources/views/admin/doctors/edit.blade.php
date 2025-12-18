@@ -36,6 +36,9 @@
                             </label>
                             <input type="text" name="name" class="form-control rounded-3 border-2"
                                    value="{{ old('name', $doctor->user->name ?? '') }}" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                            @error('name')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-6">
@@ -44,6 +47,9 @@
                             </label>
                             <input type="email" name="email" class="form-control rounded-3 border-2"
                                    value="{{ old('email', $doctor->user->email ?? '') }}" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                            @error('email')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-6">
@@ -52,6 +58,9 @@
                             </label>
                             <input type="text" name="phone" class="form-control rounded-3 border-2"
                                    value="{{ old('phone', $doctor->user->phone ?? '') }}" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                            @error('phone')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-6">
@@ -71,6 +80,9 @@
                             </label>
                             <input type="text" name="address" class="form-control rounded-3 border-2"
                                    value="{{ old('address', $doctor->user->address ?? '') }}" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                            @error('address')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
                 </div>
@@ -94,6 +106,9 @@
                                     </option>
                                 @endforeach
                             </select>
+                            @error('department_id')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-6">
@@ -102,6 +117,9 @@
                             </label>
                             <input type="text" name="specialization" class="form-control rounded-3 border-2"
                                    value="{{ old('specialization', $doctor->specialization) }}" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                            @error('specialization')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-12">
@@ -110,6 +128,9 @@
                             </label>
                             <input type="text" name="license_number" class="form-control rounded-3 border-2"
                                    value="{{ old('license_number', $doctor->license_number) }}" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                            @error('license_number')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
                 </div>

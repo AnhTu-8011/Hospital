@@ -9,6 +9,7 @@ use App\Models\Department;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 
 class DoctorController extends Controller
@@ -36,9 +37,13 @@ class DoctorController extends Controller
      */
     public function store(Request $request)
     {
+        $request->merge([
+            'email' => is_string($request->email) ? strtolower(trim($request->email)) : $request->email,
+        ]);
+
         $request->validate([
             'name'           => 'required|string|max:255',
-            'email'          => 'required|email|unique:users,email',
+            'email'          => ['required', 'email', Rule::unique('users', 'email')],
             'password'       => 'required|min:6',
             'phone'          => 'nullable|string|max:20',
             'gender'         => 'nullable|in:male,female,other',
@@ -46,6 +51,8 @@ class DoctorController extends Controller
             'department_id'  => 'required|exists:departments,id',
             'specialization' => 'nullable|string|max:255',
             'license_number' => 'nullable|string|max:255',
+        ], [
+            'email.unique' => 'Email đã tồn tại trong hệ thống.',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -86,15 +93,21 @@ class DoctorController extends Controller
      */
     public function update(Request $request, Doctor $doctor)
     {
+        $request->merge([
+            'email' => is_string($request->email) ? strtolower(trim($request->email)) : $request->email,
+        ]);
+
         $request->validate([
             'name'           => 'required|string|max:255',
-            'email'          => 'required|email|unique:users,email,' . $doctor->user_id,
+            'email'          => ['required', 'email', Rule::unique('users', 'email')->ignore($doctor->user_id)],
             'phone'          => 'nullable|string|max:20',
             'gender'         => 'nullable|in:male,female,other',
             'address'        => 'nullable|string|max:255',
             'department_id'  => 'required|exists:departments,id',
             'specialization' => 'nullable|string|max:255',
             'license_number' => 'nullable|string|max:255',
+        ], [
+            'email.unique' => 'Email đã tồn tại trong hệ thống.',
         ]);
 
         DB::transaction(function () use ($request, $doctor) {

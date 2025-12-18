@@ -127,7 +127,7 @@
                     <label for="department_id" class="form-label fw-semibold mb-2">
                         <i class="fas fa-building text-primary me-2"></i>Khoa
                     </label>
-                    <select id="department_id" class="form-select form-select-lg rounded-3 border-2" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
+                    <select name="department_id" id="department_id" class="form-select form-select-lg rounded-3 border-2" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
                         <option value="">-- Chọn khoa --</option>
                         @foreach($departments as $dept)
                             <option value="{{ $dept->id }}" {{ request('department_id') == $dept->id ? 'selected' : '' }}>{{ $dept->name }}</option>

@@ -33,14 +33,20 @@
                             <label class="form-label fw-semibold mb-2">
                                 <i class="fas fa-id-card text-primary me-2"></i>Tên bác sĩ <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="name" class="form-control rounded-3 border-2" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';" placeholder="Nhập tên bác sĩ">
+                            <input type="text" name="name" class="form-control rounded-3 border-2" value="{{ old('name') }}" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';" placeholder="Nhập tên bác sĩ">
+                            @error('name')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-semibold mb-2">
                                 <i class="fas fa-envelope text-primary me-2"></i>Email <span class="text-danger">*</span>
                             </label>
-                            <input type="email" name="email" class="form-control rounded-3 border-2" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';" placeholder="example@email.com">
+                            <input type="email" name="email" class="form-control rounded-3 border-2" value="{{ old('email') }}" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';" placeholder="example@email.com">
+                            @error('email')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-6">
@@ -48,13 +54,19 @@
                                 <i class="fas fa-lock text-primary me-2"></i>Mật khẩu <span class="text-danger">*</span>
                             </label>
                             <input type="password" name="password" class="form-control rounded-3 border-2" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';" placeholder="Tối thiểu 6 ký tự">
+                            @error('password')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-semibold mb-2">
                                 <i class="fas fa-phone text-primary me-2"></i>Số điện thoại
                             </label>
-                            <input type="text" name="phone" class="form-control rounded-3 border-2" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';" placeholder="0123456789">
+                            <input type="text" name="phone" class="form-control rounded-3 border-2" value="{{ old('phone') }}" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';" placeholder="0123456789">
+                            @error('phone')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-6">
@@ -62,17 +74,23 @@
                                 <i class="fas fa-venus-mars text-primary me-2"></i>Giới tính
                             </label>
                             <select name="gender" class="form-select rounded-3 border-2" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
-                                <option value="male">Nam</option>
-                                <option value="female">Nữ</option>
-                                <option value="other">Khác</option>
+                                <option value="male" {{ old('gender', 'male') == 'male' ? 'selected' : '' }}>Nam</option>
+                                <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>Nữ</option>
+                                <option value="other" {{ old('gender') == 'other' ? 'selected' : '' }}>Khác</option>
                             </select>
+                            @error('gender')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-semibold mb-2">
                                 <i class="fas fa-map-marker-alt text-primary me-2"></i>Địa chỉ
                             </label>
-                            <input type="text" name="address" class="form-control rounded-3 border-2" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';" placeholder="Nhập địa chỉ">
+                            <input type="text" name="address" class="form-control rounded-3 border-2" value="{{ old('address') }}" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';" placeholder="Nhập địa chỉ">
+                            @error('address')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
                 </div>
@@ -90,23 +108,32 @@
                             <select name="department_id" class="form-select rounded-3 border-2" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
                                 <option value="">-- Chọn khoa --</option>
                                 @foreach($departments as $department)
-                                    <option value="{{ $department->id }}">{{ $department->name }}</option>
+                                    <option value="{{ $department->id }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>{{ $department->name }}</option>
                                 @endforeach
                             </select>
+                            @error('department_id')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-semibold mb-2">
                                 <i class="fas fa-award text-success me-2"></i>Chuyên môn <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="specialization" class="form-control rounded-3 border-2" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';" placeholder="Ví dụ: Tim mạch, Nội khoa...">
+                            <input type="text" name="specialization" class="form-control rounded-3 border-2" value="{{ old('specialization') }}" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';" placeholder="Ví dụ: Tim mạch, Nội khoa...">
+                            @error('specialization')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-12">
                             <label class="form-label fw-semibold mb-2">
                                 <i class="fas fa-id-badge text-success me-2"></i>Số giấy phép hành nghề <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="license_number" class="form-control rounded-3 border-2" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';" placeholder="Nhập số giấy phép">
+                            <input type="text" name="license_number" class="form-control rounded-3 border-2" value="{{ old('license_number') }}" required style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';" placeholder="Nhập số giấy phép">
+                            @error('license_number')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
                 </div>

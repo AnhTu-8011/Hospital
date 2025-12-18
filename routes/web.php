@@ -50,9 +50,27 @@ Route::get('/advisor', [HomeController::class, 'advisorPage'])->name('advisor.in
 
 // 📅 Trang / popup đặt lịch hẹn
 Route::get('/appointment/modal', function () {
-    $departments = \App\Models\Department::all();
-    $services = \App\Models\Service::with('department')->get();
-    $doctors = \App\Models\Doctor::with(['user', 'department'])->get();
+    $hasActiveColumn = \Illuminate\Support\Facades\Schema::hasColumn('departments', 'is_active');
+
+    $departments = \App\Models\Department::query()
+        ->when($hasActiveColumn, fn ($q) => $q->where('is_active', true))
+        ->get();
+
+    $services = \App\Models\Service::with('department')
+        ->when($hasActiveColumn, function ($q) {
+            $q->whereHas('department', function ($sub) {
+                $sub->where('is_active', true);
+            });
+        })
+        ->get();
+
+    $doctors = \App\Models\Doctor::with(['user', 'department'])
+        ->when($hasActiveColumn, function ($q) {
+            $q->whereHas('department', function ($sub) {
+                $sub->where('is_active', true);
+            });
+        })
+        ->get();
     return view('home.booking', compact('departments', 'services', 'doctors'));
 })->name('modal.appointment');
 
@@ -295,6 +313,9 @@ Route::get('/vnpay_return', [PaymentController::class, 'vnpay_return'])->name('v
 |--------------------------------------------------------------------------
 */
 Route::get('/logout', function () {
+    $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
+    $roleName = $user && $user->role ? strtolower(trim($user->role->name)) : null;
+
     foreach (['web', 'web_admin', 'web_doctor', 'web_patient'] as $guard) {
         try {
             \Illuminate\Support\Facades\Auth::guard($guard)->logout();
@@ -305,6 +326,10 @@ Route::get('/logout', function () {
 
     request()->session()->invalidate();
     request()->session()->regenerateToken();
+
+    if ($roleName === 'patient') {
+        return redirect()->route('patient.login');
+    }
 
     return redirect()->route('login');
 });

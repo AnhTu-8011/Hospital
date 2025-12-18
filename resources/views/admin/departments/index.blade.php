@@ -36,81 +36,90 @@
                         <th class="text-center fw-semibold py-3" style="width: 120px;">Mã khoa</th>
                         <th class="text-center fw-semibold py-3" style="width: 100px;">Ảnh</th>
                         <th class="fw-semibold py-3">Tên khoa</th>
+                        <th class="text-center fw-semibold py-3" style="width: 120px;">Trạng thái</th>
                         <th class="fw-semibold py-3">Mô tả</th>
                         <th class="text-center fw-semibold py-3" style="width: 150px;">Hành động</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($departments as $department)
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($departments as $department)
                         <tr class="table-row-hover" style="transition: all 0.2s ease;">
-                        <td class="text-center fw-medium">
-                            @php
-                                $stt = (method_exists($departments, 'firstItem') && $departments->firstItem())
-                                    ? $departments->firstItem() + $loop->index
-                                    : $loop->iteration;
-                            @endphp
-                            {{ $stt }}
-                        </td>
+                            <td class="text-center fw-medium">
+                                @php
+                                    $stt = (method_exists($departments, 'firstItem') && $departments->firstItem())
+                                        ? $departments->firstItem() + $loop->index
+                                        : $loop->iteration;
+                                @endphp
+                                {{ $stt }}
+                            </td>
                             <td class="text-center">
                                 <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
                                     #{{ str_pad($department->id, 6, '0', STR_PAD_LEFT) }}
                                 </span>
                             </td>
-                        <td class="text-center">
-                            @if($department->image)
+                            <td class="text-center">
+                                @if($department->image)
                                     <img src="{{ asset('storage/'.$department->image) }}" alt="{{ $department->name }}" 
                                          class="rounded-3 shadow-sm" 
                                          style="width: 60px; height: 60px; object-fit: cover;">
-                            @else
+                                @else
                                     <div class="bg-light rounded-3 d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
                                         <i class="fas fa-hospital text-muted"></i>
                                     </div>
-                            @endif
-                        </td>
+                                @endif
+                            </td>
                             <td class="fw-semibold text-dark">{{ $department->name }}</td>
+                            <td class="text-center">
+                                @if(($department->is_active ?? true))
+                                    <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">Active</span>
+                                @else
+                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-2">Inactive</span>
+                                @endif
+                            </td>
                             <td class="text-muted">
-                            @if(!empty($department->description))
-                                {{ \Illuminate\Support\Str::limit($department->description, 100) }}
-                            @else
+                                @if(!empty($department->description))
+                                    {{ \Illuminate\Support\Str::limit($department->description, 100) }}
+                                @else
                                     <span class="text-muted fst-italic">-</span>
-                            @endif
-                        </td>
-                        <td class="text-center">
+                                @endif
+                            </td>
+                            <td class="text-center">
                                 <div class="d-flex justify-content-center gap-2">
                                     <a href="{{ route('admin.departments.edit', $department) }}" 
                                        class="btn btn-sm btn-warning rounded-pill px-3 shadow-sm" 
                                        title="Chỉnh sửa">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form action="{{ route('admin.departments.destroy', $department) }}" method="POST" class="d-inline">
-                                @csrf @method('DELETE')
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="{{ route('admin.departments.destroy', $department) }}" method="POST" class="d-inline">
+                                        @csrf @method('DELETE')
                                         <button type="submit" 
                                                 class="btn btn-sm btn-danger rounded-pill px-3 shadow-sm" 
                                                 onclick="return confirm('Bạn có chắc muốn xóa khoa này?')"
                                                 title="Xóa">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
                                 </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                            <td colspan="6" class="text-center text-muted py-5">
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
                                 <div class="py-4">
                                     <i class="fas fa-inbox fa-3x text-muted mb-3" style="opacity: 0.5;"></i>
                                     <p class="mb-0 fw-semibold">Chưa có khoa nào được thêm.</p>
                                 </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-    @if(method_exists($departments, 'links'))
-        <div class="card-footer bg-white border-0 py-3 px-4">
-            <div class="d-flex justify-content-end">
-                {{ $departments->onEachSide(1)->links('pagination::bootstrap-5') }}
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if(method_exists($departments, 'links'))
+            <div class="card-footer bg-white border-0 py-3 px-4">
+                <div class="d-flex justify-content-end">
+                    {{ $departments->onEachSide(1)->links('pagination::bootstrap-5') }}
+                </div>
             </div>
         </div>
     @endif

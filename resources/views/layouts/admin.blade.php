@@ -20,7 +20,7 @@
 </head>
 
 <body class="bg-light text-dark" style="font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);">
-<div class="d-flex min-vh-100">
+<div class="d-flex min-vh-100 admin-shell">
 
     <!-- 🌙 Sidebar -->
     <aside class="sidebar d-flex flex-column flex-shrink-0 shadow-lg border-end" style="width: 260px; background: linear-gradient(180deg, #0d6efd 0%, #0a58ca 100%);">
@@ -137,7 +137,7 @@
     </aside>
 
     <!-- 🌤 Main content -->
-    <main class="flex-grow-1 d-flex flex-column">
+    <main class="flex-grow-1 d-flex flex-column admin-main">
         <!-- Top bar: sidebar toggle on small screens -->
         <div class="d-lg-none d-flex justify-content-between align-items-center p-3 border-bottom bg-white">
             <button id="sidebarToggle" class="btn btn-outline-primary btn-sm">
@@ -147,7 +147,7 @@
         </div>
 
         <!-- Content -->
-        <div class="flex-grow-1 p-4">
+        <div class="flex-grow-1 p-4 admin-main-scroll">
             <div class="bg-white rounded-4 shadow-lg border-0 p-4" style="min-height: calc(100vh - 2rem);">
                 @if (session('status'))
                     <div class="alert alert-success alert-dismissible fade show rounded-4 border-0 shadow-sm" role="alert">
@@ -175,6 +175,37 @@
 
 <!-- 💅 CSS -->
 <style>
+    html, body {
+        height: 100%;
+    }
+
+    .admin-shell {
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .admin-main {
+        min-width: 0;
+    }
+
+    .admin-main-scroll {
+        overflow-y: auto;
+        height: 100vh;
+    }
+
+    .sidebar,
+    .admin-main-scroll {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .sidebar::-webkit-scrollbar,
+    .admin-main-scroll::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+    }
+
     /* Sidebar Navigation Links */
     .sidebar .nav-link {
         color: rgba(255, 255, 255, 0.85);
@@ -245,6 +276,10 @@
     .sidebar {
         transition: all 0.3s ease;
         box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
     }
     
     /* Badge in sidebar */
@@ -271,11 +306,22 @@
             left: -260px;
             top: 0;
             height: 100%;
+            overflow-y: auto;
             z-index: 1050;
             box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
         }
         .sidebar.active {
             left: 0;
+        }
+
+        .admin-shell {
+            height: auto;
+            overflow: visible;
+        }
+
+        .admin-main-scroll {
+            height: auto;
+            overflow-y: visible;
         }
     }
     

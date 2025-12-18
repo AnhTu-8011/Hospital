@@ -181,13 +181,6 @@
         </div>
     </section>
 
-    @auth
-        @php
-            $adminRoleId = \App\Models\Role::where('name', 'admin')->value('id');
-            $admin = $adminRoleId ? \App\Models\User::where('role_id', $adminRoleId)->first() : null;
-        @endphp
-        @include('chat.user', ['receiverId' => $admin->id ?? null])
-    @endauth
-    <!-- @include('chat.ai_chat') -->
+    {{-- @include('chat.ai_chat') --}}
 
 @endsection

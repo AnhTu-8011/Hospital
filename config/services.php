@@ -36,4 +36,8 @@ return [
         'url' => env('VNP_URL'),
         'return_url' => env('VNP_RETURN_URL'),
     ],
+
+    'groq' => [
+        'key' => env('GROQ_API_KEY'),
+    ],
 ];

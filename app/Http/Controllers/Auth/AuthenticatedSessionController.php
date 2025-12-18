@@ -103,6 +103,9 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = Auth::guard('web')->user();
+        $roleName = $user && $user->role ? strtolower(trim($user->role->name)) : null;
+
         // Đăng xuất người dùng khỏi guard 'web'
         Auth::guard('web')->logout();
 
@@ -112,7 +115,10 @@ class AuthenticatedSessionController extends Controller
         // Tạo lại CSRF token mới
         $request->session()->regenerateToken();
 
-        // Chuyển hướng về trang chủ
+        if ($roleName === 'patient') {
+            return redirect()->route('patient.login');
+        }
+
         return redirect('/');
     }
 }

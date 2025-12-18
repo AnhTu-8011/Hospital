@@ -99,6 +99,15 @@
 
     @yield('content')
 
+    @auth
+        @php
+            $admin = \App\Models\User::whereHas('role', function ($q) {
+                $q->where('name', 'admin');
+            })->first();
+        @endphp
+        @include('chat.user', ['receiverId' => $admin->id ?? null])
+    @endauth
+
     @include('layouts.footer')
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

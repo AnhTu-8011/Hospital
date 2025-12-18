@@ -48,13 +48,13 @@
                         <i class="fas fa-user-shield me-1"></i>Quản trị ({{ $counts['admin'] }})
                     </a>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link rounded-pill {{ request('role') === 'leader' ? 'active' : '' }}" 
                        href="{{ route('admin.users.index', ['role' => 'leader']) }}"
                        style="{{ request('role') === 'leader' ? 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;' : '' }}">
                         <i class="fas fa-user-tie me-1"></i>Leader ({{ $counts['leader'] }})
                     </a>
-                </li>
+                </li> -->
             </ul>
         </div>
     </div>

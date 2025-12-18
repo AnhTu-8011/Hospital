@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-use App\Models\{Appointment, Service};
+use App\Models\{Appointment, Service, Doctor};
 use Carbon\Carbon;
 
 class PaymentController extends Controller
@@ -18,6 +18,7 @@ class PaymentController extends Controller
 
             $validated = $request->validate([
                 'patient_id'          => 'required|exists:patients,id',
+                'department_id'       => 'nullable|exists:departments,id',
                 'doctor_id'           => 'required|exists:doctors,id',
                 'service_id'          => 'required|exists:services,id',
                 'appointment_date'    => 'required|date',
@@ -26,7 +27,21 @@ class PaymentController extends Controller
                 'note'                => 'nullable|string',
             ]);
 
-            $service = Service::findOrFail($validated['service_id']);
+            $service = Service::with('department')->findOrFail($validated['service_id']);
+            $doctor = Doctor::findOrFail($validated['doctor_id']);
+
+            // Đồng bộ khoa theo dịch vụ nếu user không gửi khoa (hoặc để validate chéo)
+            $departmentId = $validated['department_id'] ?? $service->department_id;
+
+            // Nếu có gửi department_id thì bắt buộc phải khớp với department của dịch vụ
+            if (!empty($validated['department_id']) && (string) $validated['department_id'] !== (string) $service->department_id) {
+                return back()->with('error', 'Dịch vụ không thuộc khoa đã chọn. Vui lòng chọn lại.')->withInput();
+            }
+
+            // Bác sĩ cũng phải thuộc đúng khoa (theo khoa đã chọn/suy ra)
+            if ($departmentId && (string) $doctor->department_id !== (string) $departmentId) {
+                return back()->with('error', 'Bác sĩ không thuộc khoa của dịch vụ đã chọn. Vui lòng chọn lại.')->withInput();
+            }
 
             DB::beginTransaction();
 

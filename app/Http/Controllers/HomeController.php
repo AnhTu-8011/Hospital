@@ -11,6 +11,7 @@ use App\Models\Disease;
 use App\Models\DiseaseSymptom;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class HomeController extends Controller
 {
@@ -182,6 +183,10 @@ class HomeController extends Controller
     {
         $query = $request->input('symptom');
         $departments = Department::query();
+
+        if (Schema::hasColumn('departments', 'is_active')) {
+            $departments->where('is_active', true);
+        }
         
         // Tìm kiếm triệu chứng trong mô tả của các khoa
         if ($query) {

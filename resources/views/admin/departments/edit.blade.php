@@ -38,6 +38,16 @@
                 </div>
 
                 <div class="mb-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="is_active" name="is_active" value="1" {{ old('is_active', $department->is_active ?? true) ? 'checked' : '' }}>
+                        <label class="form-check-label fw-semibold" for="is_active">Kích hoạt khoa</label>
+                    </div>
+                    @error('is_active')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-4">
                     <label class="form-label fw-semibold mb-2">
                         <i class="fas fa-image text-primary me-2"></i>Ảnh khoa
                     </label>
@@ -45,7 +55,7 @@
                         <div class="mb-3">
                             <p class="text-muted small mb-2">Ảnh hiện tại:</p>
                             <img src="{{ asset('storage/'.$department->image) }}" alt="{{ $department->name }}" 
-                                 class="rounded-4 shadow-sm border border-2" 
+                                 class="rounded-4 shadow-sm border-2" 
                                  style="width: 120px; height: 120px; object-fit: cover;">
                         </div>
                     @else

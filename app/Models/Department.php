@@ -13,6 +13,7 @@ class Department extends Model
         'name',
         'description',
         'image',
+        'is_active',
     ];
 
     public function doctors()

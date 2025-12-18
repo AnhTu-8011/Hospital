@@ -99,12 +99,13 @@ $(document).ready(function () {
     const chatBox = $('#chat-box');
     const toggleBtn = $('#chat-toggle');
     const closeBtn = $('#chat-close');
-    const receiverId = $('#receiver_id').val();
+    let receiverId = $('#receiver_id').val();
     const messagesDiv = $('#chat-messages');
     const notifyDot = $('#chat-notify');
     let lastMessageCount = 0;
 
     const unreadUrlTemplate = "{{ route('chat.unread_count', ['senderId' => '__SID__']) }}";
+    const messagesUrlTemplate = "{{ route('chat.get', ['receiverId' => '__RID__']) }}";
 
     // Cho phép hiển thị thông báo trình duyệt
     if (Notification.permission !== "granted") {
@@ -116,6 +117,7 @@ $(document).ready(function () {
         chatBox.toggleClass('hidden');
         notifyDot.text('').addClass('d-none');
         if (!chatBox.hasClass('hidden')) {
+            receiverId = $('#receiver_id').val();
             loadMessages();
         }
     });
@@ -141,6 +143,11 @@ $(document).ready(function () {
     });
 
     function updateUnreadBadge() {
+        receiverId = $('#receiver_id').val();
+        if (!receiverId) {
+            notifyDot.text('').addClass('d-none');
+            return;
+        }
         const url = unreadUrlTemplate.replace('__SID__', receiverId);
         $.get(url, function (res) {
             const count = res && typeof res.count !== 'undefined' ? Number(res.count) : 0;
@@ -154,8 +161,13 @@ $(document).ready(function () {
 
     // Load tin nhắn
     function loadMessages() {
+        receiverId = $('#receiver_id').val();
+        if (!receiverId) {
+            messagesDiv.html('<p class="text-danger text-center mb-0">Không tìm thấy Admin để chat. Vui lòng đăng nhập lại hoặc liên hệ quản trị.</p>');
+            return;
+        }
         $.ajax({
-            url: "/chat/" + receiverId,
+            url: messagesUrlTemplate.replace('__RID__', receiverId),
             method: "GET",
             success: function(messages) {
                 // Kiểm tra tin nhắn mới
@@ -175,6 +187,16 @@ $(document).ready(function () {
                     messagesDiv.append(`<p class="${msgAlign}"><strong>${sender}:</strong> ${msg.message}</p>`);
                 });
                 messagesDiv.scrollTop(messagesDiv[0].scrollHeight);
+            },
+            error: function (xhr) {
+                const status = xhr && xhr.status ? String(xhr.status) : '';
+                let text = 'Không tải được tin nhắn.';
+                if (status === '401') {
+                    text = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+                } else if (status === '403') {
+                    text = 'Bạn không có quyền chat. Vui lòng kiểm tra quyền tài khoản.';
+                }
+                messagesDiv.html('<p class="text-danger text-center mb-0">' + text + '</p>');
             }
         });
     }

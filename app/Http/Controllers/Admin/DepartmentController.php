@@ -7,6 +7,7 @@ use App\Models\Department;
 use App\Models\Doctor;
 use App\Models\Service;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class DepartmentController extends Controller
 {
@@ -45,13 +46,22 @@ class DepartmentController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $rules = [
             'name'        => 'required|string|max:255|unique:departments,name',
             'description' => 'nullable|string',
             'image'       => 'nullable|image|max:2048',
-        ]);
+        ];
+
+        if (Schema::hasColumn('departments', 'is_active')) {
+            $rules['is_active'] = 'nullable|boolean';
+        }
+
+        $request->validate($rules);
 
         $data = $request->only('name', 'description');
+        if (Schema::hasColumn('departments', 'is_active')) {
+            $data['is_active'] = $request->boolean('is_active');
+        }
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('departments', 'public');
@@ -77,13 +87,22 @@ class DepartmentController extends Controller
      */
     public function update(Request $request, Department $department)
     {
-        $request->validate([
+        $rules = [
             'name'        => 'required|string|max:255|unique:departments,name,' . $department->id,
             'description' => 'nullable|string',
             'image'       => 'nullable|image|max:2048',
-        ]);
+        ];
+
+        if (Schema::hasColumn('departments', 'is_active')) {
+            $rules['is_active'] = 'nullable|boolean';
+        }
+
+        $request->validate($rules);
 
         $data = $request->only('name', 'description');
+        if (Schema::hasColumn('departments', 'is_active')) {
+            $data['is_active'] = $request->boolean('is_active');
+        }
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('departments', 'public');
