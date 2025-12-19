@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Đăng nhập - Bệnh viện PHÚC AN</title>
     <link rel="icon" type="image/png" href="{{ asset('image/favicon.png') }}">
-    <link rel="shortcut icon" href="{{ asset('image/favicon.png') }}">
+    <link rel="shortcut icon" href="{{ asset('image/favicon.png') }}"> 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -22,8 +22,9 @@
     <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8" style="border: none;">
         <!-- Header -->
         <div class="text-center mb-6">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <i class="fa-solid fa-hospital text-white text-2xl"></i>
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-3" >
+                <!-- <i class="fa-solid fa-hospital text-white text-2xl"></i> -->
+                 <img src="{{ asset('image/logo.png') }}" alt="Logo" class="w-8 h-8">
             </div>
             <h1 class="text-2xl font-bold" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">BỆNH VIỆN PHÚC AN</h1>
             <p class="text-gray-500 text-sm mt-1">Chăm sóc sức khỏe tận tâm</p>
