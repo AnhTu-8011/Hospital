@@ -9,46 +9,52 @@ use Illuminate\Http\Request;
 
 class MedicalRecordController extends Controller
 {
+    /**
+     * Hiển thị danh sách hồ sơ bệnh án với bộ lọc tìm kiếm.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View
+     */
     public function index(Request $request)
     {
         $query = MedicalRecord::with(['patient.user', 'appointment.doctor.user']);
 
+        // Lọc theo tên bệnh nhân
         if ($request->filled('patient_name')) {
             $query->whereHas('patient.user', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->patient_name . '%');
+                $q->where('name', 'like', '%'.$request->patient_name.'%');
             });
         }
 
+        // Lọc theo tên bác sĩ
         if ($request->filled('doctor_name')) {
             $query->whereHas('appointment.doctor.user', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->doctor_name . '%');
+                $q->where('name', 'like', '%'.$request->doctor_name.'%');
             });
         }
 
+        // Lọc theo ngày khám
         if ($request->filled('appointment_date')) {
             $query->whereHas('appointment', function ($q) use ($request) {
                 $q->whereDate('appointment_date', $request->appointment_date);
             });
         }
 
+        // Lấy danh sách hồ sơ bệnh án với phân trang
         $records = $query->orderByDesc('id')->paginate(10)->withQueryString();
 
         return view('admin.medical-records.index', compact('records'));
     }
 
-    // public function create(Request $request)
-    // {
-    //     $appointment = null;
-    //     if ($request->filled('appointment_id')) {
-    //         $appointment = Appointment::with(['patient', 'doctor.user'])
-    //             ->find($request->appointment_id);
-    //     }
-
-    //     return view('admin.medical-records.create', compact('appointment'));
-    // }
-
+    /**
+     * Lưu hồ sơ bệnh án mới vào database.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Request $request)
     {
+        // Validate dữ liệu đầu vào
         $data = $request->validate([
             'appointment_id' => ['required', 'exists:appointments,id'],
             'patient_id' => ['nullable', 'exists:patients,id'],
@@ -58,17 +64,21 @@ class MedicalRecordController extends Controller
             'prescription' => ['nullable'],
         ]);
 
+        // Lấy thông tin lịch hẹn
         $appointment = Appointment::with('patient')->findOrFail($data['appointment_id']);
 
+        // Nếu không có patient_id, lấy từ appointment
         if (empty($data['patient_id'])) {
             $data['patient_id'] = $appointment->patient_id;
         }
 
+        // Xử lý prescription nếu là chuỗi JSON
         if (is_string($data['prescription'] ?? null)) {
             $decoded = json_decode($data['prescription'], true);
             $data['prescription'] = json_last_error() === JSON_ERROR_NONE ? $decoded : null;
         }
 
+        // Tạo hồ sơ bệnh án mới
         $record = MedicalRecord::create($data);
 
         return redirect()
@@ -76,8 +86,15 @@ class MedicalRecordController extends Controller
             ->with('success', 'Tạo hồ sơ bệnh án thành công.');
     }
 
+    /**
+     * Hiển thị chi tiết hồ sơ bệnh án.
+     *
+     * @param  \App\Models\MedicalRecord  $medicalRecord
+     * @return \Illuminate\View\View
+     */
     public function show(MedicalRecord $medicalRecord)
     {
+        // Load các quan hệ cần thiết
         $medicalRecord->loadMissing([
             'patient.user',
             'appointment.doctor.user',
@@ -85,36 +102,9 @@ class MedicalRecordController extends Controller
             'prescriptionItems.medicine',
         ]);
 
+        // Lấy danh sách các mục trong đơn thuốc
         $items = $medicalRecord->prescriptionItems ?? collect();
 
         return view('admin.medical-records.show', compact('medicalRecord', 'items'));
     }
-
-    // public function edit(MedicalRecord $medicalRecord)
-    // {
-    //     $medicalRecord->loadMissing(['patient', 'appointment']);
-
-    //     return view('admin.medical-records.edit', compact('medicalRecord'));
-    // }
-
-    // public function update(Request $request, MedicalRecord $medicalRecord)
-    // {
-    //     $data = $request->validate([
-    //         'description' => ['nullable', 'string'],
-    //         'diagnosis' => ['nullable', 'string', 'max:1000'],
-    //         'doctor_conclusion' => ['nullable', 'string'],
-    //         'prescription' => ['nullable'],
-    //     ]);
-
-    //     if (is_string($data['prescription'] ?? null)) {
-    //         $decoded = json_decode($data['prescription'], true);
-    //         $data['prescription'] = json_last_error() === JSON_ERROR_NONE ? $decoded : null;
-    //     }
-
-    //     $medicalRecord->update($data);
-
-    //     return redirect()
-    //         ->route('admin.medical-records.show', $medicalRecord)
-    //         ->with('success', 'Cập nhật hồ sơ bệnh án thành công.');
-    // }
 }

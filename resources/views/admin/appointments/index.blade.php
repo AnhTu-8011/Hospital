@@ -2,16 +2,20 @@
 
 @section('title', 'Quản lý lịch hẹn')
 
-{{-- Thanh tìm kiếm --}}
+{{-- Search Bar --}}
 @include('admin.appointments.search')
 
-{{-- Bảng lịch hẹn --}}
+{{-- Appointments Table Card --}}
 <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+    {{-- Card Header with Status Tabs --}}
     <div class="card-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
             <h6 class="m-0 font-weight-bold text-white d-flex align-items-center">
-                <i class="fas fa-list me-2"></i>Danh sách lịch hẹn
+                <i class="fas fa-list me-2"></i>
+                Danh sách lịch hẹn
             </h6>
+
+            {{-- Status Filter Tabs --}}
             @php
                 $currentStatus = request('status');
                 $pendingCount = \App\Models\Appointment::where('status', \App\Models\Appointment::STATUS_PENDING)->count();
@@ -44,9 +48,12 @@
             </ul>
         </div>
     </div>
+
+    {{-- Card Body --}}
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table align-middle table-hover mb-0">
+                {{-- Table Header --}}
                 <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                     <tr>
                         <th class="text-center fw-semibold py-3" style="width: 60px;">STT</th>
@@ -64,44 +71,74 @@
                         <th class="text-center fw-semibold py-3" style="width: 180px;">Hành động</th>
                     </tr>
                 </thead>
+
+                {{-- Table Body --}}
                 <tbody>
                     @forelse ($appointments as $appointment)
                         <tr class="table-row-hover" style="transition: all 0.2s ease;">
+                            {{-- STT --}}
                             <td class="text-center fw-medium">{{ $loop->iteration }}</td>
+
+                            {{-- Mã lịch hẹn --}}
                             <td class="text-center">
                                 <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
                                     #{{ str_pad($appointment->id, 6, '0', STR_PAD_LEFT) }}
                                 </span>
                             </td>
+
+                            {{-- Bệnh nhân --}}
                             <td class="fw-semibold text-dark">
-                                <i class="fas fa-user me-2 text-primary"></i>{{ $appointment->patient->name ?? '-' }}
+                                <i class="fas fa-user me-2 text-primary"></i>
+                                {{ $appointment->patient->name ?? '-' }}
                             </td>
+
+                            {{-- SĐT --}}
                             <td class="text-muted">{{ $appointment->patient->phone ?? '-' }}</td>
+
+                            {{-- Bảo hiểm --}}
                             <td>
                                 @if($appointment->patient->insurance_number)
-                                    <span class="badge bg-info-subtle text-info rounded-pill px-3 py-1">{{ $appointment->patient->insurance_number }}</span>
+                                    <span class="badge bg-info-subtle text-info rounded-pill px-3 py-1">
+                                        {{ $appointment->patient->insurance_number }}
+                                    </span>
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
+
+                            {{-- Bác sĩ --}}
                             <td class="text-dark">
-                                <i class="fas fa-user-md me-2 text-primary"></i>{{ $appointment->doctor->user->name ?? '-' }}
+                                <i class="fas fa-user-md me-2 text-primary"></i>
+                                {{ $appointment->doctor->user->name ?? '-' }}
                             </td>
+
+                            {{-- Dịch vụ --}}
                             <td>
                                 <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1">
                                     {{ $appointment->service->name ?? '-' }}
                                 </span>
                             </td>
-                            <td class="text-muted text-center">{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d/m/Y') }}</td>
-                            <td class="text-muted small text-center">{{ $appointment->medical_examination ?? 'Chưa xác định' }}</td>
+
+                            {{-- Ngày hẹn --}}
+                            <td class="text-muted text-center">
+                                {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d/m/Y') }}
+                            </td>
+
+                            {{-- Ca khám --}}
+                            <td class="text-muted small text-center">
+                                {{ $appointment->medical_examination ?? 'Chưa xác định' }}
+                            </td>
+
+                            {{-- Ghi chú --}}
                             <td class="text-muted small">{{ $appointment->note ?? '-' }}</td>
 
                             {{-- Thanh toán --}}
                             <td class="text-center">
                                 @php
+                                    // Tính giá và giảm giá
                                     $price = $appointment->total ?? ($appointment->service->price ?? 0);
                                     $birthdate = $appointment->patient->birthdate ?? null;
-                                    $discount = 0.8; // mặc định giảm 20%
+                                    $discount = 0.8; // Mặc định giảm 20%
 
                                     // Nếu sinh trong tháng hiện tại → giảm thêm 10%
                                     if ($birthdate && \Carbon\Carbon::parse($birthdate)->format('m') == now()->format('m')) {
@@ -111,7 +148,7 @@
                                     $finalPrice = $price * $discount;
                                 @endphp
 
-                                {{-- ✅ Hiển thị trạng thái thanh toán --}}
+                                {{-- Hiển thị trạng thái thanh toán --}}
                                 @if($appointment->status === 'canceled' && $appointment->payment_status === 'success')
                                     <span class="badge bg-info rounded-pill px-3 py-2">Đã hoàn</span>
                                     <div class="text-info fw-semibold small mt-1">
@@ -160,25 +197,42 @@
                                 <div class="d-flex justify-content-center gap-2 flex-wrap">
                                     {{-- Cập nhật trạng thái --}}
                                     @if($appointment->status !== 'completed')
-                                        <form action="{{ route('admin.appointments.status', $appointment) }}" method="POST" class="d-flex align-items-center gap-2">
+                                        <form action="{{ route('admin.appointments.status', $appointment) }}"
+                                              method="POST"
+                                              class="d-flex align-items-center gap-2">
                                             @csrf
                                             @method('PATCH')
-                                            <select name="status" class="form-select form-select-sm rounded-pill" style="width: auto;">
-                                                <option value="pending" {{ $appointment->status === 'pending' ? 'selected' : '' }}>Chờ duyệt</option>
-                                                <option value="confirmed" {{ $appointment->status === 'confirmed' ? 'selected' : '' }}>Đã duyệt</option>
-                                                <option value="canceled" {{ $appointment->status === 'canceled' ? 'selected' : '' }}>Đã hủy</option>
+                                            <select name="status"
+                                                    class="form-select form-select-sm rounded-pill"
+                                                    style="width: auto;">
+                                                <option value="pending" {{ $appointment->status === 'pending' ? 'selected' : '' }}>
+                                                    Chờ duyệt
+                                                </option>
+                                                <option value="confirmed" {{ $appointment->status === 'confirmed' ? 'selected' : '' }}>
+                                                    Đã duyệt
+                                                </option>
+                                                <option value="canceled" {{ $appointment->status === 'canceled' ? 'selected' : '' }}>
+                                                    Đã hủy
+                                                </option>
                                             </select>
-                                            <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm" title="Lưu">
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm"
+                                                    title="Lưu">
                                                 <i class="fas fa-save"></i>
                                             </button>
                                         </form>
                                     @endif
 
                                     {{-- Nút xóa --}}
-                                    <form action="{{ route('admin.appointments.destroy', $appointment) }}" method="POST" class="d-inline">
+                                    <form action="{{ route('admin.appointments.destroy', $appointment) }}"
+                                          method="POST"
+                                          class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3 shadow-sm" onclick="return confirm('Bạn có chắc muốn xóa lịch hẹn này không?')" title="Xóa">
+                                        <button type="submit"
+                                                class="btn btn-sm btn-danger rounded-pill px-3 shadow-sm"
+                                                onclick="return confirm('Bạn có chắc muốn xóa lịch hẹn này không?')"
+                                                title="Xóa">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
@@ -186,6 +240,7 @@
                             </td>
                         </tr>
                     @empty
+                        {{-- Empty State --}}
                         <tr>
                             <td colspan="13" class="text-center text-muted py-5">
                                 <div class="py-4">
@@ -201,15 +256,16 @@
     </div>
 </div>
 
-{{-- Phân trang --}}
+{{-- Pagination --}}
 <div class="d-flex justify-content-center mt-4">
     {{ $appointments->links('pagination::bootstrap-5') }}
 </div>
 
+{{-- Custom Styles --}}
 <style>
-.table-row-hover:hover {
-    background-color: #f8f9ff !important;
-    transform: scale(1.01);
-}
+    .table-row-hover:hover {
+        background-color: #f8f9ff !important;
+        transform: scale(1.01);
+    }
 </style>
 @endsection

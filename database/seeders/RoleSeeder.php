@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Role;
+use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder
 {
@@ -15,20 +15,20 @@ class RoleSeeder extends Seeder
         $roles = [
             [
                 'name' => 'patient',
-                'description' => 'Bệnh nhân'
+                'description' => 'Bệnh nhân',
             ],
             [
                 'name' => 'doctor',
-                'description' => 'Bác sĩ'
+                'description' => 'Bác sĩ',
             ],
             [
                 'name' => 'admin',
-                'description' => 'Quản trị viên'
+                'description' => 'Quản trị viên',
             ],
             [
                 'name' => 'leader',
-                'description' => 'Lãnh đạo'
-            ]
+                'description' => 'Lãnh đạo',
+            ],
         ];
 
         foreach ($roles as $role) {

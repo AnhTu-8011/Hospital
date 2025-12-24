@@ -3,77 +3,40 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AppointmentApprovedMail;
 use App\Models\Appointment;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\AppointmentApprovedMail;
 
 class AppointmentController extends Controller
 {
     /**
-     * Hiển thị danh sách lịch hẹn kèm bộ lọc tìm kiếm.
-     * 
-     * 👉 Mục đích:
-     * - Hiển thị danh sách tất cả lịch hẹn trong hệ thống (dành cho admin).
-     * - Cho phép admin lọc dữ liệu theo nhiều tiêu chí khác nhau (tên bệnh nhân, bác sĩ, bảo hiểm, ngày hẹn, trạng thái).
-     * - Kết quả được phân trang và hiển thị trên view `admin.appointments.index`.
+     * Hiển thị danh sách lịch hẹn với bộ lọc tìm kiếm.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View
      */
     public function index(Request $request)
     {
-        // Khởi tạo query gốc với các quan hệ liên quan để tránh N+1 query:
-        // - patient.user → thông tin người dùng của bệnh nhân
-        // - doctor.user → thông tin người dùng của bác sĩ
-        // - service → dịch vụ khám bệnh
         $query = Appointment::with(['patient.user', 'doctor.user', 'service']);
 
-        // 🔍 Lọc theo tên bệnh nhân nếu có nhập từ form tìm kiếm
-        if ($request->filled('patient_name')) {
-            $query->whereHas('patient.user', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->patient_name . '%');
-            });
-        }
+        // Áp dụng các bộ lọc tìm kiếm
+        $this->applyFilters($query, $request);
 
-        // 🔍 Lọc theo tên bác sĩ
-        if ($request->filled('doctor_name')) {
-            $query->whereHas('doctor.user', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->doctor_name . '%');
-            });
-        }
-
-        // 🔍 Lọc theo mã bảo hiểm của bệnh nhân
-        if ($request->filled('insurance_number')) {
-            $query->whereHas('patient.user', function ($q) use ($request) {
-                $q->where('insurance_number', 'like', '%' . $request->insurance_number . '%');
-            });
-        }
-
-        // 🔍 Lọc theo ngày hẹn (so sánh theo ngày, không tính thời gian)
-        if ($request->filled('appointment_date')) {
-            $query->whereDate('appointment_date', $request->appointment_date);
-        }
-
-        // 🔍 Lọc theo trạng thái lịch hẹn (pending, confirmed, completed, canceled)
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // Sắp xếp kết quả theo ID giảm dần (lịch hẹn mới nhất trước) và phân trang
+        // Lấy danh sách lịch hẹn với phân trang
         $appointments = $query->orderBy('id', 'desc')
-                              ->paginate(10)          // mỗi trang 10 lịch hẹn
-                              ->withQueryString();    // giữ nguyên query khi chuyển trang
+            ->paginate(10)
+            ->withQueryString();
 
-        // Trả dữ liệu sang view `admin.appointments.index`
-        // Biến $appointments sẽ được dùng để hiển thị danh sách trong bảng.
         return view('admin.appointments.index', compact('appointments'));
     }
 
     /**
-     * Hiển thị chi tiết lịch hẹn.
-     * 
-     * ⚠️ Tạm thời chỉ chuyển hướng về danh sách, 
-     * tránh lỗi khi dùng Route::resource mà không cần xem chi tiết cụ thể.
-     * 
-     * → Khi triển khai thực tế, có thể thêm view hiển thị chi tiết lịch hẹn tại đây.
+     * Hiển thị chi tiết lịch hẹn (tạm thời chuyển về danh sách).
+     *
+     * @param  \App\Models\Appointment  $appointment
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function show(Appointment $appointment)
     {
@@ -83,133 +46,258 @@ class AppointmentController extends Controller
 
     /**
      * Xóa lịch hẹn.
-     * 
-     * - Nhận vào ID lịch hẹn cần xóa.
-     * - Tìm và xóa bản ghi trong bảng `appointments`.
-     * - Sau khi xóa, chuyển hướng về danh sách kèm thông báo thành công.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy($id)
     {
-        // Tìm lịch hẹn theo ID, nếu không có sẽ tự động báo lỗi 404
         $appointment = Appointment::findOrFail($id);
-
-        // Thực hiện xóa lịch hẹn
         $appointment->delete();
 
-        // Quay về danh sách với thông báo thành công
         return redirect()->route('admin.appointments.index')
             ->with('success', 'Xóa lịch hẹn thành công!');
     }
 
     /**
      * Xác nhận lịch hẹn (thay đổi trạng thái thành "confirmed").
-     * 
-     * 👉 Dùng khi admin muốn xác nhận rằng lịch hẹn đã được phê duyệt.
+     * - Gửi email xác nhận cho bệnh nhân nếu trạng thái thay đổi.
+     *
+     * @param  \App\Models\Appointment  $appointment
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function confirm(Appointment $appointment)
     {
-        // Cập nhật trạng thái của lịch hẹn
-        $previous = $appointment->status;
-        $appointment->update(['status' => 'confirmed']);
+        $previousStatus = $appointment->status;
+        $appointment->update(['status' => Appointment::STATUS_CONFIRMED]);
 
-        if ($previous !== Appointment::STATUS_CONFIRMED) {
-            $appointment->loadMissing(['patient', 'doctor.user', 'service']);
-            $to = optional($appointment->patient)->email;
-            if ($to) {
-                Mail::to($to)->send(new AppointmentApprovedMail($appointment));
-            }
+        // Gửi email xác nhận nếu trạng thái thay đổi
+        if ($previousStatus !== Appointment::STATUS_CONFIRMED) {
+            $this->sendApprovalEmail($appointment);
         }
 
-        // Quay lại trang trước (back) với thông báo thành công
         return back()->with('success', 'Đã xác nhận lịch hẹn thành công');
     }
 
     /**
-     * Cập nhật trạng thái lịch hẹn (chỉ cho phép trong phạm vi admin).
-     * 
-     * 👉 Cho phép admin thay đổi trạng thái giữa các giá trị hợp lệ:
-     *    - pending (đang chờ)
-     *    - confirmed (đã xác nhận)
-     *    - completed (đã hoàn thành)
-     *    - canceled (đã hủy)
-     * 
-     * → Validate trước khi cập nhật để tránh giá trị không hợp lệ.
+     * Cập nhật trạng thái lịch hẹn.
+     * - Gửi email xác nhận nếu chuyển sang "confirmed".
+     * - Gửi email hủy nếu chuyển sang "cancelled".
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Appointment  $appointment
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function updateStatus(Request $request, Appointment $appointment)
     {
-        // Kiểm tra dữ liệu gửi lên từ form (bắt buộc có trường status)
+        // Validate dữ liệu đầu vào
         $request->validate([
             'status' => 'required|in:pending,confirmed,completed,canceled',
         ]);
 
         $newStatus = $request->input('status');
-        $previous = $appointment->status;
+        $previousStatus = $appointment->status;
 
-        // Cập nhật trạng thái lịch hẹn trong DB
+        // Cập nhật trạng thái
         $appointment->update(['status' => $newStatus]);
 
-        // Nếu chuyển sang trạng thái confirmed và trước đó chưa confirmed → gửi mail xác nhận
-        if ($newStatus === Appointment::STATUS_CONFIRMED && $previous !== Appointment::STATUS_CONFIRMED) {
-            $appointment->loadMissing(['patient', 'doctor.user', 'service']);
-            $to = optional($appointment->patient)->email;
-            if ($to) {
-                Mail::to($to)->send(new AppointmentApprovedMail($appointment));
-            }
+        // Gửi email xác nhận nếu chuyển sang "confirmed"
+        if ($newStatus === Appointment::STATUS_CONFIRMED && $previousStatus !== Appointment::STATUS_CONFIRMED) {
+            $this->sendApprovalEmail($appointment);
         }
 
-        // Nếu admin đổi trạng thái sang "canceled" (và trước đó chưa hủy) → gửi mail thông báo hủy
-        if ($newStatus === Appointment::STATUS_CANCELLED && $previous !== Appointment::STATUS_CANCELLED) {
+        // Gửi email hủy nếu chuyển sang "cancelled"
+        if ($newStatus === Appointment::STATUS_CANCELLED && $previousStatus !== Appointment::STATUS_CANCELLED) {
             $this->sendCancellationMail($appointment->fresh(['patient.user', 'service']));
         }
 
-        // Trả thông báo và quay lại trang trước
         return back()->with('success', 'Cập nhật trạng thái thành công.');
     }
 
-    private function sendCancellationMail(Appointment $appointment)
+    /**
+     * Áp dụng các bộ lọc tìm kiếm vào query.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  \Illuminate\Http\Request  $request
+     * @return void
+     */
+    private function applyFilters($query, Request $request): void
+    {
+        // Lọc theo tên bệnh nhân
+        if ($request->filled('patient_name')) {
+            $query->whereHas('patient.user', function ($subQuery) use ($request) {
+                $subQuery->where('name', 'like', '%'.$request->patient_name.'%');
+            });
+        }
+
+        // Lọc theo tên bác sĩ
+        if ($request->filled('doctor_name')) {
+            $query->whereHas('doctor.user', function ($subQuery) use ($request) {
+                $subQuery->where('name', 'like', '%'.$request->doctor_name.'%');
+            });
+        }
+
+        // Lọc theo số bảo hiểm
+        if ($request->filled('insurance_number')) {
+            $query->whereHas('patient.user', function ($subQuery) use ($request) {
+                $subQuery->where('insurance_number', 'like', '%'.$request->insurance_number.'%');
+            });
+        }
+
+        // Lọc theo ngày khám
+        if ($request->filled('appointment_date')) {
+            $query->whereDate('appointment_date', $request->appointment_date);
+        }
+
+        // Lọc theo trạng thái
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+    }
+
+    /**
+     * Gửi email xác nhận lịch hẹn.
+     *
+     * @param  \App\Models\Appointment  $appointment
+     * @return void
+     */
+    private function sendApprovalEmail(Appointment $appointment): void
+    {
+        $appointment->loadMissing(['patient', 'doctor.user', 'service']);
+        $patientEmail = optional($appointment->patient)->email;
+
+        // Gửi email nếu có địa chỉ email
+        if ($patientEmail) {
+            Mail::to($patientEmail)->send(new AppointmentApprovedMail($appointment));
+        }
+    }
+
+    /**
+     * Gửi email thông báo hủy lịch hẹn.
+     *
+     * @param  \App\Models\Appointment  $appointment
+     * @return void
+     */
+    private function sendCancellationMail(Appointment $appointment): void
     {
         $appointment->loadMissing(['patient.user', 'service']);
 
+        $patientEmail = $this->getPatientEmail($appointment);
+        $patientName = $this->getPatientName($appointment);
+
+        // Không gửi email nếu không có địa chỉ email
+        if (!$patientEmail) {
+            return;
+        }
+
+        // Tính toán thông tin thanh toán
         $wasPaid = $appointment->payment_status === Appointment::PAYMENT_SUCCESS;
+        $finalPrice = $this->calculateFinalPrice($appointment);
 
-        // Lấy thông tin email bệnh nhân
-        $patientEmail = optional($appointment->patient)->email ?? optional(optional($appointment->patient)->user)->email;
-        $patientName  = optional($appointment->patient)->name ?? optional(optional($appointment->patient)->user)->name;
+        // Chuẩn bị nội dung email
+        $subject = 'Thông báo hủy lịch hẹn từ bệnh viện #'.str_pad($appointment->id, 6, '0', STR_PAD_LEFT);
+        $body = $this->buildCancellationEmailBody($appointment, $patientName, $wasPaid, $finalPrice);
 
-        // Tính số tiền sau giảm (giống logic hiển thị ở phía bệnh nhân)
+        // Gửi email
+        Mail::raw($body, function ($message) use ($patientEmail, $subject, $patientName) {
+            $message->to($patientEmail, $patientName ?: null)->subject($subject);
+        });
+    }
+
+    /**
+     * Lấy email của bệnh nhân.
+     *
+     * @param  \App\Models\Appointment  $appointment
+     * @return string|null
+     */
+    private function getPatientEmail(Appointment $appointment): ?string
+    {
+        return optional($appointment->patient)->email
+            ?? optional(optional($appointment->patient)->user)->email;
+    }
+
+    /**
+     * Lấy tên của bệnh nhân.
+     *
+     * @param  \App\Models\Appointment  $appointment
+     * @return string|null
+     */
+    private function getPatientName(Appointment $appointment): ?string
+    {
+        return optional($appointment->patient)->name
+            ?? optional(optional($appointment->patient)->user)->name;
+    }
+
+    /**
+     * Tính giá cuối cùng sau khi áp dụng giảm giá.
+     *
+     * @param  \App\Models\Appointment  $appointment
+     * @return float
+     */
+    private function calculateFinalPrice(Appointment $appointment): float
+    {
         $basePrice = $appointment->total ?? ($appointment->service->price ?? 0);
+        $discount = $this->calculateDiscount($appointment);
+
+        return $basePrice * $discount;
+    }
+
+    /**
+     * Tính tỷ lệ giảm giá dựa trên tháng sinh của bệnh nhân.
+     * - Giảm 30% nếu sinh trong tháng hiện tại.
+     * - Giảm 20% mặc định.
+     *
+     * @param  \App\Models\Appointment  $appointment
+     * @return float
+     */
+    private function calculateDiscount(Appointment $appointment): float
+    {
         $birthdate = optional($appointment->patient)->birthdate;
 
-        $discount = 0.8; // mặc định giảm 20%
-        if ($birthdate && \Carbon\Carbon::parse($birthdate)->format('m') == now()->format('m')) {
-            $discount = 0.7; // nếu sinh trong tháng hiện tại → giảm thêm 10%
+        // Giảm 30% nếu sinh trong tháng hiện tại
+        if ($birthdate && Carbon::parse($birthdate)->format('m') === now()->format('m')) {
+            return 0.7;
         }
 
-        $finalPrice = $basePrice * $discount;
+        // Giảm 20% mặc định
+        return 0.8;
+    }
 
-        if ($patientEmail) {
-            $subject = 'Thông báo hủy lịch hẹn từ bệnh viện #' . str_pad($appointment->id, 6, '0', STR_PAD_LEFT);
+    /**
+     * Xây dựng nội dung email thông báo hủy lịch hẹn.
+     *
+     * @param  \App\Models\Appointment  $appointment
+     * @param  string|null  $patientName
+     * @param  bool  $wasPaid
+     * @param  float  $finalPrice
+     * @return string
+     */
+    private function buildCancellationEmailBody(
+        Appointment $appointment,
+        ?string $patientName,
+        bool $wasPaid,
+        float $finalPrice
+    ): string {
+        $appointmentId = str_pad($appointment->id, 6, '0', STR_PAD_LEFT);
+        $appointmentDate = $appointment->appointment_date->format('d/m/Y');
 
-            $bodyLines = [];
-            $bodyLines[] = 'Xin chào ' . ($patientName ?: 'Quý khách') . ',';
-            $bodyLines[] = '';
-            $bodyLines[] = 'Lịch hẹn #' . str_pad($appointment->id, 6, '0', STR_PAD_LEFT) . ' của bạn tại bệnh viện đã được hủy bởi bộ phận quản trị.';
-            $bodyLines[] = 'Ngày khám dự kiến: ' . $appointment->appointment_date->format('d/m/Y') . '.';
+        $lines = [];
+        $lines[] = 'Xin chào '.($patientName ?: 'Quý khách').',';
+        $lines[] = '';
+        $lines[] = "Lịch hẹn #{$appointmentId} của bạn tại bệnh viện đã được hủy bởi bộ phận quản trị.";
+        $lines[] = "Ngày khám dự kiến: {$appointmentDate}.";
 
-            if ($wasPaid && $finalPrice > 0) {
-                $bodyLines[] = '';
-                $bodyLines[] = 'Lịch hẹn đã được hủy và bạn đã được hoàn tiền với số tiền khoảng: ' . number_format($finalPrice, 0, ',', '.') . ' đ.';
-                $bodyLines[] = 'Thời gian tiền về tài khoản có thể mất vài ngày làm việc tùy ngân hàng/đơn vị thanh toán.';
-            }
-
-            $bodyLines[] = '';
-            $bodyLines[] = 'Nếu bạn có thắc mắc, vui lòng liên hệ lại bệnh viện để được hỗ trợ thêm.';
-
-            $body = implode("\n", $bodyLines);
-
-            Mail::raw($body, function ($message) use ($patientEmail, $subject, $patientName) {
-                $message->to($patientEmail, $patientName ?: null)->subject($subject);
-            });
+        // Thêm thông tin hoàn tiền nếu đã thanh toán
+        if ($wasPaid && $finalPrice > 0) {
+            $lines[] = '';
+            $formattedPrice = number_format($finalPrice, 0, ',', '.');
+            $lines[] = "Lịch hẹn đã được hủy và bạn đã được hoàn tiền với số tiền khoảng: {$formattedPrice} đ.";
+            $lines[] = 'Thời gian tiền về tài khoản có thể mất vài ngày làm việc tùy ngân hàng/đơn vị thanh toán.';
         }
+
+        $lines[] = '';
+        $lines[] = 'Nếu bạn có thắc mắc, vui lòng liên hệ lại bệnh viện để được hỗ trợ thêm.';
+
+        return implode("\n", $lines);
     }
 }

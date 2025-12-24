@@ -2,29 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
-use App\Models\{Appointment, Service, Doctor};
+use App\Models\Appointment;
+use App\Models\Doctor;
+use App\Models\Service;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class PaymentController extends Controller
 {
+    /**
+     * Xử lý thanh toán VNPay cho lịch hẹn mới.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function vnpay_payment(Request $request)
     {
         try {
             Log::info('VNPay Payment Request:', $request->all());
 
+            // Validate dữ liệu đầu vào
             $validated = $request->validate([
-                'patient_id'          => 'required|exists:patients,id',
-                'department_id'       => 'nullable|exists:departments,id',
-                'doctor_id'           => 'required|exists:doctors,id',
-                'service_id'          => 'required|exists:services,id',
-                'appointment_date'    => 'required|date',
-                'appointment_time'    => 'required',
+                'patient_id' => 'required|exists:patients,id',
+                'department_id' => 'nullable|exists:departments,id',
+                'doctor_id' => 'required|exists:doctors,id',
+                'service_id' => 'required|exists:services,id',
+                'appointment_date' => 'required|date',
+                'appointment_time' => 'required',
                 'medical_examination' => 'required|in:Ca sáng (07:30 - 11:30),Ca chiều (13:00 - 17:00)',
-                'note'                => 'nullable|string',
+                'note' => 'nullable|string',
             ]);
 
             $service = Service::with('department')->findOrFail($validated['service_id']);
@@ -45,28 +54,34 @@ class PaymentController extends Controller
 
             DB::beginTransaction();
 
+            // Chuẩn bị dữ liệu lịch hẹn
             $appointmentData = [
-                'patient_id'          => $validated['patient_id'],
-                'doctor_id'           => $validated['doctor_id'],
-                'service_id'          => $validated['service_id'],
-                'appointment_date'    => $validated['appointment_date'],
+                'patient_id' => $validated['patient_id'],
+                'doctor_id' => $validated['doctor_id'],
+                'service_id' => $validated['service_id'],
+                'appointment_date' => $validated['appointment_date'],
                 'medical_examination' => $validated['medical_examination'],
-                'payment_status'      => 'failed',
-                'note'                => $validated['note'] ?? null,
+                'payment_status' => 'failed',
+                'note' => $validated['note'] ?? null,
             ];
 
+            // Thêm appointment_time nếu cột tồn tại
             if (Schema::hasColumn('appointments', 'appointment_time')) {
                 $appointmentData['appointment_time'] = $validated['appointment_time'];
             }
 
+            // Thêm total nếu cột tồn tại
             if (Schema::hasColumn('appointments', 'total')) {
                 $appointmentData['total'] = $service->price;
             }
 
+            // Tạo lịch hẹn mới
             $appointment = Appointment::create($appointmentData);
 
             // Tạo mã giao dịch (TxnRef)
             $txnRef = $this->getTxnRef($appointment->id);
+
+            // Cập nhật transaction_ref nếu cột tồn tại
             if (Schema::hasColumn('appointments', 'transaction_ref')) {
                 $appointment->update(['transaction_ref' => $txnRef]);
             }
@@ -77,30 +92,39 @@ class PaymentController extends Controller
             DB::commit();
 
             Log::info('VNPay Redirect URL', ['url' => $vnpUrl]);
-            return redirect()->away($vnpUrl);
 
+            return redirect()->away($vnpUrl);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('VNPay Payment Error', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            return back()->with('error', 'Lỗi khi khởi tạo thanh toán: ' . $e->getMessage());
+
+            return back()->with('error', 'Lỗi khi khởi tạo thanh toán: '.$e->getMessage());
         }
     }
 
+    /**
+     * Xử lý callback từ VNPay sau khi thanh toán.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function vnpay_return(Request $request)
     {
         $input = $request->all();
         Log::info('VNPay Return Data', $input);
 
         $responseCode = $input['vnp_ResponseCode'] ?? null;
-        $orderInfo    = $input['vnp_OrderInfo'] ?? '';
+        $orderInfo = $input['vnp_OrderInfo'] ?? '';
 
+        // Kiểm tra response code
         if (!$responseCode) {
             return redirect()->route('home')->with('error', 'Dữ liệu phản hồi không hợp lệ.');
         }
 
+        // Lấy appointment ID từ order info
         if (!preg_match('/#(\d+)/', $orderInfo, $matches)) {
             return redirect()->route('home')->with('error', 'Không thể xác định lịch hẹn.');
         }
@@ -112,12 +136,13 @@ class PaymentController extends Controller
             return redirect()->route('home')->with('error', 'Không tìm thấy lịch hẹn.');
         }
 
+        // Xử lý thanh toán thành công
         if ($responseCode === '00') {
             $appointment->update([
                 'payment_status' => 'success',
                 'transaction_id' => $input['vnp_TransactionNo'] ?? null,
                 'transaction_ref' => $input['vnp_TxnRef'] ?? null,
-                'payment_method' => 'VNPay - ' . ($input['vnp_BankCode'] ?? 'N/A'),
+                'payment_method' => 'VNPay - '.($input['vnp_BankCode'] ?? 'N/A'),
                 'paid_at' => now(),
             ]);
 
@@ -126,20 +151,27 @@ class PaymentController extends Controller
                 ->with('success', 'Thanh toán thành công!');
         }
 
+        // Xử lý thanh toán thất bại
         $errorMessage = $responseCode === '24'
             ? 'Giao dịch đã bị hủy.'
-            : 'Thanh toán thất bại. Mã lỗi: ' . $responseCode;
+            : 'Thanh toán thất bại. Mã lỗi: '.$responseCode;
 
         $appointment->update(['payment_status' => 'failed']);
+
         return redirect()->route('appointments.show', $appointment->id)->with('error', $errorMessage);
     }
 
     /**
-     * Khởi tạo thanh toán cho một lịch hẹn đã tồn tại (từ trang chi tiết lịch hẹn)
+     * Khởi tạo thanh toán cho một lịch hẹn đã tồn tại (từ trang chi tiết lịch hẹn).
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Appointment  $appointment
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function checkout(Request $request, Appointment $appointment)
     {
         try {
+            // Kiểm tra lịch hẹn đã thanh toán chưa
             if ($appointment->payment_status === 'success') {
                 return redirect()->route('appointments.show', $appointment->id)
                     ->with('error', 'Lịch hẹn này đã được thanh toán.');
@@ -147,11 +179,12 @@ class PaymentController extends Controller
 
             // Xác định số tiền cần thanh toán
             $amount = null;
+
             if (Schema::hasColumn('appointments', 'total') && !is_null($appointment->total)) {
-                $amount = (float)$appointment->total;
+                $amount = (float) $appointment->total;
             } else {
                 $service = Service::find($appointment->service_id);
-                $amount = $service ? (float)$service->price : 0;
+                $amount = $service ? (float) $service->price : 0;
             }
 
             if ($amount <= 0) {
@@ -161,9 +194,11 @@ class PaymentController extends Controller
 
             // Tạo mã giao dịch và cập nhật lịch hẹn nếu có cột tương ứng
             $txnRef = $this->getTxnRef($appointment->id);
+
             if (Schema::hasColumn('appointments', 'transaction_ref')) {
                 $appointment->update(['transaction_ref' => $txnRef]);
             }
+
             if (Schema::hasColumn('appointments', 'payment_status')) {
                 $appointment->update(['payment_status' => 'failed']);
             }
@@ -171,31 +206,46 @@ class PaymentController extends Controller
             // Build URL và chuyển hướng
             $vnpUrl = $this->buildVnpayUrl($appointment, $amount, $request, $txnRef);
             Log::info('VNPay Checkout Redirect URL', ['url' => $vnpUrl]);
+
             return redirect()->away($vnpUrl);
         } catch (\Exception $e) {
             Log::error('VNPay Checkout Error', [
                 'appointment_id' => $appointment->id,
                 'error' => $e->getMessage(),
             ]);
+
             return redirect()->route('appointments.show', $appointment->id)
-                ->with('error', 'Không thể khởi tạo thanh toán: ' . $e->getMessage());
+                ->with('error', 'Không thể khởi tạo thanh toán: '.$e->getMessage());
         }
     }
 
+    /**
+     * Tạo mã giao dịch (Transaction Reference) cho VNPay.
+     *
+     * @param  int  $appointmentId
+     * @return string
+     */
     private function getTxnRef($appointmentId)
     {
-        return 'APP' . $appointmentId . '_' . time();
+        return 'APP'.$appointmentId.'_'.time();
     }
 
     /**
-     * Build URL theo chuẩn VNPay — KHÔNG sai chữ ký
+     * Build URL thanh toán VNPay theo chuẩn VNPay — KHÔNG sai chữ ký.
+     *
+     * @param  \App\Models\Appointment  $appointment
+     * @param  float  $price
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $txnRef
+     * @return string
      */
     private function buildVnpayUrl(Appointment $appointment, $price, Request $request, $txnRef)
     {
-        $vnp_TmnCode    = trim(env('VNPAY_TMN_CODE', '4ITGG2O5'));
+        // Lấy cấu hình VNPay từ environment
+        $vnp_TmnCode = trim(env('VNPAY_TMN_CODE', '4ITGG2O5'));
         $vnp_HashSecret = trim(env('VNPAY_HASH_SECRET', 'AJ45UO1MCUTPO3F1HIMTSVYOESY1GCJ0'));
-        $vnp_Url        = rtrim(env('VNPAY_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'), '?');
-        $vnp_Returnurl  = trim(env('VNPAY_RETURN_URL', route('vnpay.return')));
+        $vnp_Url = rtrim(env('VNPAY_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'), '?');
+        $vnp_Returnurl = trim(env('VNPAY_RETURN_URL', route('vnpay.return')));
 
         // Lấy ngày sinh của bệnh nhân
         $birthdate = $appointment->patient->birthdate ?? null;
@@ -208,46 +258,52 @@ class PaymentController extends Controller
             $discount = 0.7;
         }
 
-        // Tính số tiền thanh toán
-        $vnp_Amount = (int)($price * $discount * 100);
+        // Tính số tiền thanh toán (VNPay yêu cầu đơn vị là đồng, nhân 100)
+        $vnp_Amount = (int) ($price * $discount * 100);
 
+        // Chuẩn bị tham số VNPay
         $params = [
-            "vnp_Version"    => "2.1.0",
-            "vnp_TmnCode"    => $vnp_TmnCode,
-            "vnp_Amount"     => $vnp_Amount,
-            "vnp_Command"    => "pay",
-            "vnp_CreateDate" => now()->format('YmdHis'),
-            "vnp_CurrCode"   => "VND",
-            "vnp_IpAddr"     => $request->ip(),
-            "vnp_Locale"     => $request->input('language', 'vn'),
-            "vnp_OrderInfo"  => "Thanh toan lich kham #" . $appointment->id,
-            "vnp_OrderType"  => "billpayment",
-            "vnp_ReturnUrl"  => $vnp_Returnurl,
-            "vnp_TxnRef"     => $txnRef,
-            "vnp_ExpireDate" => now()->addMinutes(15)->format('YmdHis'),
+            'vnp_Version' => '2.1.0',
+            'vnp_TmnCode' => $vnp_TmnCode,
+            'vnp_Amount' => $vnp_Amount,
+            'vnp_Command' => 'pay',
+            'vnp_CreateDate' => now()->format('YmdHis'),
+            'vnp_CurrCode' => 'VND',
+            'vnp_IpAddr' => $request->ip(),
+            'vnp_Locale' => $request->input('language', 'vn'),
+            'vnp_OrderInfo' => 'Thanh toan lich kham #'.$appointment->id,
+            'vnp_OrderType' => 'billpayment',
+            'vnp_ReturnUrl' => $vnp_Returnurl,
+            'vnp_TxnRef' => $txnRef,
+            'vnp_ExpireDate' => now()->addMinutes(15)->format('YmdHis'),
         ];
 
+        // Thêm bank code nếu có
         if ($bankCode = $request->input('bankCode')) {
             $params['vnp_BankCode'] = $bankCode;
         }
 
+        // Sắp xếp tham số theo thứ tự alphabet
         ksort($params);
+
+        // Build hash data và query string
         $hashData = '';
         $query = '';
         $i = 0;
 
         foreach ($params as $key => $value) {
             if ($i == 1) {
-                $hashData .= '&' . urlencode($key) . "=" . urlencode($value);
+                $hashData .= '&'.urlencode($key).'='.urlencode($value);
             } else {
-                $hashData .= urlencode($key) . "=" . urlencode($value);
+                $hashData .= urlencode($key).'='.urlencode($value);
                 $i = 1;
             }
-            $query .= urlencode($key) . "=" . urlencode($value) . '&';
+            $query .= urlencode($key).'='.urlencode($value).'&';
         }
 
+        // Tạo chữ ký bảo mật
         $vnpSecureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
-        $finalUrl = $vnp_Url . '?' . $query . 'vnp_SecureHash=' . $vnpSecureHash;
+        $finalUrl = $vnp_Url.'?'.$query.'vnp_SecureHash='.$vnpSecureHash;
 
         Log::debug('VNPay Signature Debug', [
             'hash_data' => $hashData,

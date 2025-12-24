@@ -3,8 +3,8 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class RoleMiddleware
@@ -12,10 +12,8 @@ class RoleMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     * @param  string  ...$roles  // nhận nhiều role
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response) $next
+     * @param string                                                                           ...$roles // nhận nhiều role
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
@@ -23,13 +21,14 @@ class RoleMiddleware
         $user = $request->user();
 
         // Kiểm tra đăng nhập
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để tiếp tục');
         }
 
         // Kiểm tra role
-        if (!$user->role) {
+        if (! $user->role) {
             Auth::logout();
+
             return redirect()->route('login')
                 ->withErrors(['email' => 'Tài khoản của bạn chưa được gán vai trò. Vui lòng liên hệ quản trị viên.'])
                 ->withInput();

@@ -1,36 +1,41 @@
 @extends('layouts.doctor')
 
 @section('content')
-<div class="container-fluid">
-
-    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
-        <div>
-            <p class="text-uppercase text-primary fw-semibold mb-1" style="letter-spacing: .08em; font-size: 0.85rem;">HỒ SƠ BÁC SĨ</p>
-            <h1 class="h3 mb-0 fw-bold text-dark">
-                <i class="fas fa-user-md me-2 text-primary"></i>Hồ sơ bác sĩ
-            </h1>
+    <div class="container-fluid">
+        {{-- Page Header --}}
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+            <div>
+                <p class="text-uppercase text-primary fw-semibold mb-1" style="letter-spacing: .08em; font-size: 0.85rem;">
+                    HỒ SƠ BÁC SĨ
+                </p>
+                <h1 class="h3 mb-0 fw-bold text-dark">
+                    <i class="fas fa-user-md me-2 text-primary"></i>
+                    Hồ sơ bác sĩ
+                </h1>
+            </div>
+            <a href="{{ route('doctor.dashboard') }}" class="btn btn-outline-primary rounded-pill px-4 shadow-sm">
+                <i class="fas fa-arrow-left me-2"></i>
+                Quay lại
+            </a>
         </div>
-        <a href="{{ route('doctor.dashboard') }}" class="btn btn-outline-primary rounded-pill px-4 shadow-sm">
-            <i class="fas fa-arrow-left me-2"></i>Quay lại
-        </a>
-    </div>
 
-    <div class="card border-0 shadow-lg mb-4 rounded-4 overflow-hidden">
-        <div class="card-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-            <h6 class="m-0 font-weight-bold text-white d-flex align-items-center">
-                <i class="fas fa-id-card-alt me-2"></i>Thông tin cá nhân & chuyên môn
-            </h6>
-        </div>
-        <div class="card-body p-4">
+        {{-- Profile Information Card --}}
+        <div class="card border-0 shadow-lg mb-4 rounded-4 overflow-hidden">
+            <div class="card-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h6 class="m-0 font-weight-bold text-white d-flex align-items-center">
+                    <i class="fas fa-id-card-alt me-2"></i>
+                    Thông tin cá nhân & chuyên môn
+                </h6>
+            </div>
+            <div class="card-body p-4">
+                {{-- Profile Update Form --}}
+                <form action="{{ route('doctor.profile.update') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
 
-            <form action="{{ route('doctor.profile.update') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
-
-                <div class="row">
-
-                    <!-- Ảnh đại diện -->
-                    <div class="col-md-3 text-center mb-3">
+                    <div class="row">
+                        {{-- Avatar Upload --}}
+                        <div class="col-md-3 text-center mb-3">
                         <label class="fw-bold d-block mb-3 text-primary">
                             <i class="fas fa-image me-2"></i>Ảnh đại diện
                         </label>
@@ -121,10 +126,12 @@
                     </div>
                 </div>
 
-                <div class="bg-light rounded-4 p-4 mb-4">
-                    <h5 class="text-success mb-4 fw-bold d-flex align-items-center">
-                        <i class="fas fa-briefcase-medical me-2"></i>Thông tin chuyên môn
-                    </h5>
+                        {{-- Professional Information Section --}}
+                        <div class="bg-light rounded-4 p-4 mb-4">
+                            <h5 class="text-success mb-4 fw-bold d-flex align-items-center">
+                                <i class="fas fa-briefcase-medical me-2"></i>
+                                Thông tin chuyên môn
+                            </h5>
 
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
@@ -154,11 +161,12 @@
                         <input type="text" name="license_number" class="form-control rounded-3 border-2" value="{{ old('license_number', $doctor->license_number) }}" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
                     </div>
 
-                    <!-- Ảnh giấy phép hành nghề -->
-                    <div class="mb-4">
-                        <label class="form-label fw-semibold mb-2">
-                            <i class="fas fa-file-image text-success me-2"></i>Ảnh giấy phép hành nghề:
-                        </label>
+                            {{-- License Image Upload --}}
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold mb-2">
+                                    <i class="fas fa-file-image text-success me-2"></i>
+                                    Ảnh giấy phép hành nghề:
+                                </label>
                         @if($doctor->license_image)
                             <div class="mb-3">
                                 <img src="{{ asset('storage/' . $doctor->license_image) }}" alt="License" class="img-fluid rounded-4 shadow-sm border border-2" style="max-width: 400px;" id="licensePreview">
@@ -179,29 +187,40 @@
                     </div>
                 </div>
 
-                <div class="text-end">
-                    <button type="submit" class="btn btn-lg rounded-pill shadow-lg text-white fw-bold" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(102, 126, 234, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(102, 126, 234, 0.3)';">
-                        <i class="fas fa-save me-2"></i>Lưu thông tin
-                    </button>
-                </div>
-            </form>
+                            {{-- Submit Button --}}
+                            <div class="text-end">
+                                <button type="submit"
+                                        class="btn btn-lg rounded-pill shadow-lg text-white fw-bold"
+                                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease;"
+                                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(102, 126, 234, 0.4)';"
+                                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(102, 126, 234, 0.3)';">
+                                    <i class="fas fa-save me-2"></i>
+                                    Lưu thông tin
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
-    <!-- Cập nhật mật khẩu -->
-<div class="card border-0 shadow-lg mb-4 mt-4 rounded-4 overflow-hidden">
-    <div class="card-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-        <h6 class="m-0 font-weight-bold text-white d-flex align-items-center">
-            <i class="fas fa-lock me-2"></i>Thay đổi mật khẩu
-        </h6>
-    </div>
-    <div class="card-body p-4">
-        <form action="{{ route('doctor.password.update') }}" method="POST">
-            @csrf
-            @method('PUT')
 
-            <div class="row g-3">
-                <!-- Mật khẩu hiện tại -->
-                <div class="col-md-4 position-relative">
+        {{-- Change Password Card --}}
+        <div class="card border-0 shadow-lg mb-4 mt-4 rounded-4 overflow-hidden">
+            <div class="card-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <h6 class="m-0 font-weight-bold text-white d-flex align-items-center">
+                    <i class="fas fa-lock me-2"></i>
+                    Thay đổi mật khẩu
+                </h6>
+            </div>
+            <div class="card-body p-4">
+                {{-- Password Update Form --}}
+                <form action="{{ route('doctor.password.update') }}" method="POST">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="row g-3">
+                        {{-- Current Password --}}
+                        <div class="col-md-4 position-relative">
                     <label class="form-label fw-semibold mb-2">
                         <i class="fas fa-key text-warning me-2"></i>Mật khẩu hiện tại:
                     </label>
@@ -213,11 +232,12 @@
                     </div>
                 </div>
 
-                <!-- Mật khẩu mới -->
-                <div class="col-md-4 position-relative">
-                    <label class="form-label fw-semibold mb-2">
-                        <i class="fas fa-lock text-warning me-2"></i>Mật khẩu mới:
-                    </label>
+                        {{-- New Password --}}
+                        <div class="col-md-4 position-relative">
+                            <label class="form-label fw-semibold mb-2">
+                                <i class="fas fa-lock text-warning me-2"></i>
+                                Mật khẩu mới:
+                            </label>
                     <div class="input-group">
                         <input type="password" name="new_password" id="new_password" class="form-control rounded-3 border-2" required minlength="6" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
                         <button type="button" class="btn btn-outline-secondary rounded-end-3 toggle-password" data-target="#new_password">
@@ -226,11 +246,12 @@
                     </div>
                 </div>
 
-                <!-- Xác nhận mật khẩu mới -->
-                <div class="col-md-4 position-relative">
-                    <label class="form-label fw-semibold mb-2">
-                        <i class="fas fa-lock-open text-warning me-2"></i>Xác nhận mật khẩu mới:
-                    </label>
+                        {{-- Confirm New Password --}}
+                        <div class="col-md-4 position-relative">
+                            <label class="form-label fw-semibold mb-2">
+                                <i class="fas fa-lock-open text-warning me-2"></i>
+                                Xác nhận mật khẩu mới:
+                            </label>
                     <div class="input-group">
                         <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="form-control rounded-3 border-2" required minlength="6" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
                         <button type="button" class="btn btn-outline-secondary rounded-end-3 toggle-password" data-target="#new_password_confirmation">
@@ -240,64 +261,76 @@
                 </div>
             </div>
 
-            <div class="text-end mt-4">
-                <button type="submit" class="btn btn-lg rounded-pill shadow-lg text-white fw-bold" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(245, 87, 108, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(245, 87, 108, 0.3)';">
-                    <i class="fas fa-key me-2"></i>Cập nhật mật khẩu
-                </button>
+                        {{-- Submit Button --}}
+                        <div class="text-end mt-4">
+                            <button type="submit"
+                                    class="btn btn-lg rounded-pill shadow-lg text-white fw-bold"
+                                    style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); transition: all 0.3s ease;"
+                                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(245, 87, 108, 0.4)';"
+                                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(245, 87, 108, 0.3)';">
+                                <i class="fas fa-key me-2"></i>
+                                Cập nhật mật khẩu
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
-            </form>
         </div>
     </div>
-</div>
 
-@push('scripts')
-<script>
-document.querySelector('#avatar')?.addEventListener('change', e => preview(e, '#avatarPreview'));
-document.querySelector('#license_image')?.addEventListener('change', e => preview(e, '#licensePreview'));
+    {{-- Scripts --}}
+    @push('scripts')
+        <script>
+            // Image preview handlers
+            document.querySelector('#avatar')?.addEventListener('change', e => preview(e, '#avatarPreview'));
+            document.querySelector('#license_image')?.addEventListener('change', e => preview(e, '#licensePreview'));
 
-function preview(e, selector) {
-    const reader = new FileReader();
-    reader.onload = event => document.querySelector(selector).src = event.target.result;
-    reader.readAsDataURL(e.target.files[0]);
-}
-// ghép ngày sinh từ ngày/tháng/năm vào input ẩn birth_date
-function updateBirthDate() {
-    const day = document.querySelector('#birth_day')?.value;
-    const month = document.querySelector('#birth_month')?.value;
-    const year = document.querySelector('#birth_year')?.value;
-    const target = document.querySelector('#birth_date');
+            // Preview image function
+            function preview(e, selector) {
+                const reader = new FileReader();
+                reader.onload = event => document.querySelector(selector).src = event.target.result;
+                reader.readAsDataURL(e.target.files[0]);
+            }
 
-    if (!target) return;
+            // Update birth date from day/month/year inputs
+            function updateBirthDate() {
+                const day = document.querySelector('#birth_day')?.value;
+                const month = document.querySelector('#birth_month')?.value;
+                const year = document.querySelector('#birth_year')?.value;
+                const target = document.querySelector('#birth_date');
 
-    if (day && month && year && /^\d{4}$/.test(year)) {
-        target.value = `${year}-${month}-${day}`;
-    } else {
-        target.value = '';
-    }
-}
+                if (!target) return;
 
-['#birth_day', '#birth_month', '#birth_year'].forEach(sel => {
-    const el = document.querySelector(sel);
-    if (el) {
-        el.addEventListener('change', updateBirthDate);
-        el.addEventListener('input', updateBirthDate);
-    }
-});
+                if (day && month && year && /^\d{4}$/.test(year)) {
+                    target.value = `${year}-${month}-${day}`;
+                } else {
+                    target.value = '';
+                }
+            }
 
-// khởi tạo giá trị birth_date khi load trang
-updateBirthDate();
-// xem MK
-document.querySelectorAll('.toggle-password').forEach(button => {
-    button.addEventListener('click', () => {
-        const input = document.querySelector(button.dataset.target);
-        const icon = button.querySelector('i');
-        const isHidden = input.type === 'password';
-        input.type = isHidden ? 'text' : 'password';
-        icon.classList.toggle('fa-eye', !isHidden);
-        icon.classList.toggle('fa-eye-slash', isHidden);
-    });
-});
-</script>
-@endpush
+            // Initialize birth date update listeners
+            ['#birth_day', '#birth_month', '#birth_year'].forEach(sel => {
+                const el = document.querySelector(sel);
+                if (el) {
+                    el.addEventListener('change', updateBirthDate);
+                    el.addEventListener('input', updateBirthDate);
+                }
+            });
 
+            // Initialize birth date on page load
+            updateBirthDate();
+
+            // Toggle password visibility
+            document.querySelectorAll('.toggle-password').forEach(button => {
+                button.addEventListener('click', () => {
+                    const input = document.querySelector(button.dataset.target);
+                    const icon = button.querySelector('i');
+                    const isHidden = input.type === 'password';
+                    input.type = isHidden ? 'text' : 'password';
+                    icon.classList.toggle('fa-eye', !isHidden);
+                    icon.classList.toggle('fa-eye-slash', isHidden);
+                });
+            });
+        </script>
+    @endpush
 @endsection

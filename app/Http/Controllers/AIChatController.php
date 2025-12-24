@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Department;
+use App\Models\Disease;
+use App\Models\DiseaseSymptom;
+use App\Models\Service;
+use App\Models\ServiceSymptom;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Models\Disease;
-use App\Models\Service;
-use App\Models\Department;
-use App\Models\DiseaseSymptom;
-use App\Models\ServiceSymptom;
-use Illuminate\Support\Facades\DB;
 
 class AIChatController extends Controller
 {
@@ -52,7 +52,7 @@ class AIChatController extends Controller
             $diseases = Disease::with('department')
                 ->where(function ($q) use ($aiDiseases) {
                     foreach ($aiDiseases as $name) {
-                        $q->orWhere('name', 'like', '%' . $name . '%');
+                        $q->orWhere('name', 'like', '%'.$name.'%');
                     }
                 })
                 ->get();
@@ -102,8 +102,7 @@ class AIChatController extends Controller
         ]);
 
         return response()->json([
-            'reply' =>
-                'Dựa trên triệu chứng bạn cung cấp, hệ thống gợi ý một số bệnh nghi ngờ. ' .
+            'reply' => 'Dựa trên triệu chứng bạn cung cấp, hệ thống gợi ý một số bệnh nghi ngờ. '.
                 'Kết quả chỉ mang tính tham khảo, bạn nên đến bệnh viện để được chẩn đoán chính xác.',
             'suggestions' => [
                 'diseases' => $diseases->map(fn ($d) => [
@@ -142,7 +141,7 @@ class AIChatController extends Controller
             ->select('disease_id', DB::raw('COUNT(*) as score'))
             ->where(function ($w) use ($keywords) {
                 foreach ($keywords as $kw) {
-                    $w->orWhere('symptom_name', 'like', '%' . $kw . '%');
+                    $w->orWhere('symptom_name', 'like', '%'.$kw.'%');
                 }
             })
             ->groupBy('disease_id')
@@ -151,6 +150,7 @@ class AIChatController extends Controller
             ->get();
 
         $ids = $q->pluck('disease_id')->values();
+
         if ($ids->isEmpty()) {
             return collect();
         }
@@ -176,7 +176,7 @@ class AIChatController extends Controller
             ->select('service_id', DB::raw('COUNT(*) as score'))
             ->where(function ($w) use ($keywords) {
                 foreach ($keywords as $kw) {
-                    $w->orWhere('symptom_name', 'like', '%' . $kw . '%');
+                    $w->orWhere('symptom_name', 'like', '%'.$kw.'%');
                 }
             })
             ->groupBy('service_id')
@@ -185,6 +185,7 @@ class AIChatController extends Controller
             ->get();
 
         $ids = $q->pluck('service_id')->values();
+
         if ($ids->isEmpty()) {
             return collect();
         }
@@ -200,14 +201,16 @@ class AIChatController extends Controller
     }
 
     /**
-     * GỌI AI ĐỂ LẤY DANH SÁCH BỆNH
+     * GỌI AI ĐỂ LẤY DANH SÁCH BỆNH.
      */
     private function askAIForDiseases(string $message): array
     {
         try {
             $apiKey = (string) config('services.groq.key');
+
             if (trim($apiKey) === '') {
                 Log::warning('Groq API key missing (services.groq.key). Set GROQ_API_KEY in .env');
+
                 return [];
             }
 
@@ -218,14 +221,13 @@ class AIChatController extends Controller
                     'messages' => [
                         [
                             'role' => 'system',
-                            'content' =>
-                                'Bạn là trợ lý y tế. ' .
-                                'Chỉ trả về JSON: {"diseases":["Tên bệnh"]}. ' .
-                                'Không giải thích. Không chẩn đoán.'
+                            'content' => 'Bạn là trợ lý y tế. '.
+                                'Chỉ trả về JSON: {"diseases":["Tên bệnh"]}. '.
+                                'Không giải thích. Không chẩn đoán.',
                         ],
                         [
                             'role' => 'user',
-                            'content' => $message
+                            'content' => $message,
                         ],
                     ],
                 ]);
@@ -235,6 +237,7 @@ class AIChatController extends Controller
                     'status' => $res->status(),
                     'body' => $res->body(),
                 ]);
+
                 return [];
             }
 
@@ -247,8 +250,10 @@ class AIChatController extends Controller
             $content = trim($content);
 
             $json = json_decode($content, true);
+
             if (! is_array($json)) {
                 Log::warning('AI disease content not valid JSON', ['content' => $content]);
+
                 return [];
             }
 
@@ -258,11 +263,11 @@ class AIChatController extends Controller
                 ->take(5)
                 ->values()
                 ->all();
-
         } catch (\Throwable $e) {
             Log::error('AI disease suggestion failed', [
                 'error' => $e->getMessage(),
             ]);
+
             return [];
         }
     }

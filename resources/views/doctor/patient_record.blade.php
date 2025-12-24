@@ -1,35 +1,39 @@
 @extends('layouts.doctor')
 
 @section('content')
-<div class="container-fluid">
-
-    <!-- Tiêu đề -->
-    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
-        <div>
-            <p class="text-uppercase text-primary fw-semibold mb-1" style="letter-spacing: .08em; font-size: 0.85rem;">HỒ SƠ KHÁM BỆNH</p>
-            <h1 class="h3 mb-0 fw-bold text-dark">
-                <i class="fas fa-notes-medical me-2 text-primary"></i>Hồ sơ khám bệnh
-            </h1>
+    <div class="container-fluid">
+        {{-- Page Header --}}
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+            <div>
+                <p class="text-uppercase text-primary fw-semibold mb-1" style="letter-spacing: .08em; font-size: 0.85rem;">
+                    HỒ SƠ KHÁM BỆNH
+                </p>
+                <h1 class="h3 mb-0 fw-bold text-dark">
+                    <i class="fas fa-notes-medical me-2 text-primary"></i>
+                    Hồ sơ khám bệnh
+                </h1>
+            </div>
+            <a href="{{ route('doctor.dashboard') }}" class="btn btn-outline-primary rounded-pill px-4 shadow-sm">
+                <i class="fas fa-arrow-left me-2"></i>
+                Quay lại danh sách
+            </a>
         </div>
-        <a href="{{ route('doctor.dashboard') }}" class="btn btn-outline-primary rounded-pill px-4 shadow-sm">
-            <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
-        </a>
-    </div>
 
-    <!-- Hồ sơ khám bệnh -->
-    <div class="card border-0 shadow-lg mb-4 rounded-4 overflow-hidden">
-        <div class="card-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-            <h6 class="m-0 font-weight-bold text-white d-flex align-items-center">
-                <i class="fas fa-user-md me-2"></i>Thông tin hồ sơ khám bệnh
-            </h6>
-        </div>
-        <div class="card-body p-4">
-
-            <!-- Thông tin bệnh nhân -->
-            <div class="bg-light rounded-4 p-4 mb-4">
-                <h5 class="text-primary mb-3 fw-bold d-flex align-items-center">
-                    <i class="fas fa-user me-2"></i>Thông tin bệnh nhân
-                </h5>
+        {{-- Medical Record Card --}}
+        <div class="card border-0 shadow-lg mb-4 rounded-4 overflow-hidden">
+            <div class="card-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h6 class="m-0 font-weight-bold text-white d-flex align-items-center">
+                    <i class="fas fa-user-md me-2"></i>
+                    Thông tin hồ sơ khám bệnh
+                </h6>
+            </div>
+            <div class="card-body p-4">
+                {{-- Patient Information Section --}}
+                <div class="bg-light rounded-4 p-4 mb-4">
+                    <h5 class="text-primary mb-3 fw-bold d-flex align-items-center">
+                        <i class="fas fa-user me-2"></i>
+                        Thông tin bệnh nhân
+                    </h5>
                 <div class="row g-3">
                     <div class="col-md-4">
                         <div class="d-flex align-items-center">
@@ -93,11 +97,12 @@
                 </div>
             </div>
 
-            <!-- Thông tin khám bệnh -->
-            <div class="bg-light rounded-4 p-4 mb-4">
-                <h5 class="text-info mb-3 fw-bold d-flex align-items-center">
-                    <i class="fas fa-stethoscope me-2"></i>Thông tin khám bệnh
-                </h5>
+                {{-- Appointment Information Section --}}
+                <div class="bg-light rounded-4 p-4 mb-4">
+                    <h5 class="text-info mb-3 fw-bold d-flex align-items-center">
+                        <i class="fas fa-stethoscope me-2"></i>
+                        Thông tin khám bệnh
+                    </h5>
                 <div class="row g-3">
                     <div class="col-md-4">
                         <div class="d-flex align-items-center">
@@ -146,27 +151,28 @@
                     </div>
                 </div>
             </div>
-            
-            <form action="{{ route('doctor.records.update', $record->id) }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
+                {{-- Medical Record Update Form --}}
+                <form action="{{ route('doctor.records.update', $record->id) }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
 
-            <!-- Gói dịch vụ cho lần khám này -->
-            @php
-                $svc = $appointment->service ?? null;
-            @endphp
-            @if($svc)
-                @php
-                    // Tách mô tả gói dịch vụ thành từng dòng
-                    $descLines = preg_split('/\r\n|\r|\n/', $svc->description ?? '');
-                    $descLines = array_values(array_filter($descLines, function ($line) {
-                        return trim($line) !== '';
-                    }));
-                @endphp
-                <div class="mb-4">
-                    <h5 class="text-primary mb-3 fw-bold d-flex align-items-center">
-                        <i class="fas fa-list-ul me-2"></i>Gói dịch vụ bệnh nhân đã chọn
-                    </h5>
+                    {{-- Service Package Information --}}
+                    @php
+                        $svc = $appointment->service ?? null;
+                    @endphp
+                    @if($svc)
+                        @php
+                            // Split service description into lines
+                            $descLines = preg_split('/\r\n|\r|\n/', $svc->description ?? '');
+                            $descLines = array_values(array_filter($descLines, function ($line) {
+                                return trim($line) !== '';
+                            }));
+                        @endphp
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3 fw-bold d-flex align-items-center">
+                                <i class="fas fa-list-ul me-2"></i>
+                                Gói dịch vụ bệnh nhân đã chọn
+                            </h5>
                     <div class="bg-primary-subtle border-0 rounded-4 p-4 shadow-sm">
                         <div class="fw-bold mb-3 text-primary fs-5">
                             {{ $svc->name }} 
@@ -193,16 +199,19 @@
                 </div>
             @endif
 
-            <!-- Mô tả bệnh -->
-            @php
-                $labTests = \App\Models\LabTest::where('medical_record_id', $record->id)
-                    ->where('status', 'completed')
-                    ->get();
-            @endphp
-                @if(!empty($record->image) || (!empty($record->images) && is_array($record->images) && count($record->images)) || ($labTests && $labTests->count()))
-                    <h5 class="text-warning mb-3"><i class="fas fa-clipboard-list"></i> Ảnh xét nghiệm nếu có</h5>
-                    <!-- Ảnh từ xét nghiệm (admin cập nhật) -->
-                    @if($labTests && $labTests->count())
+                    {{-- Lab Test Images Section --}}
+                    @php
+                        $labTests = \App\Models\LabTest::where('medical_record_id', $record->id)
+                            ->where('status', 'completed')
+                            ->get();
+                    @endphp
+                    @if(!empty($record->image) || (!empty($record->images) && is_array($record->images) && count($record->images)) || ($labTests && $labTests->count()))
+                        <h5 class="text-warning mb-3">
+                            <i class="fas fa-clipboard-list"></i>
+                            Ảnh xét nghiệm nếu có
+                        </h5>
+                        {{-- Lab Test Images (uploaded by admin) --}}
+                        @if($labTests && $labTests->count())
                         <div class="mb-2">
                             @foreach($labTests as $t)
                                 @if(!empty($t->image))
@@ -228,53 +237,58 @@
                     @endif
                 @endif
 
-            <hr>
+                    <hr>
 
-            <!-- Chuẩn đoán -->
-            <div class="bg-light rounded-4 p-4 mb-4">
-                <h5 class="text-success mb-4 fw-bold d-flex align-items-center">
-                    <i class="fas fa-diagnoses me-2"></i>Chuẩn đoán & Kết luận
-                </h5>
+                    {{-- Diagnosis & Conclusion Section --}}
+                    <div class="bg-light rounded-4 p-4 mb-4">
+                        <h5 class="text-success mb-4 fw-bold d-flex align-items-center">
+                            <i class="fas fa-diagnoses me-2"></i>
+                            Chuẩn đoán & Kết luận
+                        </h5>
 
-                <!-- Chuẩn đoán -->
-                <div class="mb-4">
-                    <label for="diagnosis" class="form-label fw-semibold mb-2">
-                        <i class="fas fa-file-medical text-success me-2"></i>Chuẩn đoán ban đầu:
-                    </label>
+                        {{-- Diagnosis Field --}}
+                        <div class="mb-4">
+                            <label for="diagnosis" class="form-label fw-semibold mb-2">
+                                <i class="fas fa-file-medical text-success me-2"></i>
+                                Chuẩn đoán ban đầu:
+                            </label>
                     <textarea id="diagnosis" name="diagnosis" class="form-control rounded-3 border-2" rows="3" placeholder="Nhập chuẩn đoán..." style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">{{ old('diagnosis', $record->diagnosis ?? '') }}</textarea>
                 </div>
 
-                <!-- Kết luận -->
-                <div class="mb-4">
-                    <label for="doctor_conclusion" class="form-label fw-semibold mb-2">
-                        <i class="fas fa-clipboard-check text-success me-2"></i>Kết luận bác sĩ:
-                    </label>
+                        {{-- Doctor Conclusion Field --}}
+                        <div class="mb-4">
+                            <label for="doctor_conclusion" class="form-label fw-semibold mb-2">
+                                <i class="fas fa-clipboard-check text-success me-2"></i>
+                                Kết luận bác sĩ:
+                            </label>
                     <textarea id="doctor_conclusion" name="doctor_conclusion" class="form-control rounded-3 border-2" rows="3" placeholder="Nhập kết luận bác sĩ..." style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">{{ old('doctor_conclusion', $record->doctor_conclusion ?? '') }}</textarea>
                 </div>
 
-                <!-- Trạng thái lịch hẹn -->
-                <div class="mb-4">
-                    <label for="status" class="form-label fw-semibold mb-2">
-                        <i class="fas fa-info-circle text-success me-2"></i>Trạng thái lịch hẹn:
-                    </label>
+                        {{-- Appointment Status Field --}}
+                        <div class="mb-4">
+                            <label for="status" class="form-label fw-semibold mb-2">
+                                <i class="fas fa-info-circle text-success me-2"></i>
+                                Trạng thái lịch hẹn:
+                            </label>
                     <select id="status" name="status" class="form-select rounded-3 border-2" style="transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';" onblur="this.style.borderColor=''; this.style.boxShadow='';">
                         <option value="confirmed" {{ ($appointment->status ?? '') === 'confirmed' ? 'selected' : '' }}>Đã duyệt</option>
                         <option value="completed" {{ ($appointment->status ?? '') === 'completed' ? 'selected' : '' }}>Đã khám</option>
                     </select>
                 </div>
 
-                <!-- Toa thuốc -->
-                <div class="mb-4">
-                    <label class="form-label fw-semibold mb-2">
-                        <i class="fas fa-pills text-success me-2"></i>Toa thuốc:
-                    </label>
+                        {{-- Prescription Section --}}
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold mb-2">
+                                <i class="fas fa-pills text-success me-2"></i>
+                                Toa thuốc:
+                            </label>
 
-                    @php
-                        $medicines = \App\Models\Medicine::orderBy('name')->get();
-                        $existingItems = method_exists($record, 'prescriptionItems')
-                            ? $record->prescriptionItems
-                            : collect();
-                    @endphp
+                            @php
+                                $medicines = \App\Models\Medicine::orderBy('name')->get();
+                                $existingItems = method_exists($record, 'prescriptionItems')
+                                    ? $record->prescriptionItems
+                                    : collect();
+                            @endphp
 
                     <div class="table-responsive">
                         <table class="table table-bordered align-middle mb-0">
@@ -384,22 +398,28 @@
                     </div>
                 </div>
 
-                <!-- Nút lưu -->
-                <div class="text-end">
-                    <button type="submit" class="btn btn-lg rounded-pill shadow-lg text-white fw-bold" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(102, 126, 234, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(102, 126, 234, 0.3)';">
-                        <i class="fas fa-save me-2"></i>Lưu thông tin
-                    </button>
-                </div>
-            </div>
-            </form>
+                            {{-- Submit Button --}}
+                            <div class="text-end">
+                                <button type="submit"
+                                        class="btn btn-lg rounded-pill shadow-lg text-white fw-bold"
+                                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease;"
+                                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(102, 126, 234, 0.4)';"
+                                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(102, 126, 234, 0.3)';">
+                                    <i class="fas fa-save me-2"></i>
+                                    Lưu thông tin
+                                </button>
+                            </div>
+                        </div>
+                    </form>
 
-            <hr>
+                    <hr>
 
-            <!-- Yêu cầu xét nghiệm -->
-            <div class="bg-light rounded-4 p-4 mb-4">
-                <h5 class="text-primary mb-4 fw-bold d-flex align-items-center">
-                    <i class="fas fa-vial me-2"></i>Yêu cầu xét nghiệm
-                </h5>
+                    {{-- Lab Test Request Section --}}
+                    <div class="bg-light rounded-4 p-4 mb-4">
+                        <h5 class="text-primary mb-4 fw-bold d-flex align-items-center">
+                            <i class="fas fa-vial me-2"></i>
+                            Yêu cầu xét nghiệm
+                        </h5>
                 @php
                     $testTypes = \App\Models\TestType::with('department')->orderBy('name')->get();
                     $allDepartments = \App\Models\Department::orderBy('name')->get();

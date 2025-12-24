@@ -3,22 +3,32 @@
 namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
+use App\Models\Appointment;
+use App\Models\MedicalRecord;
+use App\Models\PrescriptionItem;
+use App\Models\Service;
 use Illuminate\Http\Request;
-use App\Models\{Appointment, Patient, MedicalRecord, Service, PrescriptionItem};
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class DoctorRecordController extends Controller
 {
     /**
-     * Hiển thị hồ sơ khám bệnh của bệnh nhân
+     * Hiển thị hồ sơ khám bệnh của bệnh nhân.
+     * - Tạo hồ sơ bệnh án mới nếu chưa có.
+     * - Hiển thị thông tin lịch hẹn, bệnh nhân và dịch vụ.
+     *
+     * @param  int  $appointmentId
+     * @return \Illuminate\View\View
      */
     public function showPatientRecord($appointmentId)
     {
+        // Lấy thông tin lịch hẹn
         $appointment = Appointment::with(['patient', 'doctor.user', 'service'])->findOrFail($appointmentId);
 
+        // Lấy danh sách dịch vụ
         $services = Service::with('department')->orderBy('name')->get();
 
+        // Tạo hoặc lấy hồ sơ bệnh án
         $record = MedicalRecord::firstOrCreate(
             ['appointment_id' => $appointmentId],
             [
@@ -36,9 +46,19 @@ class DoctorRecordController extends Controller
 
     /**
      * Cập nhật thông tin chẩn đoán, kết luận và toa thuốc.
+     * - Lưu thông tin chẩn đoán và kết luận.
+     * - Lưu các hạng mục gói dịch vụ đã chọn.
+     * - Xử lý toa thuốc chi tiết theo bảng prescription_items.
+     * - Xử lý upload ảnh đơn và nhiều ảnh.
+     * - Cập nhật trạng thái lịch hẹn nếu có.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\MedicalRecord  $record
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, MedicalRecord $record)
     {
+        // Validate dữ liệu đầu vào
         $request->validate([
             'diagnosis' => 'nullable|string|max:1000',
             'doctor_conclusion' => 'nullable|string|max:1000',
@@ -65,6 +85,7 @@ class DoctorRecordController extends Controller
 
             // Lưu các hạng mục gói dịch vụ mà bác sĩ đã tích chọn
             $items = $request->input('service_items', []);
+
             if (is_array($items)) {
                 $items = array_values(array_filter($items, function ($v) {
                     return is_string($v) && trim($v) !== '';
@@ -72,6 +93,7 @@ class DoctorRecordController extends Controller
             } else {
                 $items = [];
             }
+
             // Lưu vào cột description dạng chuỗi, mỗi dịch vụ 1 dòng
             $record->description = !empty($items)
                 ? implode("\n", $items)
@@ -85,6 +107,7 @@ class DoctorRecordController extends Controller
                 $record->prescriptionItems()->delete();
             }
 
+            // Tạo các dòng toa thuốc mới
             if (is_array($items)) {
                 foreach ($items as $item) {
                     // Bỏ qua dòng trống (không chọn thuốc và không nhập gì)
@@ -115,15 +138,16 @@ class DoctorRecordController extends Controller
                 }
             }
 
-            // Ảnh đơn
+            // Xử lý upload ảnh đơn
             if ($request->hasFile('image')) {
                 $path = $request->file('image')->store('medical_records', 'public');
                 $record->image = $path;
             }
 
-            // Nhiều ảnh
+            // Xử lý upload nhiều ảnh
             if ($request->hasFile('images')) {
                 $stored = [];
+
                 foreach ($request->file('images') as $file) {
                     if ($file) {
                         $stored[] = $file->store('medical_records', 'public');
@@ -139,8 +163,10 @@ class DoctorRecordController extends Controller
             if ($request->filled('status')) {
                 $status = $request->input('status');
                 $allowed = ['pending', 'confirmed', 'completed'];
+
                 if (in_array($status, $allowed, true)) {
                     $appointment = $record->appointment()->first();
+
                     if ($appointment) {
                         $appointment->status = $status;
                         $appointment->save();
@@ -153,10 +179,10 @@ class DoctorRecordController extends Controller
                 ->with('success', 'Cập nhật hồ sơ bệnh án thành công!');
         } catch (\Exception $e) {
             Log::error('Lỗi khi cập nhật hồ sơ bệnh án', ['error' => $e->getMessage()]);
+
             return redirect()
                 ->back()
                 ->with('error', 'Không thể cập nhật hồ sơ bệnh án.');
         }
     }
-
 }

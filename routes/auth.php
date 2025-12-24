@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\PasswordController;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\PatientAuthController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -21,7 +21,6 @@ Route::get('login', function () {
 Route::post('login', [PatientAuthController::class, 'login']);
 
 Route::middleware('auth')->group(function () {
-
     // removed: email verification routes
     // removed: confirm password routes
 

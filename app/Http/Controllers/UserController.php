@@ -2,28 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Role;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
+    /**
+     * Khởi tạo controller.
+     * Chỉ cho phép admin truy cập các hành động trong controller này.
+     */
     public function __construct()
     {
-        // Chỉ cho phép admin truy cập các hành động trong controller này
         $this->middleware('admin');
     }
 
     /**
      * Hiển thị danh sách người dùng, có thể lọc theo vai trò (role).
-     * Route: admin/users
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View
      */
     public function index(Request $request)
     {
         // Lấy giá trị role trên URL (vd: ?role=doctor)
-        $filter = $request->query('role'); // giá trị mong đợi: patient, doctor, admin, leader
+        $filter = $request->query('role');
 
         // Lấy danh sách người dùng, đồng thời nạp quan hệ 'role'
         $query = User::with('role');
@@ -60,7 +65,9 @@ class UserController extends Controller
 
     /**
      * Hiển thị form chỉnh sửa thông tin người dùng cụ thể.
-     * Route: admin/users/{user}/edit
+     *
+     * @param  \App\Models\User  $user
+     * @return \Illuminate\View\View
      */
     public function edit(User $user)
     {
@@ -76,7 +83,10 @@ class UserController extends Controller
 
     /**
      * Cập nhật thông tin người dùng.
-     * Route: PUT admin/users/{user}
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\User  $user
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, User $user)
     {
@@ -98,7 +108,9 @@ class UserController extends Controller
 
     /**
      * Xóa người dùng khỏi hệ thống.
-     * Route: DELETE admin/users/{user}
+     *
+     * @param  \App\Models\User  $user
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(User $user)
     {

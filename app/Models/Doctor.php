@@ -24,7 +24,7 @@ class Doctor extends Model
     ];
 
     /**
-     * Quan hệ 1 bác sĩ thuộc về 1 user
+     * Quan hệ 1 bác sĩ thuộc về 1 user.
      */
     public function user()
     {
@@ -32,7 +32,7 @@ class Doctor extends Model
     }
 
     /**
-     * Quan hệ 1 bác sĩ thuộc về 1 khoa phòng
+     * Quan hệ 1 bác sĩ thuộc về 1 khoa phòng.
      */
     public function department()
     {
@@ -40,7 +40,7 @@ class Doctor extends Model
     }
 
     /**
-     * Quan hệ 1 bác sĩ có nhiều lịch hẹn
+     * Quan hệ 1 bác sĩ có nhiều lịch hẹn.
      */
     public function appointments()
     {

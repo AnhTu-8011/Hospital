@@ -6,9 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use App\Models\Patient;
-use App\Models\Role;
-use App\Models\Doctor;
 
 class User extends Authenticatable
 {
@@ -40,12 +37,11 @@ class User extends Authenticatable
     /**
      * Kiểm tra người dùng có role nhất định hay không.
      *
-     * @param  string|array  $roles
-     * @return bool
+     * @param string|array $roles
      */
     public function hasRole($roles): bool
     {
-        if (!$this->role) {
+        if (! $this->role) {
             return false;
         }
 

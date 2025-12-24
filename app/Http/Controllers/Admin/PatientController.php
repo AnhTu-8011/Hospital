@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -10,10 +11,10 @@ class PatientController extends Controller
 {
     /**
      * Hiển thị danh sách tất cả bệnh nhân.
-     * 
-     * 👉 Mục đích:
      * - Lấy danh sách bệnh nhân cùng thông tin user liên kết.
      * - Hiển thị trên trang quản lý bệnh nhân cho admin.
+     *
+     * @return \Illuminate\View\View
      */
     public function index()
     {
@@ -28,8 +29,9 @@ class PatientController extends Controller
 
     /**
      * Hiển thị form thêm mới bệnh nhân.
-     * 
-     * 👉 Dùng để admin nhập thông tin bệnh nhân mới (họ tên, email, sđt,...)
+     * - Dùng để admin nhập thông tin bệnh nhân mới (họ tên, email, sđt,...)
+     *
+     * @return \Illuminate\View\View
      */
     public function create()
     {
@@ -39,11 +41,13 @@ class PatientController extends Controller
 
     /**
      * Lưu thông tin bệnh nhân mới vào cơ sở dữ liệu.
-     * 
-     * 👉 Luồng xử lý:
-     * 1️⃣ Validate dữ liệu đầu vào.
-     * 2️⃣ Tạo user tương ứng (vì bệnh nhân cũng là một user trong hệ thống).
-     * 3️⃣ Tạo bản ghi Patient liên kết với user vừa tạo.
+     * - Luồng xử lý:
+     *   1️⃣ Validate dữ liệu đầu vào.
+     *   2️⃣ Tạo user tương ứng (vì bệnh nhân cũng là một user trong hệ thống).
+     *   3️⃣ Tạo bản ghi Patient liên kết với user vừa tạo.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
     {
@@ -78,8 +82,10 @@ class PatientController extends Controller
 
     /**
      * Hiển thị form chỉnh sửa thông tin bệnh nhân.
-     * 
-     * 👉 Khi admin click "Chỉnh sửa" → hiển thị form với dữ liệu hiện tại.
+     * - Khi admin click "Chỉnh sửa" → hiển thị form với dữ liệu hiện tại.
+     *
+     * @param  \App\Models\Patient  $patient
+     * @return \Illuminate\View\View
      */
     public function edit(Patient $patient)
     {
@@ -89,11 +95,14 @@ class PatientController extends Controller
 
     /**
      * Cập nhật thông tin bệnh nhân.
-     * 
-     * 👉 Luồng xử lý:
-     * 1️⃣ Validate dữ liệu đầu vào.
-     * 2️⃣ Cập nhật bảng patients.
-     * 3️⃣ Cập nhật bảng users (vì name/email nằm ở đó).
+     * - Luồng xử lý:
+     *   1️⃣ Validate dữ liệu đầu vào.
+     *   2️⃣ Cập nhật bảng patients.
+     *   3️⃣ Cập nhật bảng users (vì name/email nằm ở đó).
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Patient  $patient
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, Patient $patient)
     {
@@ -109,7 +118,7 @@ class PatientController extends Controller
         // Bước 3: Cập nhật thông tin name và email trong bảng users (liên kết qua quan hệ user)
         $patient->user->update([
             'name' => $request->name,
-            'email' => $request->email
+            'email' => $request->email,
         ]);
 
         // Quay về danh sách với thông báo thành công
@@ -118,10 +127,12 @@ class PatientController extends Controller
 
     /**
      * Xóa bệnh nhân khỏi hệ thống.
-     * 
-     * 👉 Khi xóa bệnh nhân:
-     * - Xóa cả bản ghi trong bảng `users` để tránh user "mồ côi".
-     * - Sau đó xóa bản ghi trong bảng `patients`.
+     * - Khi xóa bệnh nhân:
+     *   - Xóa cả bản ghi trong bảng `users` để tránh user "mồ côi".
+     *   - Sau đó xóa bản ghi trong bảng `patients`.
+     *
+     * @param  \App\Models\Patient  $patient
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(Patient $patient)
     {

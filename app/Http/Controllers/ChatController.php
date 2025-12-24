@@ -15,7 +15,7 @@ class ChatController extends Controller
      * - Admin đăng nhập bằng guard web_admin.
      * - Người dùng/patient đăng nhập bằng guard mặc định web.
      *
-     * @return User|null
+     * @return \App\Models\User|null
      */
     private function authUser(): ?User
     {
@@ -38,6 +38,7 @@ class ChatController extends Controller
     private function authId(): ?int
     {
         $user = $this->authUser();
+
         return $user?->id;
     }
 
@@ -49,6 +50,7 @@ class ChatController extends Controller
     private function isAdmin(): bool
     {
         $user = $this->authUser();
+
         return (bool) ($user && $user->role && $user->role->name === 'admin');
     }
 
@@ -59,8 +61,9 @@ class ChatController extends Controller
      * - Nếu người đăng nhập là admin → hiển thị danh sách người dùng (user) để chọn và trò chuyện.
      * - Nếu người đăng nhập là user → tự động chat với admin đầu tiên trong hệ thống.
      */
+
     /**
-     * Hiển thị giao diện chat cho admin
+     * Hiển thị giao diện chat cho admin.
      * - Load danh sách bệnh nhân (role patient) để admin chọn hội thoại.
      * - Truyền authId sang view để JS so sánh tin nhắn gửi/nhận.
      *
@@ -69,17 +72,18 @@ class ChatController extends Controller
     public function adminChat()
     {
         $user = $this->authUser();
+
         if (!$user) {
             abort(401);
         }
-        
+
         // Lấy danh sách tất cả user (trừ chính admin)
         $users = User::where('id', '!=', $user->id)
-                     ->whereHas('role', function($query) {
-                         $query->where('name', 'patient');
-                     })
-                     ->with('role')
-                     ->get();
+            ->whereHas('role', function ($query) {
+                $query->where('name', 'patient');
+            })
+            ->with('role')
+            ->get();
 
         $authId = $user->id;
 
@@ -96,6 +100,7 @@ class ChatController extends Controller
     public function index()
     {
         $user = $this->authUser(); // Lấy thông tin người dùng hiện tại
+
         if (!$user) {
             abort(401);
         }
@@ -107,11 +112,11 @@ class ChatController extends Controller
 
         // Trường hợp người dùng là user thông thường
         // -> Mặc định chỉ có thể chat với admin
-        $admin = User::whereHas('role', function($query) {
-                    $query->where('name', 'admin');
-                })
-                ->with('role')
-                ->first();
+        $admin = User::whereHas('role', function ($query) {
+            $query->where('name', 'admin');
+        })
+            ->with('role')
+            ->first();
 
         // Trả về view chat cho user, truyền id của admin để xác định người nhận
         return view('chat.user', ['receiverId' => $admin->id]);
@@ -125,12 +130,13 @@ class ChatController extends Controller
      * - Dữ liệu tin nhắn được lưu vào bảng `messages`.
      * - Có kiểm tra quyền: admin chỉ chat với patient, patient chỉ chat với admin.
      *
-     * @param Request $request
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function sendMessage(Request $request)
     {
         $sender = $this->authUser();
+
         if (!$sender) {
             abort(401);
         }
@@ -138,7 +144,7 @@ class ChatController extends Controller
         // Kiểm tra dữ liệu hợp lệ
         $request->validate([
             'receiver_id' => 'required|exists:users,id', // ID người nhận phải tồn tại
-            'message' => 'required|string',              // Nội dung tin nhắn là chuỗi ký tự
+            'message' => 'required|string', // Nội dung tin nhắn là chuỗi ký tự
         ]);
 
         $receiver = User::with('role')->findOrFail($request->receiver_id);
@@ -156,9 +162,9 @@ class ChatController extends Controller
 
         // Lưu tin nhắn vào CSDL
         Message::create([
-            'sender_id' => $sender->id,             // ID người gửi = user đang đăng nhập
+            'sender_id' => $sender->id, // ID người gửi = user đang đăng nhập
             'receiver_id' => $request->receiver_id, // ID người nhận được truyền từ request
-            'message' => $request->message,         // Nội dung tin nhắn
+            'message' => $request->message, // Nội dung tin nhắn
         ]);
 
         // Trả về phản hồi JSON cho AJAX
@@ -174,6 +180,7 @@ class ChatController extends Controller
     public function adminUnreadCount()
     {
         $user = $this->authUser();
+
         if (!$user) {
             abort(401);
         }
@@ -199,6 +206,7 @@ class ChatController extends Controller
     public function adminUnreadByUser()
     {
         $user = $this->authUser();
+
         if (!$user) {
             abort(401);
         }
@@ -215,6 +223,7 @@ class ChatController extends Controller
             ->get();
 
         $byUser = [];
+
         foreach ($rows as $row) {
             $byUser[(int) $row->sender_id] = (int) $row->unread_count;
         }
@@ -226,12 +235,13 @@ class ChatController extends Controller
      * Đếm tin nhắn chưa đọc của user hiện tại từ 1 người gửi cụ thể (senderId).
      * Ví dụ: bệnh nhân đếm tin chưa đọc từ admin.
      *
-     * @param int|string $senderId
+     * @param  int|string  $senderId
      * @return \Illuminate\Http\JsonResponse
      */
     public function userUnreadCount($senderId)
     {
         $user = $this->authUser();
+
         if (!$user) {
             abort(401);
         }
@@ -253,12 +263,13 @@ class ChatController extends Controller
      * - Khi mở hội thoại sẽ đánh dấu đã đọc (is_read = true) các tin nhắn gửi tới user hiện tại.
      * - Có kiểm tra quyền: admin chỉ chat với patient, patient chỉ chat với admin.
      *
-     * @param int|string $receiverId
+     * @param  int|string  $receiverId
      * @return \Illuminate\Http\JsonResponse
      */
     public function getMessages($receiverId)
     {
         $sender = $this->authUser();
+
         if (!$sender) {
             abort(401);
         }
@@ -276,20 +287,22 @@ class ChatController extends Controller
             }
         }
 
+        // Đánh dấu tin nhắn đã đọc khi mở hội thoại
         Message::where('sender_id', $receiverId)
             ->where('receiver_id', $this->authId())
             ->where('is_read', false)
             ->update(['is_read' => true]);
 
+        // Lấy toàn bộ tin nhắn giữa 2 người
         $messages = Message::where(function ($q) use ($receiverId) {
-                // Điều kiện: user hiện tại là người gửi và receiver là người nhận
-                $q->where('sender_id', $this->authId())
-                  ->where('receiver_id', $receiverId);
-            })
+            // Điều kiện: user hiện tại là người gửi và receiver là người nhận
+            $q->where('sender_id', $this->authId())
+                ->where('receiver_id', $receiverId);
+        })
             ->orWhere(function ($q) use ($receiverId) {
                 // Điều kiện ngược lại: receiver gửi và user hiện tại là người nhận
                 $q->where('sender_id', $receiverId)
-                  ->where('receiver_id', $this->authId());
+                    ->where('receiver_id', $this->authId());
             })
             ->orderBy('created_at', 'asc') // Sắp xếp theo thứ tự thời gian
             ->get();

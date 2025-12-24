@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::table('appointments', function (Blueprint $table) {
             $table->enum('medical_examination', [
                 'Ca sáng (07:30 - 11:30)',
-                'Ca chiều (13:00 - 17:00)'
+                'Ca chiều (13:00 - 17:00)',
             ])->nullable()->after('status');
         });
     }

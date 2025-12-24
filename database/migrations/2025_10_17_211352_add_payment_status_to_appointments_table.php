@@ -9,10 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('appointments', function (Blueprint $table) {
-            if (!Schema::hasColumn('appointments', 'payment_status')) {
+            if (! Schema::hasColumn('appointments', 'payment_status')) {
                 $table->enum('payment_status', ['success', 'failed'])
-                      ->default('failed')
-                      ->after('status');
+                    ->default('failed')
+                    ->after('status');
             }
         });
     }

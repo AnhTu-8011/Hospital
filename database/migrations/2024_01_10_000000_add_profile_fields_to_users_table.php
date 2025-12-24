@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasColumns('users', ['phone', 'insurance_number', 'birthdate', 'gender', 'address'])) {
+        if (! Schema::hasColumns('users', ['phone', 'insurance_number', 'birthdate', 'gender', 'address'])) {
             Schema::table('users', function (Blueprint $table) {
                 $table->string('phone')->nullable();
                 $table->string('insurance_number')->nullable();
@@ -27,7 +27,7 @@ return new class extends Migration
                 'insurance_number',
                 'birthdate',
                 'gender',
-                'address'
+                'address',
             ]);
         });
     }

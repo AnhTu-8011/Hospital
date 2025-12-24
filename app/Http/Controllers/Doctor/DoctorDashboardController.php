@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\Doctor;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,12 +11,19 @@ use Illuminate\Support\Facades\Hash;
 class DoctorDashboardController extends Controller
 {
     /**
-     * Hiển thị trang dashboard của bác sĩ
+     * Hiển thị trang dashboard của bác sĩ.
+     * - Hiển thị danh sách lịch hẹn trong ngày được chọn.
+     * - Thống kê số lượng lịch hẹn theo trạng thái (pending, confirmed, completed).
+     * - Cho phép lọc theo ngày.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View
      */
     public function index(Request $request)
     {
         $doctor = Auth::user()->doctor ?? null;
 
+        // Kiểm tra nếu không tìm thấy thông tin bác sĩ
         if (!$doctor) {
             return view('doctor.dashboard', [
                 'error' => 'Không tìm thấy thông tin bác sĩ!',
@@ -59,7 +64,9 @@ class DoctorDashboardController extends Controller
     }
 
     /**
-     * Trang thông tin cá nhân của bác sĩ
+     * Hiển thị trang thông tin cá nhân của bác sĩ.
+     *
+     * @return \Illuminate\View\View
      */
     public function profile()
     {
@@ -73,7 +80,9 @@ class DoctorDashboardController extends Controller
     }
 
     /**
-     * Trang chỉnh sửa thông tin cá nhân
+     * Hiển thị trang chỉnh sửa thông tin cá nhân.
+     *
+     * @return \Illuminate\View\View
      */
     public function edit()
     {
@@ -87,15 +96,21 @@ class DoctorDashboardController extends Controller
     }
 
     /**
-     * Cập nhật thông tin cá nhân
+     * Cập nhật thông tin cá nhân của bác sĩ.
+     * - Cập nhật thông tin trong bảng users.
+     * - Cập nhật thông tin trong bảng doctors.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request)
     {
         $user = Auth::user();
 
+        // Validate dữ liệu đầu vào
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
             'phone' => 'required|string|max:15',
             'gender' => 'required|in:male,female,other',
             'birthdate' => 'required|date',
@@ -127,15 +142,22 @@ class DoctorDashboardController extends Controller
     }
 
     /**
-     * Cập nhật mật khẩu bác sĩ
+     * Cập nhật mật khẩu bác sĩ.
+     * - Yêu cầu nhập mật khẩu hiện tại để xác thực.
+     * - Mật khẩu mới phải được xác nhận và tối thiểu 8 ký tự.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function updatePassword(Request $request)
     {
+        // Validate dữ liệu đầu vào
         $request->validate([
             'current_password' => ['required', 'current_password'],
             'password' => ['required', 'confirmed', 'min:8'],
         ]);
 
+        // Cập nhật mật khẩu mới
         $user = Auth::user();
         $user->update([
             'password' => Hash::make($request->password),
@@ -145,7 +167,11 @@ class DoctorDashboardController extends Controller
     }
 
     /**
-     * Danh sách lịch hẹn của bác sĩ
+     * Hiển thị danh sách lịch hẹn của bác sĩ.
+     * - Hiển thị tất cả lịch hẹn của bác sĩ hiện tại.
+     * - Sắp xếp theo ngày khám giảm dần (mới nhất trước).
+     *
+     * @return \Illuminate\View\View
      */
     public function appointments()
     {

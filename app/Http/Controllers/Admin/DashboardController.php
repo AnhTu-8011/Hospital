@@ -3,24 +3,23 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Doctor;
 use App\Models\Appointment;
-use App\Models\User;
 use App\Models\Department;
+use App\Models\Doctor;
 use App\Models\Service;
+use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class DashboardController extends Controller
 {
     /**
      * Hiển thị trang Dashboard dành cho Admin.
-     * 
-     * 👉 Mục đích:
      * - Cung cấp các thống kê tổng quan (tổng số bác sĩ, bệnh nhân, phòng ban, dịch vụ, lịch hẹn, v.v.)
      * - Hiển thị danh sách lịch hẹn gần nhất.
      * - Hiển thị biểu đồ/thống kê doanh thu theo ngày, tháng và năm.
+     *
+     * @return \Illuminate\View\View
      */
     public function index()
     {
@@ -32,41 +31,41 @@ class DashboardController extends Controller
         // =====================================================
         $stats = [
             // Tổng số bác sĩ trong hệ thống
-            'total_doctors'          => Doctor::count(),
+            'total_doctors' => Doctor::count(),
 
             // Tổng số bệnh nhân (ở đây giả định role_id = 1 là bệnh nhân)
-            'total_patients'         => User::where('role_id', 1)->count(),
+            'total_patients' => User::where('role_id', 1)->count(),
 
             // Tổng số khoa (phòng ban)
-            'total_departments'      => Department::count(),
+            'total_departments' => Department::count(),
 
             // Tổng số dịch vụ khám bệnh
-            'total_services'         => Service::count(),
+            'total_services' => Service::count(),
 
             // Tổng số lịch hẹn trong toàn hệ thống
-            'total_appointments'     => Appointment::count(),
+            'total_appointments' => Appointment::count(),
 
             // Số lượng lịch hẹn diễn ra trong ngày hôm nay
-            'today_appointments'     => Appointment::whereDate('appointment_date', $today)->count(),
+            'today_appointments' => Appointment::whereDate('appointment_date', $today)->count(),
 
             // Số lượng lịch hẹn đang chờ xác nhận
-            'pending_appointments'   => Appointment::where('status', 'pending')->count(),
+            'pending_appointments' => Appointment::where('status', 'pending')->count(),
 
             // Số lượng lịch hẹn đã hoàn thành
             'completed_appointments' => Appointment::where('status', 'completed')->count(),
 
             // Số lượng lịch hẹn đã thanh toán
-            'paid_appointments'      => Appointment::where('status', 'paid')->count(),
+            'paid_appointments' => Appointment::where('status', 'paid')->count(),
         ];
 
         // =====================================================
         // 📅 PHẦN 2: DANH SÁCH LỊCH HẸN GẦN NHẤT
         // =====================================================
         $recentAppointments = Appointment::with([
-                'patient',      // Quan hệ với bệnh nhân
-                'doctor.user',  // Quan hệ với bác sĩ và thông tin user của bác sĩ
-                'service'       // Quan hệ với dịch vụ khám bệnh
-            ])
+            'patient',      // Quan hệ với bệnh nhân
+            'doctor.user',  // Quan hệ với bác sĩ và thông tin user của bác sĩ
+            'service',       // Quan hệ với dịch vụ khám bệnh
+        ])
             ->orderByDesc('appointment_date') // Sắp xếp lịch hẹn mới nhất lên đầu
             ->limit(10)                       // Giới hạn lấy 10 lịch hẹn gần nhất
             ->get();
@@ -75,7 +74,7 @@ class DashboardController extends Controller
         // 💰 PHẦN 3: THỐNG KÊ DOANH THU
         // =====================================================
         // Tính mốc thời gian để lọc dữ liệu thống kê
-        $start7Days    = Carbon::now()->subDays(6)->startOfDay();     // 7 ngày gần nhất
+        $start7Days = Carbon::now()->subDays(6)->startOfDay();     // 7 ngày gần nhất
         $start12Months = Carbon::now()->subMonths(11)->startOfMonth(); // 12 tháng gần nhất
 
         // ===== 💵 Tổng doanh thu toàn hệ thống =====
@@ -84,21 +83,21 @@ class DashboardController extends Controller
         $dateExpr = Schema::hasColumn('appointments', 'paid_at')
             ? 'COALESCE(appointments.paid_at, appointments.appointment_date)'
             : 'appointments.appointment_date';
-        $discountExpr = 'CASE WHEN patients.birthdate IS NOT NULL AND MONTH(patients.birthdate) = MONTH(' . $dateExpr . ') THEN 0.7 ELSE 0.8 END';
+        $discountExpr = 'CASE WHEN patients.birthdate IS NOT NULL AND MONTH(patients.birthdate) = MONTH('.$dateExpr.') THEN 0.7 ELSE 0.8 END';
 
         $totalRevenue = Appointment::where('payment_status', Appointment::PAYMENT_SUCCESS)
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->join('patients', 'appointments.patient_id', '=', 'patients.id')
-            ->selectRaw('SUM((' . $priceExpr . ') * ' . $discountExpr . ') as total')
+            ->selectRaw('SUM(('.$priceExpr.') * '.$discountExpr.') as total')
             ->value('total');
 
         // ===== 📈 Doanh thu theo NGÀY (7 ngày gần nhất) =====
         // Nhóm theo ngày thanh toán (paid_at) nếu có, nếu không thì theo ngày hẹn
         $daily = Appointment::where('payment_status', Appointment::PAYMENT_SUCCESS)
-            ->whereRaw($dateExpr . ' >= ?', [$start7Days])
+            ->whereRaw($dateExpr.' >= ?', [$start7Days])
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->join('patients', 'appointments.patient_id', '=', 'patients.id')
-            ->selectRaw('DATE(' . $dateExpr . ') as date, SUM((' . $priceExpr . ') * ' . $discountExpr . ') as total')
+            ->selectRaw('DATE('.$dateExpr.') as date, SUM(('.$priceExpr.') * '.$discountExpr.') as total')
             ->groupBy('date')
             ->orderBy('date', 'asc')
             ->get();
@@ -106,10 +105,10 @@ class DashboardController extends Controller
         // ===== 📊 Doanh thu theo THÁNG (12 tháng gần nhất) =====
         // Nhóm theo định dạng YYYY-MM của thời điểm thanh toán (paid_at) nếu có
         $monthly = Appointment::where('payment_status', Appointment::PAYMENT_SUCCESS)
-            ->whereRaw($dateExpr . ' >= ?', [$start12Months])
+            ->whereRaw($dateExpr.' >= ?', [$start12Months])
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->join('patients', 'appointments.patient_id', '=', 'patients.id')
-            ->selectRaw('DATE_FORMAT(' . $dateExpr . ', "%Y-%m") as month, SUM((' . $priceExpr . ') * ' . $discountExpr . ') as total')
+            ->selectRaw('DATE_FORMAT('.$dateExpr.', "%Y-%m") as month, SUM(('.$priceExpr.') * '.$discountExpr.') as total')
             ->groupBy('month')
             ->orderBy('month', 'asc')
             ->get();
@@ -119,7 +118,7 @@ class DashboardController extends Controller
         $yearly = Appointment::where('payment_status', Appointment::PAYMENT_SUCCESS)
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->join('patients', 'appointments.patient_id', '=', 'patients.id')
-            ->selectRaw('YEAR(' . $dateExpr . ') as year, SUM((' . $priceExpr . ') * ' . $discountExpr . ') as total')
+            ->selectRaw('YEAR('.$dateExpr.') as year, SUM(('.$priceExpr.') * '.$discountExpr.') as total')
             ->groupBy('year')
             ->orderBy('year', 'asc')
             ->get();

@@ -2,10 +2,10 @@
 
 namespace App\Mail;
 
+use App\Models\Appointment;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Appointment;
 
 class AppointmentReminderMail extends Mailable
 {
@@ -21,6 +21,6 @@ class AppointmentReminderMail extends Mailable
     public function build()
     {
         return $this->subject('Nhắc nhở lịch hẹn - Ngày mai')
-                    ->view('emails.appointment_reminder');
+            ->view('emails.appointment_reminder');
     }
 }

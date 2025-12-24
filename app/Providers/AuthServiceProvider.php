@@ -22,10 +22,9 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerPolicies();
-        
+
         // Đăng ký middleware 'role' với ứng dụng
         $router = $this->app['router'];
         $router->aliasMiddleware('role', \App\Http\Middleware\RoleMiddleware::class);
     }
-    
 }

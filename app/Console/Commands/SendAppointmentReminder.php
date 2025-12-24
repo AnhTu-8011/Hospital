@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
-use App\Models\Appointment;
 use App\Mail\AppointmentReminderMail;
+use App\Models\Appointment;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class SendAppointmentReminder extends Command
 {
@@ -47,7 +47,7 @@ class SendAppointmentReminder extends Command
                 'to' => $to,
             ]);
 
-            if (!$to) {
+            if (! $to) {
                 Log::warning('[SendAppointmentReminder] Skipped appointment due to missing patient email', [
                     'appointment_id' => $appointment->id ?? null,
                 ]);

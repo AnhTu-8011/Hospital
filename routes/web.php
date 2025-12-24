@@ -1,44 +1,37 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Admin\{
-    DashboardController,
-    DepartmentController as AdminDepartmentController,
-    ReportController,
-    DoctorController as AdminDoctorController,
-    AppointmentController as AdminAppointmentController,
-    DiseaseController as AdminDiseaseController,
-    MedicalRecordController as AdminMedicalRecordController,
-    MedicineController as AdminMedicineController,
-};
-use App\Http\Controllers\{
-    AIChatController,
-    ServiceController,
-    PatientController,
-    UserController,
-    AppointmentController,
-    PaymentController,
-    ChatController,
-    ForgotPasswordController,
-    ResetPasswordController,
-    HomeController
-};
-use App\Http\Controllers\Doctor\{
-    DoctorDashboardController,
-    DoctorProfileController,
-    DoctorRecordController,
-    HistoryController
-};
+use App\Http\Controllers\Admin\AppointmentController as AdminAppointmentController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DepartmentController as AdminDepartmentController;
+use App\Http\Controllers\Admin\DiseaseController as AdminDiseaseController;
+use App\Http\Controllers\Admin\DoctorController as AdminDoctorController;
+use App\Http\Controllers\Admin\MedicalRecordController as AdminMedicalRecordController;
+use App\Http\Controllers\Admin\MedicineController as AdminMedicineController;
+use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\DoctorAuthController;
 use App\Http\Controllers\Auth\PatientAuthController;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\Doctor\DoctorDashboardController;
+use App\Http\Controllers\Doctor\DoctorProfileController;
+use App\Http\Controllers\Doctor\DoctorRecordController;
+use App\Http\Controllers\Doctor\HistoryController;
+use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PatientController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ResetPasswordController;
+use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
 | 🏠 Trang chính (Home)
 |--------------------------------------------------------------------------
 */
+
 Route::get('/', [HomeController::class, 'welcome'])->name('home');
 Route::get('/doctors', [HomeController::class, 'doctorsPage'])->name('doctors.index');
 Route::get('/departments', [HomeController::class, 'departmentsPage'])->name('departments.index');
@@ -53,7 +46,7 @@ Route::get('/appointment/modal', function () {
     $hasActiveColumn = \Illuminate\Support\Facades\Schema::hasColumn('departments', 'is_active');
 
     $departments = \App\Models\Department::query()
-        ->when($hasActiveColumn, fn ($q) => $q->where('is_active', true))
+        ->when($hasActiveColumn, fn($q) => $q->where('is_active', true))
         ->get();
 
     $services = \App\Models\Service::with('department')
@@ -71,6 +64,7 @@ Route::get('/appointment/modal', function () {
             });
         })
         ->get();
+
     return view('home.booking', compact('departments', 'services', 'doctors'));
 })->name('modal.appointment');
 
@@ -117,7 +111,6 @@ Route::middleware(['auth:web_admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-
         // 📊 Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -159,10 +152,10 @@ Route::middleware(['auth:web_admin'])
         // 💬 Chat
         Route::get('/chat', [\App\Http\Controllers\ChatController::class, 'index'])
             ->name('chat.index');
-            
+
         Route::post('/chat/send', [\App\Http\Controllers\ChatController::class, 'sendMessage'])
             ->name('chat.send');
-            
+
         Route::get('/chat/messages/{receiverId}', [\App\Http\Controllers\ChatController::class, 'getMessages'])
             ->name('chat.messages');
 
@@ -171,7 +164,7 @@ Route::middleware(['auth:web_admin'])
 
         Route::get('/chat/unread-by-user', [\App\Http\Controllers\ChatController::class, 'adminUnreadByUser'])
             ->name('chat.unread_by_user');
-            
+
         // Admin chat interface
         Route::get('/chat-interface', [\App\Http\Controllers\ChatController::class, 'adminChat'])
             ->name('chat.admin');
@@ -197,7 +190,6 @@ Route::middleware(['auth:web_doctor'])
     ->prefix('doctor')
     ->name('doctor.')
     ->group(function () {
-
         // 📊 Dashboard
         Route::get('/dashboard', [DoctorDashboardController::class, 'index'])->name('dashboard');
 
@@ -216,7 +208,7 @@ Route::middleware(['auth:web_doctor'])
         Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
         Route::get('/patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
 
-       // 📋 Hồ sơ bệnh án
+        // 📋 Hồ sơ bệnh án
         Route::get('/patients/{patient}/records', [\App\Http\Controllers\Doctor\DoctorRecordController::class, 'index'])->name('patients.records');
         Route::post('/patients/{patient}/records', [\App\Http\Controllers\Doctor\DoctorRecordController::class, 'store'])->name('patients.records.store');
 
@@ -266,7 +258,6 @@ Route::middleware(['auth'])
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth'])->group(function () {
-
     // 👤 Hồ sơ cá nhân
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

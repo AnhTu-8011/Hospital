@@ -3,8 +3,8 @@
 namespace App\Http\Responses;
 
 use Illuminate\Http\Request;
-use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
 use Illuminate\Support\Facades\Log;
+use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
 
 class RegisterResponse implements RegisterResponseContract
 {
@@ -13,11 +13,12 @@ class RegisterResponse implements RegisterResponseContract
         $user = $request->user();
         Log::info('Register response for user:', [
             'user_id' => $user?->id,
-            'role' => $user?->role?->name
+            'role' => $user?->role?->name,
         ]);
 
-        if (!$user || !$user->role) {
+        if (! $user || ! $user->role) {
             Log::warning('User or role not found after registration');
+
             return redirect()->intended('/');
         }
 

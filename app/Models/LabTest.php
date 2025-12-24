@@ -41,7 +41,8 @@ class LabTest extends Model
     {
         return $this->belongsTo(User::class, 'uploaded_by');
     }
-    public function testType()
+
+    public function test_type()
     {
         return $this->belongsTo(TestType::class, 'test_type_id');
     }

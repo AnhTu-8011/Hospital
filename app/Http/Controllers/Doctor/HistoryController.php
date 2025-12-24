@@ -3,28 +3,33 @@
 namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
+use App\Models\MedicalRecord;
 use Illuminate\Http\Request;
-use App\Models\{Appointment, Patient, MedicalRecord};
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class HistoryController extends Controller
 {
-        /**
-     * Lịch sử khám: danh sách hồ sơ bệnh án
+    /**
+     * Hiển thị lịch sử khám: danh sách hồ sơ bệnh án.
+     * - Chỉ hiển thị các hồ sơ bệnh án của bác sĩ hiện tại.
+     * - Sắp xếp theo thời gian tạo giảm dần (mới nhất trước).
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View
      */
     public function history(Request $request)
     {
         $user = $request->user();
         $doctorId = optional(optional($user)->doctor)->id;
 
+        // Lấy danh sách hồ sơ bệnh án của bác sĩ hiện tại
         $medicalRecords = MedicalRecord::with(['appointment.patient', 'appointment.service'])
             ->when($doctorId, function ($query) use ($doctorId) {
+                // Lọc theo doctor_id nếu có
                 $query->whereHas('appointment', function ($q) use ($doctorId) {
                     $q->where('doctor_id', $doctorId);
                 });
             }, function ($query) {
-                // If no doctor found for current user, do not return any records
+                // Nếu không tìm thấy bác sĩ cho user hiện tại, không trả về bản ghi nào
                 $query->whereRaw('1 = 0');
             })
             ->orderByDesc('created_at')

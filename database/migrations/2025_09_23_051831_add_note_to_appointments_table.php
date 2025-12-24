@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::table('appointments', function (Blueprint $table) {
             $table->text('note')->nullable()->after('status'); // thêm cột note sau status
-
         });
     }
 

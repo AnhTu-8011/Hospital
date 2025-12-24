@@ -3,27 +3,39 @@
 @section('title', 'Lịch khám bác sĩ ' . $doctor->user->name)
 
 @section('content')
+    {{-- Page Header --}}
     <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
         <div>
-            <p class="text-uppercase text-primary fw-semibold mb-1" style="letter-spacing: .08em; font-size: 0.85rem;">LỊCH KHÁM BÁC SĨ</p>
+            <p class="text-uppercase text-primary fw-semibold mb-1" style="letter-spacing: .08em; font-size: 0.85rem;">
+                LỊCH KHÁM BÁC SĨ
+            </p>
             <h1 class="h3 mb-0 fw-bold text-dark">
-                <i class="fas fa-calendar-check me-2 text-primary"></i>Lịch khám bác sĩ
+                <i class="fas fa-calendar-check me-2 text-primary"></i>
+                Lịch khám bác sĩ
             </h1>
         </div>
         <a href="{{ route('admin.doctors.index') }}" class="btn btn-outline-primary rounded-pill px-4 shadow-sm">
-            <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+            <i class="fas fa-arrow-left me-2"></i>
+            Quay lại danh sách
         </a>
     </div>
 
+    {{-- Schedule Card --}}
     <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        {{-- Card Header --}}
         <div class="card-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
             <h6 class="m-0 font-weight-bold text-white d-flex align-items-center">
-                <i class="fas fa-user-md me-2"></i>Thông tin bác sĩ - Ngày {{ \Carbon\Carbon::parse($today)->format('d/m/Y') }}
+                <i class="fas fa-user-md me-2"></i>
+                Thông tin bác sĩ - Ngày {{ \Carbon\Carbon::parse($today)->format('d/m/Y') }}
             </h6>
         </div>
+
+        {{-- Card Body --}}
         <div class="card-body p-4">
+            {{-- Doctor Info --}}
             <div class="bg-light rounded-4 p-4 mb-4">
                 <div class="row g-3">
+                    {{-- Bác sĩ --}}
                     <div class="col-md-6">
                         <div class="d-flex align-items-center">
                             <i class="fas fa-user-md text-primary me-3 fs-4"></i>
@@ -33,6 +45,8 @@
                             </div>
                         </div>
                     </div>
+
+                    {{-- Chuyên khoa --}}
                     <div class="col-md-6">
                         <div class="d-flex align-items-center">
                             <i class="fas fa-building text-primary me-3 fs-4"></i>
@@ -45,7 +59,9 @@
                 </div>
             </div>
 
+            {{-- Schedule Stats --}}
             <div class="row g-4">
+                {{-- Ca sáng --}}
                 <div class="col-md-6">
                     <div class="card border-0 shadow-sm rounded-4 h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                         <div class="card-body p-4 text-white">
@@ -63,6 +79,7 @@
                     </div>
                 </div>
 
+                {{-- Ca chiều --}}
                 <div class="col-md-6">
                     <div class="card border-0 shadow-sm rounded-4 h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                         <div class="card-body p-4 text-white">

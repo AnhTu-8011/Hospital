@@ -8,28 +8,29 @@ use Illuminate\Database\Eloquent\Model;
 class Patient extends Model
 {
     use HasFactory;
+
     protected $fillable = [
-        'user_id', 
-        'name', 
-        'email',  
-        'birthdate', 
-        'gender', 
-        'address', 
-        'phone', 
-        'insurance_number', 
-        'avatar'
+        'user_id',
+        'name',
+        'email',
+        'birthdate',
+        'gender',
+        'address',
+        'phone',
+        'insurance_number',
+        'avatar',
     ];
 
     protected $casts = [
-        'birthdate' => 'date'
+        'birthdate' => 'date',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
- /**
-     * Tự động điền name và email từ user khi tạo patient mới
+    /**
+     * Tự động điền name và email từ user khi tạo patient mới.
      */
     // protected static function boot()
     // {
@@ -52,7 +53,4 @@ class Patient extends Model
     {
         return $this->hasMany(Appointment::class);
     }
-
-
 }
-

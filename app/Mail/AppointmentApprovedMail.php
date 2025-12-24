@@ -2,10 +2,10 @@
 
 namespace App\Mail;
 
+use App\Models\Appointment;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Appointment;
 
 class AppointmentApprovedMail extends Mailable
 {
@@ -21,6 +21,6 @@ class AppointmentApprovedMail extends Mailable
     public function build()
     {
         return $this->subject('Lịch hẹn của bạn đã được xác nhận')
-                    ->view('emails.appointment_approved');
+            ->view('emails.appointment_approved');
     }
 }

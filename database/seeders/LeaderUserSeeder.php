@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
 use App\Models\Role;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class LeaderUserSeeder extends Seeder
@@ -18,7 +18,7 @@ class LeaderUserSeeder extends Seeder
         $leaderRole = Role::where('name', 'leader')->first();
 
         // nếu chưa có thì tạo
-        if (!$leaderRole) {
+        if (! $leaderRole) {
             $leaderRole = Role::create(['name' => 'leader']);
         }
 

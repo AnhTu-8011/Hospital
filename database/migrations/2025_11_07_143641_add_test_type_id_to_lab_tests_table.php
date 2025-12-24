@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('lab_tests', function (Blueprint $table) {
             // 🔗 Thêm cột liên kết với bảng test_types
-            if (!Schema::hasColumn('lab_tests', 'test_type_id')) {
+            if (! Schema::hasColumn('lab_tests', 'test_type_id')) {
                 $table->unsignedBigInteger('test_type_id')->nullable()->after('department_id');
                 $table->foreign('test_type_id')
                     ->references('id')

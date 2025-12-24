@@ -14,17 +14,19 @@ class ProfileController extends Controller
 {
     /**
      * Hiển thị trang chính của hồ sơ cá nhân.
-     * Ví dụ: /profile
+     *
+     * @return \Illuminate\View\View
      */
     public function index()
     {
-        // Trả về giao diện trang hồ sơ
-        return view('profile.index'); 
+        return view('profile.index');
     }
 
     /**
      * Hiển thị trang chỉnh sửa hồ sơ người dùng.
-     * Truyền dữ liệu user hiện tại vào view.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View
      */
     public function edit(Request $request): View
     {
@@ -36,11 +38,14 @@ class ProfileController extends Controller
     /**
      * Cập nhật thông tin hồ sơ người dùng,
      * đồng thời đồng bộ với bảng "patients".
+     *
+     * @param  \App\Http\Requests\ProfileUpdateRequest  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function update(ProfileUpdateRequest $request)
     {
-        $user = $request->user();             // Lấy người dùng hiện tại
-        $validated = $request->validated();   // Lấy dữ liệu đã được xác thực từ request
+        $user = $request->user(); // Lấy người dùng hiện tại
+        $validated = $request->validated(); // Lấy dữ liệu đã được xác thực từ request
 
         // Gán dữ liệu hợp lệ vào model user
         $user->fill($validated);
@@ -98,13 +103,16 @@ class ProfileController extends Controller
 
     /**
      * Đổi mật khẩu người dùng hiện tại.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function updatePassword(Request $request)
     {
         // Xác thực dữ liệu nhập
         $request->validate([
-            'current_password' => 'required',           // bắt buộc nhập mật khẩu hiện tại
-            'password'         => 'required|confirmed|min:8', // mật khẩu mới ít nhất 8 ký tự và phải trùng với xác nhận
+            'current_password' => 'required', // bắt buộc nhập mật khẩu hiện tại
+            'password' => 'required|confirmed|min:8', // mật khẩu mới ít nhất 8 ký tự và phải trùng với xác nhận
         ]);
 
         $user = Auth::user(); // Lấy user hiện tại
@@ -125,6 +133,9 @@ class ProfileController extends Controller
     /**
      * Xóa tài khoản người dùng (có yêu cầu xác nhận mật khẩu).
      * Sau khi xóa, đăng xuất và hủy session.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(Request $request)
     {
@@ -134,17 +145,17 @@ class ProfileController extends Controller
         $request->validate([
             'password' => ['required', 'current_password'],
         ]);
-    
+
         // Đăng xuất khỏi hệ thống
         Auth::logout();
-    
+
         // Xóa user (và có thể cascade xóa dữ liệu liên quan)
         $user->delete();
-    
+
         // Làm mới session để đảm bảo bảo mật
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-    
+
         // Chuyển hướng về trang chủ sau khi xóa thành công
         return redirect('/')->with('status', 'Tài khoản đã được xóa thành công.');
     }
