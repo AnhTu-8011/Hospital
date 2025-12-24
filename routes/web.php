@@ -81,6 +81,7 @@ Route::get('/appointment/modal', function () {
 //--------------------------------------------------------------------------
 */
 Route::middleware(['auth'])->get('/dashboard', function () {
+    /** @var \App\Models\User|null $user */
     $user = auth()->user();
 
     if ($user && method_exists($user, 'hasRole')) {
@@ -93,7 +94,7 @@ Route::middleware(['auth'])->get('/dashboard', function () {
         }
     }
 
-    return redirect()->route('patient.dashboard');
+    return redirect()->route('home');
 })->name('dashboard');
 
 /*
@@ -215,9 +216,9 @@ Route::middleware(['auth:web_doctor'])
         Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
         Route::get('/patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
 
-        // 📋 Hồ sơ bệnh án
-        Route::get('/patients/{patient}/records', [\App\Http\Controllers\Doctor\MedicalRecordController::class, 'index'])->name('patients.records');
-        Route::post('/patients/{patient}/records', [\App\Http\Controllers\Doctor\MedicalRecordController::class, 'store'])->name('patients.records.store');
+       // 📋 Hồ sơ bệnh án
+        Route::get('/patients/{patient}/records', [\App\Http\Controllers\Doctor\DoctorRecordController::class, 'index'])->name('patients.records');
+        Route::post('/patients/{patient}/records', [\App\Http\Controllers\Doctor\DoctorRecordController::class, 'store'])->name('patients.records.store');
 
         // 🧪 Bác sĩ yêu cầu xét nghiệm
         Route::get('/records/{record}/lab-tests/create', [\App\Http\Controllers\Doctor\LabTestController::class, 'create'])
