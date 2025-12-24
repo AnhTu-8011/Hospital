@@ -118,6 +118,12 @@ class ChatController extends Controller
             ->with('role')
             ->first();
 
+        // Kiểm tra nếu không có admin trong hệ thống
+        if (!$admin) {
+            return redirect()->route('home')
+                ->with('error', 'Hiện tại chưa có quản trị viên để hỗ trợ. Vui lòng thử lại sau.');
+        }
+
         // Trả về view chat cho user, truyền id của admin để xác định người nhận
         return view('chat.user', ['receiverId' => $admin->id]);
     }
