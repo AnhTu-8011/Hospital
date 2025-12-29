@@ -40,7 +40,37 @@ class AppointmentController extends Controller
     }
 
     /**
+     * Lấy thời gian bắt đầu ca khám dựa trên medical_examination và appointment_date.
+     *
+     * @param  \App\Models\Appointment  $appointment
+     * @return \Carbon\Carbon|null
+     */
+    private function getAppointmentStartTime(Appointment $appointment): ?Carbon
+    {
+        if (!$appointment->medical_examination || !$appointment->appointment_date) {
+            return null;
+        }
+
+        $appointmentDate = Carbon::parse($appointment->appointment_date);
+        
+        // Xác định thời gian bắt đầu ca khám
+        if (strpos($appointment->medical_examination, 'Ca sáng') !== false) {
+            // Ca sáng bắt đầu lúc 07:30
+            $appointmentDate->setTime(7, 30, 0);
+        } elseif (strpos($appointment->medical_examination, 'Ca chiều') !== false) {
+            // Ca chiều bắt đầu lúc 13:00
+            $appointmentDate->setTime(13, 0, 0);
+        } else {
+            return null;
+        }
+
+        return $appointmentDate;
+    }
+
+    /**
      * Kiểm tra xem lịch hẹn có sẽ bị tự động hủy không.
+     * - Lịch hẹn sẽ tự động hủy nếu chưa thanh toán và chưa đến thời điểm bắt đầu ca khám
+     * - Phải có ít nhất 24 giờ từ thời điểm hiện tại đến thời điểm bắt đầu ca khám
      *
      * @param  \App\Models\Appointment  $appointment
      * @return bool
@@ -56,14 +86,31 @@ class AppointmentController extends Controller
             return false;
         }
 
-        // Kiểm tra xem đã qua 24 giờ kể từ khi tạo chưa
-        $hoursSinceCreation = now()->diffInHours($appointment->created_at, false);
+        // Lấy thời gian bắt đầu ca khám
+        $appointmentStartTime = $this->getAppointmentStartTime($appointment);
+        if (!$appointmentStartTime) {
+            // Nếu không xác định được thời gian ca khám, dùng logic cũ (24h sau khi tạo)
+            $hoursSinceCreation = now()->diffInHours($appointment->created_at, false);
+            return $hoursSinceCreation < 24;
+        }
+
+        // Kiểm tra xem có đủ 24 giờ từ bây giờ đến thời điểm bắt đầu ca khám không
+        $now = Carbon::now();
+        $hoursUntilAppointment = $now->diffInHours($appointmentStartTime, false);
         
-        return $hoursSinceCreation < 24;
+        // Nếu đã qua thời điểm bắt đầu ca khám, không tự động hủy nữa
+        if ($hoursUntilAppointment < 0) {
+            return false;
+        }
+        
+        // Nếu còn ít hơn 24 giờ đến thời điểm bắt đầu ca khám, sẽ tự động hủy
+        return $hoursUntilAppointment < 24;
     }
 
     /**
      * Tính số giờ còn lại trước khi tự động hủy.
+     * - Tính từ thời điểm hiện tại đến thời điểm bắt đầu ca khám
+     * - Hoặc đến 24 giờ sau khi tạo (nếu không xác định được thời gian ca khám)
      *
      * @param  \App\Models\Appointment  $appointment
      * @return float|null
@@ -74,9 +121,19 @@ class AppointmentController extends Controller
             return null;
         }
 
+        // Lấy thời gian bắt đầu ca khám
+        $appointmentStartTime = $this->getAppointmentStartTime($appointment);
+        
+        if ($appointmentStartTime) {
+            // Tính số giờ còn lại đến thời điểm bắt đầu ca khám
+            $now = Carbon::now();
+            $hoursRemaining = $now->diffInHours($appointmentStartTime, false);
+            return max(0, $hoursRemaining);
+        }
+
+        // Fallback: dùng logic cũ (24h sau khi tạo)
         $cutoffTime = Carbon::parse($appointment->created_at)->addHours(24);
         $hoursRemaining = now()->diffInHours($cutoffTime, false);
-
         return max(0, $hoursRemaining);
     }
 
@@ -106,26 +163,6 @@ class AppointmentController extends Controller
         return redirect()->route('admin.appointments.index')
             ->with('success', 'Xóa lịch hẹn thành công!');
     }
-
-    // /**
-    //  * Xác nhận lịch hẹn (thay đổi trạng thái thành "confirmed").
-    //  * - Gửi email xác nhận cho bệnh nhân nếu trạng thái thay đổi.
-    //  *
-    //  * @param  \App\Models\Appointment  $appointment
-    //  * @return \Illuminate\Http\RedirectResponse
-    //  */
-    // public function confirm(Appointment $appointment)
-    // {
-    //     $previousStatus = $appointment->status;
-    //     $appointment->update(['status' => Appointment::STATUS_CONFIRMED]);
-
-    //     // Gửi email xác nhận nếu trạng thái thay đổi
-    //     if ($previousStatus !== Appointment::STATUS_CONFIRMED) {
-    //         $this->sendApprovalEmail($appointment);
-    //     }
-
-    //     return back()->with('success', 'Đã xác nhận lịch hẹn thành công');
-    // }
 
     /**
      * Cập nhật trạng thái lịch hẹn.

@@ -236,6 +236,8 @@
                                    id="appointment_date"
                                    class="form-control form-control-lg rounded-3 border-2"
                                    required
+                                   min="{{ \Carbon\Carbon::today()->format('Y-m-d') }}"
+                                   max="{{ \Carbon\Carbon::today()->addDays(6)->format('Y-m-d') }}"
                                    onkeydown="return false;"
                                    style="transition: all 0.3s ease;"
                                    onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)';"

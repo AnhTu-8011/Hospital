@@ -202,7 +202,7 @@ Route::middleware(['auth:web_doctor'])
         Route::get('/appointments', [AppointmentController::class, 'doctorAppointments'])->name('appointments.index');
         Route::get('/appointments/{appointment}', [AppointmentController::class, 'show'])->name('appointments.show');
         Route::put('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.status');
-        Route::post('/appointments/{appointment}/complete', [AppointmentController::class, 'complete'])->name('appointments.complete');
+        Route::post('/appointments/{appointment}/complete', [\App\Http\Controllers\Doctor\DoctorAppointmentController::class, 'complete'])->name('appointments.complete');
 
         // 👨‍⚕️ Bệnh nhân
         Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');

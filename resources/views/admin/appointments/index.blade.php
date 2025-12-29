@@ -266,13 +266,37 @@
                                     @php
                                         $isPaidAndPending = $appointment->payment_status === 'success' 
                                             && $appointment->status === 'pending';
-                                        $hoursSinceCreation = $isPaidAndPending ? now()->diffInHours($appointment->created_at, false) : null;
-                                        $willAutoApprove = $isPaidAndPending && $hoursSinceCreation !== null && $hoursSinceCreation < 24;
-                                        $hoursUntilAutoApprove = $willAutoApprove ? max(0, 24 - $hoursSinceCreation) : null;
+                                        
+                                        // Tính thời gian bắt đầu ca khám
+                                        $appointmentStartTime = null;
+                                        if ($isPaidAndPending && $appointment->medical_examination && $appointment->appointment_date) {
+                                            $appointmentDate = \Carbon\Carbon::parse($appointment->appointment_date);
+                                            if (strpos($appointment->medical_examination, 'Ca sáng') !== false) {
+                                                $appointmentDate->setTime(7, 30, 0);
+                                                $appointmentStartTime = $appointmentDate;
+                                            } elseif (strpos($appointment->medical_examination, 'Ca chiều') !== false) {
+                                                $appointmentDate->setTime(13, 0, 0);
+                                                $appointmentStartTime = $appointmentDate;
+                                            }
+                                        }
+                                        
+                                        // Tính số giờ còn lại đến thời điểm bắt đầu ca khám
+                                        $hoursUntilAppointment = null;
+                                        if ($isPaidAndPending && $appointmentStartTime) {
+                                            $hoursUntilAppointment = now()->diffInHours($appointmentStartTime, false);
+                                        }
+                                        
+                                        // Sẽ tự động duyệt nếu còn ít hơn 24 giờ đến thời điểm bắt đầu ca khám
+                                        $willAutoApprove = $isPaidAndPending 
+                                            && $hoursUntilAppointment !== null 
+                                            && $hoursUntilAppointment >= 0 
+                                            && $hoursUntilAppointment < 24;
+                                        
+                                        $hoursUntilAutoApprove = $willAutoApprove ? max(0, $hoursUntilAppointment) : null;
                                     @endphp
                                     @if($willAutoApprove && $hoursUntilAutoApprove !== null)
                                         <span class="badge bg-info-subtle text-info rounded-pill px-2 py-1 small" 
-                                              title="Lịch hẹn đã thanh toán sẽ tự động được duyệt trong vòng 24 giờ nếu khách hàng không hủy">
+                                              title="Lịch hẹn đã thanh toán sẽ tự động được duyệt trước khi ca khám bắt đầu nếu khách hàng không hủy">
                                             <i class="fas fa-info-circle me-1"></i>
                                             Tự động duyệt sau {{ round($hoursUntilAutoApprove, 1) }}h
                                         </span>

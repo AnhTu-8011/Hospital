@@ -17,13 +17,67 @@ document.addEventListener('DOMContentLoaded', () => {
     const sdImage = document.getElementById('sd_image');
 
     // 🔹 Giới hạn ngày đặt lịch trong 7 ngày (cả cuối tuần)
-    const today = new Date();
-    const start = new Date(today);
-    const end = new Date(today);
-    end.setDate(end.getDate() + 6);
+    // Đảm bảo không cho chọn ngày đã qua (tự động cập nhật khi qua ngày mới)
+    if (dateInput) {
+        // Hàm lấy ngày hôm nay theo local time (tránh vấn đề timezone)
+        function getTodayString() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
 
-    dateInput.min = start.toISOString().split('T')[0];
-    dateInput.max = end.toISOString().split('T')[0];
+        // Hàm lấy ngày tối đa (6 ngày sau)
+        function getMaxDateString() {
+            const today = new Date();
+            const maxDate = new Date(today);
+            maxDate.setDate(today.getDate() + 6);
+            const year = maxDate.getFullYear();
+            const month = String(maxDate.getMonth() + 1).padStart(2, '0');
+            const day = String(maxDate.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Cập nhật min và max
+        const todayStr = getTodayString();
+        const maxDateStr = getMaxDateString();
+        
+        dateInput.min = todayStr;
+        dateInput.max = maxDateStr;
+
+        // Nếu người dùng đã chọn ngày trong quá khứ, tự động reset về hôm nay
+        if (dateInput.value && dateInput.value < todayStr) {
+            dateInput.value = todayStr;
+        }
+
+        // Thêm event listener để kiểm tra khi người dùng thay đổi ngày
+        dateInput.addEventListener('change', function() {
+            const selectedDate = this.value;
+            const currentToday = getTodayString();
+            
+            // Nếu chọn ngày trong quá khứ, tự động reset về hôm nay
+            if (selectedDate && selectedDate < currentToday) {
+                alert('Không thể chọn ngày trong quá khứ. Đã tự động chuyển về ngày hôm nay.');
+                this.value = currentToday;
+            }
+        });
+
+        // Kiểm tra lại mỗi khi focus vào input (để cập nhật khi qua ngày mới)
+        dateInput.addEventListener('focus', function() {
+            const currentToday = getTodayString();
+            const currentMax = getMaxDateString();
+            
+            // Cập nhật lại min và max
+            this.min = currentToday;
+            this.max = currentMax;
+            
+            // Nếu giá trị hiện tại là ngày cũ, reset về hôm nay
+            if (this.value && this.value < currentToday) {
+                this.value = currentToday;
+            }
+        });
+    }
 
     // 🔒 Khóa chọn khoa (và giữ nguyên hành vi hiện tại) nếu chưa đăng nhập
     const isAuth = form && form.dataset && form.dataset.auth === '1';

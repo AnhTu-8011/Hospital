@@ -38,6 +38,7 @@ class DoctorProfileController extends Controller
      */
     public function update(Request $request)
     {
+        /** @var User $user */
         $user = Auth::user();
         $doctor = Doctor::where('user_id', $user->id)->firstOrFail();
 
@@ -117,7 +118,8 @@ class DoctorProfileController extends Controller
             'new_password' => 'required|min:6|confirmed',
         ]);
 
-        $user = auth()->user();
+        /** @var User $user */
+        $user = Auth::user();
 
         // Kiểm tra mật khẩu hiện tại
         if (!Hash::check($request->current_password, $user->password)) {

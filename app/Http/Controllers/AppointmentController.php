@@ -340,34 +340,6 @@ class AppointmentController extends Controller
     }
 
     /**
-     * Bác sĩ đánh dấu lịch hẹn đã hoàn thành.
-     * - Chỉ bác sĩ của lịch hẹn và khi trạng thái là "confirmed" mới được phép cập nhật.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Appointment  $appointment
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function complete(Request $request, Appointment $appointment)
-    {
-        $user = Auth::user();
-
-        // Chỉ cho phép bác sĩ đúng của lịch hẹn
-        if (!$user || !$user->role || strtolower(trim($user->role->name)) !== 'doctor' || !$user->doctor || $user->doctor->id !== $appointment->doctor_id) {
-            return back()->with('error', 'Bạn không có quyền cập nhật lịch hẹn này.');
-        }
-
-        // Chỉ cho phép hoàn thành khi lịch hẹn đã được duyệt
-        if ($appointment->status !== 'confirmed') {
-            return back()->with('error', 'Chỉ có thể hoàn thành lịch hẹn đã được duyệt.');
-        }
-
-        // Cập nhật trạng thái lịch hẹn sang "completed"
-        $appointment->update(['status' => 'completed']);
-
-        return back()->with('success', 'Đã đánh dấu lịch hẹn là hoàn thành.');
-    }
-
-    /**
      * Hiển thị hồ sơ bệnh án sau khi khám.
      * - Dành cho bệnh nhân xem lại chi tiết lịch khám và kết quả (medical_record).
      *
