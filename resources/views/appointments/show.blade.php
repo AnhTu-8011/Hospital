@@ -158,27 +158,12 @@
 
                     $finalPrice = $price * $discount;
 
-                    // Kiểm tra quy tắc 24 giờ: chỉ cho phép hủy nếu còn ít nhất 24 giờ trước lịch hẹn
-                    $appointmentDate = Carbon::parse($appointment->appointment_date)->startOfDay();
+                    // Kiểm tra quy tắc 24 giờ: chỉ cho phép hủy trong vòng 24 giờ kể từ khi đặt lịch
+                    $createdAt = Carbon::parse($appointment->created_at);
+                    $hoursSinceCreation = now()->diffInHours($createdAt, false);
                     
-                    // Xác định thời gian bắt đầu ca khám dựa trên medical_examination
-                    $appointmentStartTime = null;
-                    if (strpos($appointment->medical_examination ?? '', 'Ca sáng') !== false) {
-                        // Ca sáng bắt đầu lúc 07:30
-                        $appointmentStartTime = $appointmentDate->copy()->setTime(7, 30, 0);
-                    } elseif (strpos($appointment->medical_examination ?? '', 'Ca chiều') !== false) {
-                        // Ca chiều bắt đầu lúc 13:00
-                        $appointmentStartTime = $appointmentDate->copy()->setTime(13, 0, 0);
-                    } else {
-                        // Mặc định: nếu không xác định được ca, dùng 07:30
-                        $appointmentStartTime = $appointmentDate->copy()->setTime(7, 30, 0);
-                    }
-                    
-                    // Tính số giờ còn lại trước lịch hẹn
-                    $hoursUntilAppointment = now()->diffInHours($appointmentStartTime, false);
-                    
-                    // Chỉ cho phép hủy nếu còn ít nhất 24 giờ
-                    $canCancelByDate = $hoursUntilAppointment >= 24;
+                    // Chỉ cho phép hủy nếu chưa qua 24 giờ kể từ khi đặt lịch
+                    $canCancelByDate = $hoursSinceCreation < 24;
                 @endphp
 
                 {{-- Price & Status Information --}}

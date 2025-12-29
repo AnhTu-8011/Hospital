@@ -37,7 +37,8 @@ class AppointmentController extends Controller
         // Lấy danh sách lịch hẹn của bệnh nhân hiện tại
         $appointments = Appointment::where('patient_id', $user->patient->id)
             ->with(['doctor.user', 'service']) // Nạp thêm thông tin liên quan
-            ->orderByDesc('appointment_date') // Mới nhất lên trước
+            ->orderByDesc('created_at') // Sắp xếp theo mới nhất (thời gian tạo)
+            ->orderByDesc('id') // Nếu cùng thời gian thì sắp xếp theo ID
             ->paginate(10);
 
         return view('appointments.index', compact('appointments'));
@@ -250,33 +251,17 @@ class AppointmentController extends Controller
                 ->with('error', 'Chỉ có thể hủy lịch hẹn đang chờ duyệt hoặc đã duyệt, chưa khám.');
         }
 
-        // Kiểm tra quy tắc 24 giờ: chỉ cho phép hủy nếu còn ít nhất 24 giờ trước lịch hẹn
-        $appointmentDate = Carbon::parse($appointment->appointment_date)->startOfDay();
+        // Kiểm tra quy tắc 24 giờ: chỉ cho phép hủy trong vòng 24 giờ kể từ khi đặt lịch
+        $createdAt = Carbon::parse($appointment->created_at);
+        $hoursSinceCreation = now()->diffInHours($createdAt, false);
         
-        // Xác định thời gian bắt đầu ca khám dựa trên medical_examination
-        $appointmentStartTime = null;
-        if (strpos($appointment->medical_examination ?? '', 'Ca sáng') !== false) {
-            // Ca sáng bắt đầu lúc 07:30
-            $appointmentStartTime = $appointmentDate->copy()->setTime(7, 30, 0);
-        } elseif (strpos($appointment->medical_examination ?? '', 'Ca chiều') !== false) {
-            // Ca chiều bắt đầu lúc 13:00
-            $appointmentStartTime = $appointmentDate->copy()->setTime(13, 0, 0);
-        } else {
-            // Mặc định: nếu không xác định được ca, dùng 07:30
-            $appointmentStartTime = $appointmentDate->copy()->setTime(7, 30, 0);
-        }
-        
-        // Tính số giờ còn lại trước lịch hẹn
-        $hoursUntilAppointment = now()->diffInHours($appointmentStartTime, false);
-        
-        // Nếu còn ít hơn 24 giờ, không cho phép hủy
-        if ($hoursUntilAppointment < 24) {
-            $remainingHours = max(0, $hoursUntilAppointment);
-            $remainingMinutes = now()->diffInMinutes($appointmentStartTime, false) % 60;
+        // Nếu đã qua 24 giờ kể từ khi đặt lịch, không cho phép hủy
+        if ($hoursSinceCreation >= 24) {
+            $hoursPassed = round($hoursSinceCreation, 1);
             
             return redirect()->route('appointments.show', $appointment->id)
-                ->with('error', 'Bạn chỉ có thể hủy lịch hẹn trong vòng 24 giờ trước lịch khám. ' .
-                    'Hiện tại còn ' . round($hoursUntilAppointment, 1) . ' giờ trước lịch hẹn. ' .
+                ->with('error', 'Bạn chỉ có thể hủy lịch hẹn trong vòng 24 giờ kể từ khi đặt lịch. ' .
+                    'Lịch hẹn này đã được đặt cách đây ' . $hoursPassed . ' giờ. ' .
                     'Vui lòng liên hệ trực tiếp bệnh viện để được hỗ trợ.');
         }
 

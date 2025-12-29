@@ -11,7 +11,14 @@
         ->whereIn('status', [\App\Models\Appointment::STATUS_PENDING, \App\Models\Appointment::STATUS_CONFIRMED])
         ->where('created_at', '>', now()->subHours(24))
         ->count();
+    
+    $paidPendingCount = \App\Models\Appointment::where('payment_status', \App\Models\Appointment::PAYMENT_SUCCESS)
+        ->where('status', \App\Models\Appointment::STATUS_PENDING)
+        ->where('created_at', '>', now()->subHours(24))
+        ->count();
 @endphp
+
+{{-- Auto Cancel Alert --}}
 @if($unpaidPendingCount > 0)
     <div class="alert alert-warning border-0 shadow-sm rounded-4 mb-4" role="alert">
         <div class="d-flex align-items-center">
@@ -21,6 +28,36 @@
                 <p class="mb-0 small">
                     Có <strong>{{ $unpaidPendingCount }}</strong> lịch hẹn chưa thanh toán sẽ tự động bị hủy sau 24 giờ kể từ khi đặt lịch nếu không thanh toán.
                     Hệ thống sẽ tự động chạy kiểm tra mỗi giờ để hủy các lịch hẹn quá hạn.
+                </p>
+            </div>
+        </div>
+    </div>
+@endif
+
+{{-- Auto Approve Alert --}}
+@if($paidPendingCount > 0)
+    <div class="alert alert-info border-0 shadow-sm rounded-4 mb-4" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-info-circle me-3 fs-4"></i>
+            <div>
+                <strong class="d-block mb-1">Lưu ý: Tự động duyệt lịch hẹn đã thanh toán</strong>
+                <p class="mb-0 small">
+                    Có <strong>{{ $paidPendingCount }}</strong> lịch hẹn đã thanh toán trong vòng 24 giờ sẽ tự động được cập nhật thành "Đã duyệt" nếu khách hàng không hủy.
+                    Hệ thống sẽ tự động chạy kiểm tra mỗi giờ để duyệt các lịch hẹn đã thanh toán.
+                </p>
+            </div>
+        </div>
+    </div>
+@else
+    {{-- General Info Alert (always show) --}}
+    <div class="alert alert-info border-0 shadow-sm rounded-4 mb-4" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-info-circle me-3 fs-4"></i>
+            <div>
+                <strong class="d-block mb-1">Lưu ý: Tự động duyệt lịch hẹn đã thanh toán</strong>
+                <p class="mb-0 small">
+                    Sau khi thanh toán trong vòng 24 giờ, nếu khách hàng không hủy thì lịch hẹn sẽ tự động được cập nhật thành "Đã duyệt".
+                    Hệ thống sẽ tự động chạy kiểm tra mỗi giờ để duyệt các lịch hẹn đã thanh toán.
                 </p>
             </div>
         </div>
@@ -222,6 +259,22 @@
                                               title="Lịch hẹn sẽ tự động hủy nếu không thanh toán trong vòng 24 giờ">
                                             <i class="fas fa-exclamation-triangle me-1"></i>
                                             Tự động hủy sau {{ round($appointment->hours_until_auto_cancel, 1) }}h
+                                        </span>
+                                    @endif
+                                    
+                                    {{-- Cảnh báo tự động duyệt --}}
+                                    @php
+                                        $isPaidAndPending = $appointment->payment_status === 'success' 
+                                            && $appointment->status === 'pending';
+                                        $hoursSinceCreation = $isPaidAndPending ? now()->diffInHours($appointment->created_at, false) : null;
+                                        $willAutoApprove = $isPaidAndPending && $hoursSinceCreation !== null && $hoursSinceCreation < 24;
+                                        $hoursUntilAutoApprove = $willAutoApprove ? max(0, 24 - $hoursSinceCreation) : null;
+                                    @endphp
+                                    @if($willAutoApprove && $hoursUntilAutoApprove !== null)
+                                        <span class="badge bg-info-subtle text-info rounded-pill px-2 py-1 small" 
+                                              title="Lịch hẹn đã thanh toán sẽ tự động được duyệt trong vòng 24 giờ nếu khách hàng không hủy">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Tự động duyệt sau {{ round($hoursUntilAutoApprove, 1) }}h
                                         </span>
                                     @endif
                                 </div>
