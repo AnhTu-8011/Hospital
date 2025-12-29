@@ -29,7 +29,55 @@ class AppointmentController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        // Tính toán thông tin tự động hủy cho mỗi lịch hẹn
+        $appointments->getCollection()->transform(function ($appointment) {
+            $appointment->will_auto_cancel = $this->willAutoCancel($appointment);
+            $appointment->hours_until_auto_cancel = $this->getHoursUntilAutoCancel($appointment);
+            return $appointment;
+        });
+
         return view('admin.appointments.index', compact('appointments'));
+    }
+
+    /**
+     * Kiểm tra xem lịch hẹn có sẽ bị tự động hủy không.
+     *
+     * @param  \App\Models\Appointment  $appointment
+     * @return bool
+     */
+    private function willAutoCancel(Appointment $appointment): bool
+    {
+        // Chỉ áp dụng cho lịch hẹn chưa thanh toán và đang ở trạng thái pending/confirmed
+        if ($appointment->payment_status === Appointment::PAYMENT_SUCCESS) {
+            return false;
+        }
+
+        if (!in_array($appointment->status, [Appointment::STATUS_PENDING, Appointment::STATUS_CONFIRMED])) {
+            return false;
+        }
+
+        // Kiểm tra xem đã qua 24 giờ kể từ khi tạo chưa
+        $hoursSinceCreation = now()->diffInHours($appointment->created_at, false);
+        
+        return $hoursSinceCreation < 24;
+    }
+
+    /**
+     * Tính số giờ còn lại trước khi tự động hủy.
+     *
+     * @param  \App\Models\Appointment  $appointment
+     * @return float|null
+     */
+    private function getHoursUntilAutoCancel(Appointment $appointment): ?float
+    {
+        if (!$this->willAutoCancel($appointment)) {
+            return null;
+        }
+
+        $cutoffTime = Carbon::parse($appointment->created_at)->addHours(24);
+        $hoursRemaining = now()->diffInHours($cutoffTime, false);
+
+        return max(0, $hoursRemaining);
     }
 
     /**

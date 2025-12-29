@@ -22,6 +22,9 @@ class Kernel extends ConsoleKernel
 
         // Tự động hủy các lịch hẹn chưa thanh toán sau 24 giờ - chạy mỗi giờ
         $schedule->command('app:auto-cancel-unpaid-appointments')->hourly();
+
+        // Tự động duyệt các lịch hẹn đã thanh toán trong vòng 24 giờ - chạy mỗi giờ
+        $schedule->command('app:auto-approve-paid-appointments')->hourly();
     }
 
     /**
