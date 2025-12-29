@@ -59,25 +59,25 @@ class AppointmentController extends Controller
             ->with('success', 'Xóa lịch hẹn thành công!');
     }
 
-    /**
-     * Xác nhận lịch hẹn (thay đổi trạng thái thành "confirmed").
-     * - Gửi email xác nhận cho bệnh nhân nếu trạng thái thay đổi.
-     *
-     * @param  \App\Models\Appointment  $appointment
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function confirm(Appointment $appointment)
-    {
-        $previousStatus = $appointment->status;
-        $appointment->update(['status' => Appointment::STATUS_CONFIRMED]);
+    // /**
+    //  * Xác nhận lịch hẹn (thay đổi trạng thái thành "confirmed").
+    //  * - Gửi email xác nhận cho bệnh nhân nếu trạng thái thay đổi.
+    //  *
+    //  * @param  \App\Models\Appointment  $appointment
+    //  * @return \Illuminate\Http\RedirectResponse
+    //  */
+    // public function confirm(Appointment $appointment)
+    // {
+    //     $previousStatus = $appointment->status;
+    //     $appointment->update(['status' => Appointment::STATUS_CONFIRMED]);
 
-        // Gửi email xác nhận nếu trạng thái thay đổi
-        if ($previousStatus !== Appointment::STATUS_CONFIRMED) {
-            $this->sendApprovalEmail($appointment);
-        }
+    //     // Gửi email xác nhận nếu trạng thái thay đổi
+    //     if ($previousStatus !== Appointment::STATUS_CONFIRMED) {
+    //         $this->sendApprovalEmail($appointment);
+    //     }
 
-        return back()->with('success', 'Đã xác nhận lịch hẹn thành công');
-    }
+    //     return back()->with('success', 'Đã xác nhận lịch hẹn thành công');
+    // }
 
     /**
      * Cập nhật trạng thái lịch hẹn.
@@ -163,8 +163,8 @@ class AppointmentController extends Controller
      */
     private function sendApprovalEmail(Appointment $appointment): void
     {
-        $appointment->loadMissing(['patient', 'doctor.user', 'service']);
-        $patientEmail = optional($appointment->patient)->email;
+        $appointment->loadMissing(['patient', 'doctor.user', 'service']);//loadMissing để tránh nạp dữ liệu không cần thiết
+        $patientEmail = optional($appointment->patient)->email; //optional để tránh lỗi khi không có email
 
         // Gửi email nếu có địa chỉ email
         if ($patientEmail) {

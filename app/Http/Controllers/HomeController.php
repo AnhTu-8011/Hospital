@@ -42,13 +42,13 @@ class HomeController extends Controller
 
         // 2. Lấy danh sách tất cả khoa
         $departments = Department::all();
-        
+
         // 3. Gọi method xử lý tìm kiếm (KHÔNG lọc theo khoa)
 
         $suggestions = $this->getSuggestionsBySymptoms($symptomQuery, null);
 
         // 4. Trả về view với dữ liệu
-            return view('home.advisor.index', array_merge([
+        return view('home.advisor.index', array_merge([
             'symptomQuery' => $symptomQuery,
             'selectedDepartmentId' => null,
             'departments' => $departments,
@@ -102,7 +102,7 @@ class HomeController extends Controller
                     [$query]
                 );
             } else {
-                $departments->where('description', 'LIKE', '%'.$query.'%');
+                $departments->where('description', 'LIKE', '%' . $query . '%');
             }
         }
 
@@ -187,14 +187,14 @@ class HomeController extends Controller
         // 4. Tìm các ID dịch vụ và bệnh khớp
         $serviceIds = $this->findMatchingServiceIds($keywords);
         $diseaseIds = $this->findMatchingDiseaseIds($keywords);
-        
+
         // 5. Lấy danh sách dịch vụ gợi ý
         if ($serviceIds->isNotEmpty()) {
             $suggestedServices = $this->getSuggestedServices($serviceIds, $keywords, $selectedDepartmentId);
             $departmentIds = $suggestedServices->pluck('department_id')->unique();
 
             // 6. Kiểm tra nếu có khoa → lấy danh sách khoa
-                if ($departmentIds->isNotEmpty()) {
+            if ($departmentIds->isNotEmpty()) {
                 $suggestedDepartments = Department::whereIn('id', $departmentIds)->get();
                 $suggestedDoctors = Doctor::with(['user', 'department'])
                     ->whereIn('department_id', $departmentIds)
@@ -251,11 +251,11 @@ class HomeController extends Controller
     private function normalizeKeywords(string $symptomQuery): Collection
     {
         return collect(explode(',', $symptomQuery))
-            ->map(fn($keyword) => trim($keyword))//loại bỏ khoảng trắng và chuyển về chữ thường không dấu
-            ->filter(fn($keyword) => $keyword !== '')//bỏ rỗng
-            ->unique()//bỏ trùng
-            ->filter(fn($keyword) => mb_strlen($keyword) >= 2)//tối thiểu 2 ký tự
-            ->values();//chuyển về mảng
+            ->map(fn($keyword) => trim($keyword)) //loại bỏ khoảng trắng và chuyển về chữ thường không dấu
+            ->filter(fn($keyword) => $keyword !== '') //bỏ rỗng
+            ->unique() //bỏ trùng
+            ->filter(fn($keyword) => mb_strlen($keyword) >= 2) //tối thiểu 2 ký tự
+            ->values(); //chuyển về mảng
     }
 
     /**
@@ -270,12 +270,12 @@ class HomeController extends Controller
 
         foreach ($keywords as $keyword) {
             // Tìm trong bảng service_symptoms với `LIKE '%keyword%'` (không phân biệt hoa thường)
-            $matchedIds = ServiceSymptom::whereRaw('LOWER(symptom_name) LIKE ?', ['%'.strtolower($keyword).'%'])
-                ->pluck('service_id');//lấy service_id
-            $serviceIds = $serviceIds->merge($matchedIds);//gộp và loại bỏ trùng
+            $matchedIds = ServiceSymptom::whereRaw('LOWER(symptom_name) LIKE ?', ['%' . strtolower($keyword) . '%'])
+                ->pluck('service_id'); //lấy service_id
+            $serviceIds = $serviceIds->merge($matchedIds); //gộp và loại bỏ trùng
         }
 
-        return $serviceIds->unique();//loại bỏ trùng
+        return $serviceIds->unique(); //loại bỏ trùng
     }
 
     /**
@@ -286,16 +286,16 @@ class HomeController extends Controller
      */
     private function findMatchingDiseaseIds(Collection $keywords): Collection
     {
-        $diseaseIds = collect();//khởi tạo collection rỗng
+        $diseaseIds = collect(); //khởi tạo collection rỗng
 
         foreach ($keywords as $keyword) {
             // Tìm trong bảng disease_symptoms với `LIKE '%keyword%'` (không phân biệt hoa thường)
-            $matchedIds = DiseaseSymptom::whereRaw('LOWER(symptom_name) LIKE ?', ['%'.strtolower($keyword).'%'])
-                ->pluck('disease_id');//lấy disease_id
-            $diseaseIds = $diseaseIds->merge($matchedIds);//gộp và loại bỏ trùng
+            $matchedIds = DiseaseSymptom::whereRaw('LOWER(symptom_name) LIKE ?', ['%' . strtolower($keyword) . '%'])
+                ->pluck('disease_id'); //lấy disease_id
+            $diseaseIds = $diseaseIds->merge($matchedIds); //gộp và loại bỏ trùng
         }
 
-        return $diseaseIds->unique();//loại bỏ trùng
+        return $diseaseIds->unique(); //loại bỏ trùng
     }
 
     /**
@@ -311,11 +311,11 @@ class HomeController extends Controller
             // Kiểm tra nếu triệu chứng khớp với từ khóa
             foreach ($keywords as $keyword) {
                 if (stripos($symptom->symptom_name, $keyword) !== false) {
-                    return true;//trả về true nếu khớp
+                    return true; //trả về true nếu khớp
                 }
             }
 
-            return false;//trả về false nếu không khớp          
+            return false; //trả về false nếu không khớp          
         })->count();
     }
 
@@ -347,11 +347,11 @@ class HomeController extends Controller
             })
             ->filter(function ($service) {
                 // Chỉ lấy dịch vụ có ít nhất 1 triệu chứng khớp
-                return ($service->matched_symptoms_count ?? 0) > 0;//trả về true nếu có triệu chứng khớp
+                return ($service->matched_symptoms_count ?? 0) > 0; //trả về true nếu có triệu chứng khớp
             })
-            ->sortByDesc('matched_symptoms_count')//sắp xếp theo độ khớp giảm dần
-            ->take(6)//lấy 6 dịch vụ đầu tiên
-            ->values();//chuyển về mảng
+            ->sortByDesc('matched_symptoms_count') //sắp xếp theo độ khớp giảm dần
+            ->take(6) //lấy 6 dịch vụ đầu tiên
+            ->values(); //chuyển về mảng
     }
 
     /**
@@ -384,9 +384,9 @@ class HomeController extends Controller
                 // Chỉ lấy bệnh có ít nhất 1 triệu chứng khớp
                 return ($disease->matched_symptoms_count ?? 0) > 0;
             })
-            ->sortByDesc('matched_symptoms_count')//sắp xếp theo độ khớp giảm dần
-            ->take(6)//lấy 6 bệnh đầu tiên
-            ->values();//chuyển về mảng         
+            ->sortByDesc('matched_symptoms_count') //sắp xếp theo độ khớp giảm dần
+            ->take(6) //lấy 6 bệnh đầu tiên
+            ->values(); //chuyển về mảng         
     }
 
     /**
@@ -403,7 +403,7 @@ class HomeController extends Controller
         }
 
         // Lấy danh sách service IDs thuộc khoa
-        $serviceIds = Service::where('department_id', $departmentId)->pluck('id');//lấy service_id
+        $serviceIds = Service::where('department_id', $departmentId)->pluck('id'); //lấy service_id
 
         // Kiểm tra nếu không có dịch vụ → trả về rỗng
         if ($serviceIds->isEmpty()) {
@@ -411,21 +411,21 @@ class HomeController extends Controller
         }
 
         // Lấy triệu chứng từ các dịch vụ và nhóm lại
-        return ServiceSymptom::whereIn('service_id', $serviceIds)//tìm trong bảng service_symptoms với service_id
+        return ServiceSymptom::whereIn('service_id', $serviceIds) //tìm trong bảng service_symptoms với service_id
             ->select('symptom_name')
-            ->get()//lấy triệu chứng theo service_id
+            ->get() //lấy triệu chứng theo service_id
             ->groupBy(function ($item) {
                 return mb_strtolower(trim($item->symptom_name));
-            })//nhóm triệu chứng theo symptom_name
+            }) //nhóm triệu chứng theo symptom_name
             ->map(function ($group) {
                 return [
-                    'name' => $group->first()->symptom_name,//lấy symptom_name đầu tiên
-                    'count' => $group->count(),//đếm số lần xuất hiện
+                    'name' => $group->first()->symptom_name, //lấy symptom_name đầu tiên
+                    'count' => $group->count(), //đếm số lần xuất hiện
                 ];
-            })//chuyển về mảng
-            ->sortByDesc('count')//sắp xếp theo số lần xuất hiện giảm dần
-            ->values()//chuyển về mảng
-            ->take(12);//lấy 12 triệu chứng đầu tiên
+            }) //chuyển về mảng
+            ->sortByDesc('count') //sắp xếp theo số lần xuất hiện giảm dần
+            ->values() //chuyển về mảng
+            ->take(12); //lấy 12 triệu chứng đầu tiên
     }
 
     /**

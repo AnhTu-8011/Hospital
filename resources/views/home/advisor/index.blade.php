@@ -28,6 +28,9 @@
               <div class="col-12">
                 <div class="input-group input-group-lg">
                   <span class="input-group-text bg-white border-2"><i class="bi bi-search text-primary"></i></span>
+                  {{-- $symptomQuery: Chuỗi triệu chứng người dùng nhập vào (ví dụ: "đau đầu, sốt, ho")
+                       Được lấy từ request->input('symptom') trong HomeController::advisorPage()
+                       Kiểu: string|null --}}
                   <input type="text" name="symptom" value="{{ $symptomQuery ?? '' }}" class="form-control rounded-end-3 border-2" placeholder="Ví dụ: đau đầu, sốt, ho, đau bụng..." autofocus>
                 </div>
                 <div class="mt-2">
@@ -50,185 +53,251 @@
                 <small class="text-muted">Hệ thống sẽ gợi ý bệnh phù hợp, khoa liên quan, dịch vụ tương ứng và cho phép bạn đặt lịch ngay.</small>
               </div>
 
-        @if(($symptomQuery ?? null))
-        <div class="mt-4">
-          @if(isset($suggestedDiseases) && $suggestedDiseases->isNotEmpty())
-            <div class="alert alert-info rounded-4 border-0 shadow-sm mb-4">
-              <div class="d-flex align-items-center mb-3">
-                <i class="bi bi-activity me-2 fs-4"></i>
-                <div>
-                  <h5 class="mb-1 fw-bold">Gợi ý bệnh liên quan</h5>
-                  <p class="mb-0 text-muted small">Từ triệu chứng: "<strong>{{ $symptomQuery }}</strong>"</p>
-                </div>
-              </div>
-              <div class="row g-3">
-                @foreach($suggestedDiseases as $disease)
-                  <div class="col-md-6">
-                    <div class="p-3 rounded-3 border bg-white h-100">
-                      <div class="d-flex align-items-start justify-content-between">
-                        <div>
-                          <h6 class="fw-bold mb-1">{{ $disease->name }}</h6>
-                          <div class="mb-2">
-                            @if($disease->department)
-                              <span class="badge bg-primary rounded-pill me-2"><i class="bi bi-hospital me-1"></i>{{ $disease->department->name }}</span>
-                            @endif
-                      @if($disease->symptoms && $disease->symptoms->count())
-                        <div class="mt-2">
-                          <small class="text-muted d-block mb-1">Triệu chứng:</small>
-                          <div class="d-flex flex-wrap gap-2">
-                            @foreach($disease->symptoms as $sym)
-                              <span class="badge bg-info text-dark rounded-pill">{{ $sym->symptom_name }}</span>
-                            @endforeach
-                          </div>
-                        </div>
-                      @endif
-                          </div>
-                        </div>
-                      </div>
-                      @if(!empty($disease->description))
-                        <p class="text-muted small mb-0" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">{{ $disease->description }}</p>
-                      @endif
+              {{-- Kiểm tra nếu có triệu chứng được nhập vào --}}
+              @if(($symptomQuery ?? null))
+              <div class="mt-4">
+                {{-- $suggestedDiseases: Collection chứa danh sách các bệnh được gợi ý dựa trên triệu chứng
+                     Được trả về từ HomeController::getSuggestionsBySymptoms()
+                     Kiểu: Illuminate\Support\Collection<App\Models\Disease>
+                     Mỗi Disease có: id, name, description, department_id, image, symptoms (quan hệ) --}}
+                @if(isset($suggestedDiseases) && $suggestedDiseases->isNotEmpty())
+                <div class="alert alert-info rounded-4 border-0 shadow-sm mb-4">
+                  <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-activity me-2 fs-4"></i>
+                    <div>
+                      <h5 class="mb-1 fw-bold">Gợi ý bệnh liên quan</h5>
+                      <p class="mb-0 text-muted small">Từ triệu chứng: "<strong>{{ $symptomQuery }}</strong>"</p>
                     </div>
                   </div>
-                @endforeach
-              </div>
-            </div>
-          @endif
-
-          @if(isset($suggestedDepartments) && $suggestedDepartments->isNotEmpty())
-            <div class="alert alert-primary rounded-4 border-0 shadow-sm mb-4">
-              <p class="mb-2 fw-semibold"><i class="bi bi-hospital me-2"></i>Khoa phù hợp:</p>
-              <div class="d-flex flex-wrap gap-2">
-                @foreach($suggestedDepartments as $dept)
-                  <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">{{ $dept->name }}</span>
-                @endforeach
-              </div>
-            </div>
-          @endif
-
-          @if(isset($suggestedDoctors) && $suggestedDoctors->isNotEmpty())
-            <div class="alert alert-success rounded-4 border-0 shadow-sm mb-4">
-              <p class="mb-2 fw-semibold"><i class="bi bi-person-badge me-2"></i>Bác sĩ phù hợp:</p>
-              <div class="d-flex flex-wrap gap-2">
-                @foreach($suggestedDoctors->take(8) as $doctor)
-                  <span class="badge bg-success rounded-pill px-3 py-2 fs-6">{{ $doctor->user->name ?? 'Bác sĩ' }}</span>
-                @endforeach
-                @if($suggestedDoctors->count() > 8)
-                  <span class="badge bg-secondary rounded-pill px-3 py-2 fs-6">+{{ $suggestedDoctors->count() - 8 }} bác sĩ khác</span>
-                @endif
-              </div>
-            </div>
-          @endif
-
-          @if(isset($suggestedServices) && $suggestedServices->isNotEmpty())
-            <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-3">
-              <div class="d-flex align-items-center">
-                <i class="bi bi-check-circle-fill me-2 fs-5"></i>
-                <div>
-                  <div class="fw-bold">Tìm thấy {{ $suggestedServices->count() }} dịch vụ phù hợp</div>
-                  <small class="text-muted">Bạn có thể chọn dịch vụ và đặt lịch ngay</small>
+                  <div class="row g-3">
+                    {{-- $disease: Từng đối tượng Disease trong collection $suggestedDiseases
+                         Kiểu: App\Models\Disease
+                         Thuộc tính: name, description, department_id, image
+                         Quan hệ: department (belongsTo), symptoms (hasMany) --}}
+                    @foreach($suggestedDiseases as $disease)
+                    <div class="col-md-6">
+                      <div class="p-3 rounded-3 border bg-white h-100">
+                        <div class="d-flex align-items-start justify-content-between">
+                          <div>
+                            {{-- $disease->name: Tên bệnh (ví dụ: "Cảm cúm", "Viêm họng") --}}
+                            <h6 class="fw-bold mb-1">{{ $disease->name }}</h6>
+                            <div class="mb-2">
+                              {{-- $disease->department: Quan hệ belongsTo với Department
+                                   Kiểu: App\Models\Department|null
+                                   Thuộc tính: id, name, description, image --}}
+                              @if($disease->department)
+                              <span class="badge bg-primary rounded-pill me-2"><i class="bi bi-hospital me-1"></i>{{ $disease->department->name }}</span>
+                              @endif
+                              {{-- $disease->symptoms: Quan hệ hasMany với DiseaseSymptom
+                                   Kiểu: Illuminate\Support\Collection<App\Models\DiseaseSymptom>
+                                   Mỗi DiseaseSymptom có: id, disease_id, symptom_name --}}
+                              @if($disease->symptoms && $disease->symptoms->count())
+                              <div class="mt-2">
+                                <small class="text-muted d-block mb-1">Triệu chứng:</small>
+                                <div class="d-flex flex-wrap gap-2">
+                                  {{-- $sym: Từng đối tượng DiseaseSymptom trong collection $disease->symptoms
+                                       Kiểu: App\Models\DiseaseSymptom
+                                       Thuộc tính: id, disease_id, symptom_name (tên triệu chứng) --}}
+                                  @foreach($disease->symptoms as $sym)
+                                  {{-- $sym->symptom_name: Tên triệu chứng (ví dụ: "đau đầu", "sốt", "ho") --}}
+                                  <span class="badge bg-info text-dark rounded-pill">{{ $sym->symptom_name }}</span>
+                                  @endforeach
+                                </div>
+                              </div>
+                              @endif
+                            </div>
+                          </div>
+                        </div>
+                        {{-- $disease->description: Mô tả chi tiết về bệnh --}}
+                        @if(!empty($disease->description))
+                        <p class="text-muted small mb-0" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">{{ $disease->description }}</p>
+                        @endif
+                      </div>
+                    </div>
+                    @endforeach
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div class="row g-4">
-              @foreach($suggestedServices as $service)
-                <div class="col-md-4 col-sm-6">
-                  <div class="card border-0 h-100 bg-white rounded-4 shadow-sm" style="cursor:pointer; transition: all 0.3s ease;"
-                       onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 12px 24px rgba(13,110,253,.15)';"
-                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)';"
-                       data-bs-toggle="modal" data-bs-target="#serviceModal{{ $service->id }}">
-                    <div class="card-body text-center p-4">
-                      <div class="mb-3 d-flex justify-content-center">
-                        <div style="width: 160px; height: 160px; overflow:hidden; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                          @php
+                @endif
+
+                {{-- $suggestedDepartments: Collection chứa danh sách các khoa được gợi ý
+                     Được lấy từ Department::whereIn('id', $departmentIds)->get()
+                     Kiểu: Illuminate\Support\Collection<App\Models\Department>
+                     Mỗi Department có: id, name, description, image --}}
+                @if(isset($suggestedDepartments) && $suggestedDepartments->isNotEmpty())
+                <div class="alert alert-primary rounded-4 border-0 shadow-sm mb-4">
+                  <p class="mb-2 fw-semibold"><i class="bi bi-hospital me-2"></i>Khoa phù hợp:</p>
+                  <div class="d-flex flex-wrap gap-2">
+                    {{-- $dept: Từng đối tượng Department trong collection $suggestedDepartments
+                         Kiểu: App\Models\Department
+                         Thuộc tính: id, name, description, image --}}
+                    @foreach($suggestedDepartments as $dept)
+                    {{-- $dept->name: Tên khoa (ví dụ: "Khoa Nội", "Khoa Ngoại") --}}
+                    <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">{{ $dept->name }}</span>
+                    @endforeach
+                  </div>
+                </div>
+                @endif
+
+                {{-- $suggestedDoctors: Collection chứa danh sách các bác sĩ được gợi ý
+                     Được lấy từ Doctor::whereIn('department_id', $departmentIds)->take(8)->get()
+                     Kiểu: Illuminate\Support\Collection<App\Models\Doctor>
+                     Mỗi Doctor có: id, user_id, department_id
+                     Quan hệ: user (belongsTo), department (belongsTo) --}}
+                @if(isset($suggestedDoctors) && $suggestedDoctors->isNotEmpty())
+                <div class="alert alert-success rounded-4 border-0 shadow-sm mb-4">
+                  <p class="mb-2 fw-semibold"><i class="bi bi-person-badge me-2"></i>Bác sĩ phù hợp:</p>
+                  <div class="d-flex flex-wrap gap-2">
+                    {{-- $doctor: Từng đối tượng Doctor trong collection $suggestedDoctors (chỉ lấy 8 đầu tiên)
+                         Kiểu: App\Models\Doctor
+                         $doctor->user: Quan hệ belongsTo với User (thông tin tài khoản bác sĩ)
+                         $doctor->user->name: Tên bác sĩ từ bảng users --}}
+                    @foreach($suggestedDoctors->take(8) as $doctor)
+                    <span class="badge bg-success rounded-pill px-3 py-2 fs-6">{{ $doctor->user->name ?? 'Bác sĩ' }}</span>
+                    @endforeach
+                    @if($suggestedDoctors->count() > 8)
+                    <span class="badge bg-secondary rounded-pill px-3 py-2 fs-6">+{{ $suggestedDoctors->count() - 8 }} bác sĩ khác</span>
+                    @endif
+                  </div>
+                </div>
+                @endif
+
+                {{-- $suggestedServices: Collection chứa danh sách các dịch vụ được gợi ý
+                     Được trả về từ HomeController::getSuggestedServices()
+                     Kiểu: Illuminate\Support\Collection<App\Models\Service>
+                     Mỗi Service có: id, name, description, price, department_id, image
+                     Quan hệ: department (belongsTo), symptoms (hasMany)
+                     Được sắp xếp theo matched_symptoms_count (số triệu chứng khớp) giảm dần, tối đa 6 dịch vụ --}}
+                @if(isset($suggestedServices) && $suggestedServices->isNotEmpty())
+                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-3">
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                    <div>
+                      <div class="fw-bold">Tìm thấy {{ $suggestedServices->count() }} dịch vụ phù hợp</div>
+                      <small class="text-muted">Bạn có thể chọn dịch vụ và đặt lịch ngay</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="row g-4">
+                  {{-- $service: Từng đối tượng Service trong collection $suggestedServices
+                       Kiểu: App\Models\Service
+                       Thuộc tính: id, name, description, price, department_id, image
+                       Quan hệ: department (belongsTo), symptoms (hasMany) --}}
+                  @foreach($suggestedServices as $service)
+                  <div class="col-md-4 col-sm-6">
+                    <div class="card border-0 h-100 bg-white rounded-4 shadow-sm" style="cursor:pointer; transition: all 0.3s ease;"
+                      onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 12px 24px rgba(13,110,253,.15)';"
+                      onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)';"
+                      data-bs-toggle="modal" data-bs-target="#serviceModal{{ $service->id }}">
+                      <div class="card-body text-center p-4">
+                        <div class="mb-3 d-flex justify-content-center">
+                          <div style="width: 160px; height: 160px; overflow:hidden; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            @php
+                            {{-- $serviceImage: Đường dẫn ảnh của dịch vụ (nếu có)
+                                 Kiểu: string|null
+                                 Lấy từ $service->image --}}
                             $serviceImage = $service->image ?? null;
+                            {{-- $departmentImage: Đường dẫn ảnh của khoa (nếu dịch vụ không có ảnh)
+                                 Kiểu: string|null
+                                 Lấy từ $service->department->image --}}
                             $departmentImage = $service->department->image ?? null;
-                          @endphp
-                          @if(!empty($serviceImage))
+                            @endphp
+                            @if(!empty($serviceImage))
                             <img src="{{ asset('storage/'.$serviceImage) }}" alt="{{ $service->name }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform .3s;"
-                                 onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)';">
-                          @elseif(!empty($departmentImage))
+                              onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)';">
+                            @elseif(!empty($departmentImage))
                             <img src="{{ asset('storage/'.$departmentImage) }}" alt="{{ $service->department->name ?? $service->name }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform .3s;"
-                                 onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)';">
-                          @else
+                              onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)';">
+                            @else
                             <div class="d-flex align-items-center justify-content-center bg-primary-subtle h-100">
                               <i class="bi bi-hospital text-primary" style="font-size: 3rem;"></i>
                             </div>
-                          @endif
-                        </div>
-                      </div>
-                      <h5 class="fw-bold mb-1 text-dark">{{ $service->name }}</h5>
-                      @if($service->department)
-                        <div class="mb-2"><span class="badge bg-primary"><i class="bi bi-hospital me-1"></i>{{ $service->department->name }}</span></div>
-                      @endif
-                      @if(!is_null($service->price))
-                        <p class="text-primary fw-bold mb-0">{{ number_format($service->price, 0, ',', '.') }} đ</p>
-                      @endif
-                    </div>
-                  </div>
-                </div>
-
-                <div class="modal fade" id="serviceModal{{ $service->id }}" tabindex="-1" aria-labelledby="serviceModalLabel{{ $service->id }}" aria-hidden="true">
-                  <div class="modal-dialog modal-dialog-centered" style="max-width:600px;">
-                    <div class="modal-content rounded-4 border-0 shadow-lg">
-                      <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #e3f2ff 0%, #f6fbff 100%); border-radius: 1rem 1rem 0 0 !important;">
-                        <h5 class="modal-title fw-bold text-primary" id="serviceModalLabel{{ $service->id }}">{{ $service->name }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-                      </div>
-                      <div class="modal-body p-4">
-                        <div class="text-center mb-4">
-                          <div style="width: 200px; height: 200px; margin: 0 auto; overflow:hidden; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                            @php
-                              $serviceImage = $service->image ?? null;
-                              $departmentImage = $service->department->image ?? null;
-                            @endphp
-                            @if(!empty($serviceImage))
-                              <img src="{{ asset('storage/'.$serviceImage) }}" alt="{{ $service->name }}" style="width: 100%; height: 100%; object-fit: cover;">
-                            @elseif(!empty($departmentImage))
-                              <img src="{{ asset('storage/'.$departmentImage) }}" alt="{{ $service->department->name ?? $service->name }}" style="width: 100%; height: 100%; object-fit: cover;">
-                            @else
-                              <div class="d-flex align-items-center justify-content-center bg-primary-subtle h-100">
-                                <i class="bi bi-hospital text-primary" style="font-size: 4rem;"></i>
-                              </div>
                             @endif
                           </div>
                         </div>
-                        @if(!empty($service->description))
+                        {{-- $service->name: Tên dịch vụ (ví dụ: "Khám tổng quát", "Xét nghiệm máu") --}}
+                        <h5 class="fw-bold mb-1 text-dark">{{ $service->name }}</h5>
+                        {{-- $service->department: Quan hệ belongsTo với Department
+                             Kiểu: App\Models\Department|null --}}
+                        @if($service->department)
+                        <div class="mb-2"><span class="badge bg-primary"><i class="bi bi-hospital me-1"></i>{{ $service->department->name }}</span></div>
+                        @endif
+                        {{-- $service->price: Giá dịch vụ (số nguyên, đơn vị: VNĐ)
+                             Kiểu: int|null --}}
+                        @if(!is_null($service->price))
+                        <p class="text-primary fw-bold mb-0">{{ number_format($service->price, 0, ',', '.') }} đ</p>
+                        @endif
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="modal fade" id="serviceModal{{ $service->id }}" tabindex="-1" aria-labelledby="serviceModalLabel{{ $service->id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" style="max-width:600px;">
+                      <div class="modal-content rounded-4 border-0 shadow-lg">
+                        <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #e3f2ff 0%, #f6fbff 100%); border-radius: 1rem 1rem 0 0 !important;">
+                          <h5 class="modal-title fw-bold text-primary" id="serviceModalLabel{{ $service->id }}">{{ $service->name }}</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                          <div class="text-center mb-4">
+                            <div style="width: 200px; height: 200px; margin: 0 auto; overflow:hidden; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                              @php
+                              {{-- Biến tạm để lưu ảnh dịch vụ trong modal --}}
+                              $serviceImage = $service->image ?? null;
+                              {{-- Biến tạm để lưu ảnh khoa trong modal (fallback) --}}
+                              $departmentImage = $service->department->image ?? null;
+                              @endphp
+                              @if(!empty($serviceImage))
+                              <img src="{{ asset('storage/'.$serviceImage) }}" alt="{{ $service->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                              @elseif(!empty($departmentImage))
+                              <img src="{{ asset('storage/'.$departmentImage) }}" alt="{{ $service->department->name ?? $service->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                              @else
+                              <div class="d-flex align-items-center justify-content-center bg-primary-subtle h-100">
+                                <i class="bi bi-hospital text-primary" style="font-size: 4rem;"></i>
+                              </div>
+                              @endif
+                            </div>
+                          </div>
+                          {{-- $service->description: Mô tả chi tiết về dịch vụ --}}
+                          @if(!empty($service->description))
                           <div class="bg-light rounded-3 p-3 mb-3">
                             <p class="mb-0" style="white-space: pre-line; color: #495057;">{{ $service->description }}</p>
                           </div>
-                        @endif
-                        @if($service->department)
+                          @endif
+                          @if($service->department)
                           <div class="mb-3">
                             <p class="mb-1">
                               <i class="bi bi-hospital text-primary me-2"></i>
                               <strong>Khoa:</strong> <span class="text-dark">{{ $service->department->name }}</span>
                             </p>
                           </div>
-                        @endif
-                        @if(!is_null($service->price))
+                          @endif
+                          @if(!is_null($service->price))
                           <div class="text-center">
                             <p class="mb-1 text-muted small">Giá dịch vụ</p>
                             <p class="fw-bold mb-0 fs-4 text-primary">{{ number_format($service->price, 0, ',', '.') }} đ</p>
                           </div>
-                        @endif
-                      </div>
-                      <div class="modal-footer border-0 pt-0">
-                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
-                        <a href="{{ route('modal.appointment', ['department_id' => $service->department_id, 'service_id' => $service->id]) }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                          <i class="bi bi-calendar-check me-2"></i>Đặt lịch ngay
-                        </a>
+                          @endif
+                        </div>
+                        <div class="modal-footer border-0 pt-0">
+                          <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                          {{-- $service->department_id: ID của khoa mà dịch vụ thuộc về
+                               $service->id: ID của dịch vụ
+                               Được truyền vào route để đặt lịch với khoa và dịch vụ đã chọn --}}
+                          <a href="{{ route('modal.appointment', ['department_id' => $service->department_id, 'service_id' => $service->id]) }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                            <i class="bi bi-calendar-check me-2"></i>Đặt lịch ngay
+                          </a>
+                        </div>
                       </div>
                     </div>
                   </div>
+                  @endforeach
                 </div>
-              @endforeach
-            </div>
-          @else
-            <div class="alert alert-light border-0">Không tìm thấy dịch vụ phù hợp với "{{ $symptomQuery }}"</div>
-          @endif
-        </div>
-        @endif
+                @else
+                {{-- Hiển thị thông báo khi không tìm thấy dịch vụ nào phù hợp với triệu chứng --}}
+                <div class="alert alert-light border-0">Không tìm thấy dịch vụ phù hợp với "{{ $symptomQuery }}"</div>
+                @endif
+              </div>
+              @endif
             </form>
           </div>
         </div>

@@ -158,8 +158,27 @@
 
                     $finalPrice = $price * $discount;
 
-                    // Chỉ cho phép hủy nếu ngày khám còn ở tương lai (không phải hôm nay hoặc quá khứ)
-                    $canCancelByDate = Carbon::parse($appointment->appointment_date)->greaterThan(now()->startOfDay());
+                    // Kiểm tra quy tắc 24 giờ: chỉ cho phép hủy nếu còn ít nhất 24 giờ trước lịch hẹn
+                    $appointmentDate = Carbon::parse($appointment->appointment_date)->startOfDay();
+                    
+                    // Xác định thời gian bắt đầu ca khám dựa trên medical_examination
+                    $appointmentStartTime = null;
+                    if (strpos($appointment->medical_examination ?? '', 'Ca sáng') !== false) {
+                        // Ca sáng bắt đầu lúc 07:30
+                        $appointmentStartTime = $appointmentDate->copy()->setTime(7, 30, 0);
+                    } elseif (strpos($appointment->medical_examination ?? '', 'Ca chiều') !== false) {
+                        // Ca chiều bắt đầu lúc 13:00
+                        $appointmentStartTime = $appointmentDate->copy()->setTime(13, 0, 0);
+                    } else {
+                        // Mặc định: nếu không xác định được ca, dùng 07:30
+                        $appointmentStartTime = $appointmentDate->copy()->setTime(7, 30, 0);
+                    }
+                    
+                    // Tính số giờ còn lại trước lịch hẹn
+                    $hoursUntilAppointment = now()->diffInHours($appointmentStartTime, false);
+                    
+                    // Chỉ cho phép hủy nếu còn ít nhất 24 giờ
+                    $canCancelByDate = $hoursUntilAppointment >= 24;
                 @endphp
 
                 {{-- Price & Status Information --}}
@@ -226,62 +245,64 @@
                 </div>
 
                 {{-- Action Buttons --}}
-                @if($canCancelByDate && in_array($appointment->status, ['pending', 'confirmed']))
+                @if(in_array($appointment->status, ['pending', 'confirmed']))
                     <div class="d-flex gap-2 mt-4">
                         {{-- Cancel Appointment Form --}}
-                        <form action="{{ route('appointments.cancel', $appointment->id) }}"
-                              method="POST"
-                              class="d-inline"
-                              id="cancel-appointment-form-{{ $appointment->id }}">
-                            @csrf
-                            @method('PATCH')
-                            <button type="button"
-                                    class="btn btn-lg btn-danger rounded-pill px-4 shadow-sm"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#cancelConfirmModal-{{ $appointment->id }}">
-                                <i class="fas fa-times me-2"></i>
-                                Hủy lịch hẹn
-                            </button>
+                        @if($canCancelByDate)
+                            <form action="{{ route('appointments.cancel', $appointment->id) }}"
+                                  method="POST"
+                                  class="d-inline"
+                                  id="cancel-appointment-form-{{ $appointment->id }}">
+                                @csrf
+                                @method('PATCH')
+                                <button type="button"
+                                        class="btn btn-lg btn-danger rounded-pill px-4 shadow-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#cancelConfirmModal-{{ $appointment->id }}">
+                                    <i class="fas fa-times me-2"></i>
+                                    Hủy lịch hẹn
+                                </button>
 
-                            {{-- Cancel Confirmation Modal --}}
-                            <div class="modal fade"
-                                 id="cancelConfirmModal-{{ $appointment->id }}"
-                                 tabindex="-1"
-                                 aria-labelledby="cancelConfirmModalLabel-{{ $appointment->id }}"
-                                 aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="cancelConfirmModalLabel-{{ $appointment->id }}">
-                                                Xác nhận hủy lịch hẹn
-                                            </h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            @if($appointment->payment_status === 'success')
-                                                <p class="mb-2">Lịch hẹn này đã được <strong>thanh toán</strong>.</p>
-                                                <p class="mb-2">
-                                                    Khi hủy, bạn sẽ được <strong>hoàn tiền khoảng {{ number_format($finalPrice, 0, ',', '.') }} đ</strong>.
-                                                </p>
-                                                <p class="text-muted mb-0">
-                                                    Thời gian tiền về tài khoản có thể mất vài ngày làm việc tùy ngân hàng/đơn vị thanh toán.
-                                                </p>
-                                            @else
-                                                <p class="mb-0">Bạn có chắc chắn muốn hủy lịch hẹn này?</p>
-                                            @endif
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                                Không, quay lại
-                                            </button>
-                                            <button type="submit" class="btn btn-danger">
-                                                Có, hủy lịch hẹn
-                                            </button>
+                                {{-- Cancel Confirmation Modal --}}
+                                <div class="modal fade"
+                                     id="cancelConfirmModal-{{ $appointment->id }}"
+                                     tabindex="-1"
+                                     aria-labelledby="cancelConfirmModalLabel-{{ $appointment->id }}"
+                                     aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="cancelConfirmModalLabel-{{ $appointment->id }}">
+                                                    Xác nhận hủy lịch hẹn
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                @if($appointment->payment_status === 'success')
+                                                    <p class="mb-2">Lịch hẹn này đã được <strong>thanh toán</strong>.</p>
+                                                    <p class="mb-2">
+                                                        Khi hủy, bạn sẽ được <strong>hoàn tiền khoảng {{ number_format($finalPrice, 0, ',', '.') }} đ</strong>.
+                                                    </p>
+                                                    <p class="text-muted mb-0">
+                                                        Thời gian tiền về tài khoản có thể mất vài ngày làm việc tùy ngân hàng/đơn vị thanh toán.
+                                                    </p>
+                                                @else
+                                                    <p class="mb-0">Bạn có chắc chắn muốn hủy lịch hẹn này?</p>
+                                                @endif
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                    Không, quay lại
+                                                </button>
+                                                <button type="submit" class="btn btn-danger">
+                                                    Có, hủy lịch hẹn
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </form>
+                            </form>
+                        @endif
 
                         {{-- Payment Button --}}
                         @if($appointment->payment_status != 'success')

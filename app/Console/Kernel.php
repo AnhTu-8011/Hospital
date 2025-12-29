@@ -19,6 +19,9 @@ class Kernel extends ConsoleKernel
         // Gửi nhắc lịch mỗi ngày lúc 07:00
         $schedule->command('app:send-appointment-reminder')->dailyAt('11:40');
         // $schedule->command('app:send-appointment-reminder')->everyMinute();
+
+        // Tự động hủy các lịch hẹn chưa thanh toán sau 24 giờ - chạy mỗi giờ
+        $schedule->command('app:auto-cancel-unpaid-appointments')->hourly();
     }
 
     /**
