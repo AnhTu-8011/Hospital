@@ -5,65 +5,6 @@
 {{-- Search Bar --}}
 @include('admin.appointments.search')
 
-{{-- Auto Cancel Info Alert --}}
-@php
-    $unpaidPendingCount = \App\Models\Appointment::where('payment_status', '!=', \App\Models\Appointment::PAYMENT_SUCCESS)
-        ->whereIn('status', [\App\Models\Appointment::STATUS_PENDING, \App\Models\Appointment::STATUS_CONFIRMED])
-        ->where('created_at', '>', now()->subHours(24))
-        ->count();
-    
-    $paidPendingCount = \App\Models\Appointment::where('payment_status', \App\Models\Appointment::PAYMENT_SUCCESS)
-        ->where('status', \App\Models\Appointment::STATUS_PENDING)
-        ->where('created_at', '>', now()->subHours(24))
-        ->count();
-@endphp
-
-{{-- Auto Cancel Alert --}}
-@if($unpaidPendingCount > 0)
-    <div class="alert alert-warning border-0 shadow-sm rounded-4 mb-4" role="alert">
-        <div class="d-flex align-items-center">
-            <i class="fas fa-exclamation-triangle me-3 fs-4"></i>
-            <div>
-                <strong class="d-block mb-1">Lưu ý: Tự động hủy lịch hẹn chưa thanh toán</strong>
-                <p class="mb-0 small">
-                    Có <strong>{{ $unpaidPendingCount }}</strong> lịch hẹn chưa thanh toán sẽ tự động bị hủy sau 24 giờ kể từ khi đặt lịch nếu không thanh toán.
-                    Hệ thống sẽ tự động chạy kiểm tra mỗi giờ để hủy các lịch hẹn quá hạn.
-                </p>
-            </div>
-        </div>
-    </div>
-@endif
-
-{{-- Auto Approve Alert --}}
-@if($paidPendingCount > 0)
-    <div class="alert alert-info border-0 shadow-sm rounded-4 mb-4" role="alert">
-        <div class="d-flex align-items-center">
-            <i class="fas fa-info-circle me-3 fs-4"></i>
-            <div>
-                <strong class="d-block mb-1">Lưu ý: Tự động duyệt lịch hẹn đã thanh toán</strong>
-                <p class="mb-0 small">
-                    Có <strong>{{ $paidPendingCount }}</strong> lịch hẹn đã thanh toán trong vòng 24 giờ sẽ tự động được cập nhật thành "Đã duyệt" nếu khách hàng không hủy.
-                    Hệ thống sẽ tự động chạy kiểm tra mỗi giờ để duyệt các lịch hẹn đã thanh toán.
-                </p>
-            </div>
-        </div>
-    </div>
-@else
-    {{-- General Info Alert (always show) --}}
-    <div class="alert alert-info border-0 shadow-sm rounded-4 mb-4" role="alert">
-        <div class="d-flex align-items-center">
-            <i class="fas fa-info-circle me-3 fs-4"></i>
-            <div>
-                <strong class="d-block mb-1">Lưu ý: Tự động duyệt lịch hẹn đã thanh toán</strong>
-                <p class="mb-0 small">
-                    Sau khi thanh toán trong vòng 24 giờ, nếu khách hàng không hủy thì lịch hẹn sẽ tự động được cập nhật thành "Đã duyệt".
-                    Hệ thống sẽ tự động chạy kiểm tra mỗi giờ để duyệt các lịch hẹn đã thanh toán.
-                </p>
-            </div>
-        </div>
-    </div>
-@endif
-
 {{-- Appointments Table Card --}}
 <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
     {{-- Card Header with Status Tabs --}}
@@ -207,101 +148,48 @@
                                     $finalPrice = $price * $discount;
                                 @endphp
 
-                                <div class="d-flex flex-column gap-1 align-items-center">
-                                    {{-- Hiển thị trạng thái thanh toán --}}
-                                    @if($appointment->status === 'canceled' && $appointment->payment_status === 'success')
-                                        <span class="badge bg-info rounded-pill px-3 py-2">Đã hoàn</span>
-                                        <div class="text-info fw-semibold small">
-                                            {{ number_format($finalPrice, 0, ',', '.') }} đ
-                                        </div>
-                                    @elseif($appointment->payment_status === 'success')
-                                        <span class="badge bg-success rounded-pill px-3 py-2">Thành công</span>
-                                        <div class="text-success fw-semibold small">
-                                            {{ number_format($finalPrice, 0, ',', '.') }} đ
-                                            @if ($discount == 0.7)
-                                                <span class="d-block text-success mt-1">
-                                                    🎉 Giảm thêm 10%
-                                                </span>
-                                            @endif
-                                        </div>
-                                    @elseif($appointment->payment_status === 'failed')
-                                        <span class="badge bg-danger rounded-pill px-3 py-2">Chưa thanh toán</span>
-                                        <div class="text-muted small">
-                                            {{ number_format($finalPrice, 0, ',', '.') }} đ
-                                        </div>
-                                    @else
-                                        <span class="badge bg-warning rounded-pill px-3 py-2">Chưa thanh toán</span>
-                                        <div class="text-muted small">
-                                            {{ number_format($finalPrice, 0, ',', '.') }} đ
-                                        </div>
-                                    @endif
-                                </div>
+                                {{-- Hiển thị trạng thái thanh toán --}}
+                                @if($appointment->status === 'canceled' && $appointment->payment_status === 'success')
+                                    <span class="badge bg-info rounded-pill px-3 py-2">Đã hoàn</span>
+                                    <div class="text-info fw-semibold small mt-1">
+                                        {{ number_format($finalPrice, 0, ',', '.') }} đ
+                                    </div>
+                                @elseif($appointment->payment_status === 'success')
+                                    <span class="badge bg-success rounded-pill px-3 py-2">Thành công</span>
+                                    <div class="text-success fw-semibold small mt-1">
+                                        {{ number_format($finalPrice, 0, ',', '.') }} đ
+                                        @if ($discount == 0.7)
+                                            <span class="d-block text-success mt-1">
+                                                🎉 Giảm thêm 10%
+                                            </span>
+                                        @endif
+                                    </div>
+                                @elseif($appointment->payment_status === 'failed')
+                                    <span class="badge bg-danger rounded-pill px-3 py-2">Chưa thanh toán</span>
+                                    <div class="text-muted small mt-1">
+                                        {{ number_format($finalPrice, 0, ',', '.') }} đ
+                                    </div>
+                                @else
+                                    <span class="badge bg-secondary rounded-pill px-3 py-2">Không xác định</span>
+                                    <div class="text-muted small mt-1">
+                                        {{ number_format($finalPrice, 0, ',', '.') }} đ
+                                    </div>
+                                @endif
                             </td>
 
                             {{-- Trạng thái --}}
                             <td class="text-center">
-                                <div class="d-flex flex-column gap-1 align-items-center">
-                                    @if($appointment->status === 'completed')
-                                        <span class="badge bg-success rounded-pill px-3 py-2">Đã khám</span>
-                                    @elseif($appointment->status === 'confirmed')
-                                        <span class="badge bg-primary rounded-pill px-3 py-2">Đã duyệt</span>
-                                    @elseif($appointment->status === 'pending')
-                                        <span class="badge bg-warning rounded-pill px-3 py-2">Chờ duyệt</span>
-                                    @elseif($appointment->status === 'canceled')
-                                        <span class="badge bg-danger rounded-pill px-3 py-2">Đã hủy</span>
-                                    @else
-                                        <span class="badge bg-secondary rounded-pill px-3 py-2">Không rõ</span>
-                                    @endif
-                                    
-                                    {{-- Cảnh báo tự động hủy --}}
-                                    @if(isset($appointment->will_auto_cancel) && $appointment->will_auto_cancel && $appointment->hours_until_auto_cancel !== null)
-                                        <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-1 small" 
-                                              title="Lịch hẹn sẽ tự động hủy nếu không thanh toán trong vòng 24 giờ">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>
-                                            Tự động hủy sau {{ round($appointment->hours_until_auto_cancel, 1) }}h
-                                        </span>
-                                    @endif
-                                    
-                                    {{-- Cảnh báo tự động duyệt --}}
-                                    @php
-                                        $isPaidAndPending = $appointment->payment_status === 'success' 
-                                            && $appointment->status === 'pending';
-                                        
-                                        // Tính thời gian bắt đầu ca khám
-                                        $appointmentStartTime = null;
-                                        if ($isPaidAndPending && $appointment->medical_examination && $appointment->appointment_date) {
-                                            $appointmentDate = \Carbon\Carbon::parse($appointment->appointment_date);
-                                            if (strpos($appointment->medical_examination, 'Ca sáng') !== false) {
-                                                $appointmentDate->setTime(7, 30, 0);
-                                                $appointmentStartTime = $appointmentDate;
-                                            } elseif (strpos($appointment->medical_examination, 'Ca chiều') !== false) {
-                                                $appointmentDate->setTime(13, 0, 0);
-                                                $appointmentStartTime = $appointmentDate;
-                                            }
-                                        }
-                                        
-                                        // Tính số giờ còn lại đến thời điểm bắt đầu ca khám
-                                        $hoursUntilAppointment = null;
-                                        if ($isPaidAndPending && $appointmentStartTime) {
-                                            $hoursUntilAppointment = now()->diffInHours($appointmentStartTime, false);
-                                        }
-                                        
-                                        // Sẽ tự động duyệt nếu còn ít hơn 24 giờ đến thời điểm bắt đầu ca khám
-                                        $willAutoApprove = $isPaidAndPending 
-                                            && $hoursUntilAppointment !== null 
-                                            && $hoursUntilAppointment >= 0 
-                                            && $hoursUntilAppointment < 24;
-                                        
-                                        $hoursUntilAutoApprove = $willAutoApprove ? max(0, $hoursUntilAppointment) : null;
-                                    @endphp
-                                    @if($willAutoApprove && $hoursUntilAutoApprove !== null)
-                                        <span class="badge bg-info-subtle text-info rounded-pill px-2 py-1 small" 
-                                              title="Lịch hẹn đã thanh toán sẽ tự động được duyệt trước khi ca khám bắt đầu nếu khách hàng không hủy">
-                                            <i class="fas fa-info-circle me-1"></i>
-                                            Tự động duyệt sau {{ round($hoursUntilAutoApprove, 1) }}h
-                                        </span>
-                                    @endif
-                                </div>
+                                @if($appointment->status === 'completed')
+                                    <span class="badge bg-success rounded-pill px-3 py-2">Đã khám</span>
+                                @elseif($appointment->status === 'confirmed')
+                                    <span class="badge bg-primary rounded-pill px-3 py-2">Đã duyệt</span>
+                                @elseif($appointment->status === 'pending')
+                                    <span class="badge bg-warning rounded-pill px-3 py-2">Chờ duyệt</span>
+                                @elseif($appointment->status === 'canceled')
+                                    <span class="badge bg-danger rounded-pill px-3 py-2">Đã hủy</span>
+                                @else
+                                    <span class="badge bg-secondary rounded-pill px-3 py-2">Không rõ</span>
+                                @endif
                             </td>
 
                             {{-- Hành động --}}

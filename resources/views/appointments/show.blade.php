@@ -158,12 +158,32 @@
 
                     $finalPrice = $price * $discount;
 
-                    // Kiểm tra quy tắc 24 giờ: chỉ cho phép hủy trong vòng 24 giờ kể từ khi đặt lịch
-                    $createdAt = Carbon::parse($appointment->created_at);
-                    $hoursSinceCreation = now()->diffInHours($createdAt, false);
-                    
-                    // Chỉ cho phép hủy nếu chưa qua 24 giờ kể từ khi đặt lịch
-                    $canCancelByDate = $hoursSinceCreation < 24;
+                    // Kiểm tra điều kiện hủy lịch hẹn
+                    $wasPaid = $appointment->payment_status === 'success';
+                    $canCancelByDate = false;
+                    $cancelMessage = '';
+
+                    if ($wasPaid && $appointment->paid_at) {
+                        // Nếu đã thanh toán: chỉ cho phép hủy trong vòng 5 giờ kể từ khi thanh toán
+                        $paidAt = Carbon::parse($appointment->paid_at);
+                        $hoursSincePayment = now()->diffInHours($paidAt, false);
+                        $canCancelByDate = $hoursSincePayment < 5;
+                        
+                        if (!$canCancelByDate) {
+                            $hoursPassed = round($hoursSincePayment, 1);
+                            $cancelMessage = 'Lịch hẹn đã thanh toán không thể hủy sau 5 giờ kể từ khi thanh toán. Đã qua ' . $hoursPassed . ' giờ.';
+                        }
+                    } else {
+                        // Nếu chưa thanh toán: chỉ cho phép hủy trong vòng 5 giờ kể từ khi đặt lịch
+                        $createdAt = Carbon::parse($appointment->created_at);
+                        $hoursSinceCreation = now()->diffInHours($createdAt, false);
+                        $canCancelByDate = $hoursSinceCreation < 5;
+                        
+                        if (!$canCancelByDate) {
+                            $hoursPassed = round($hoursSinceCreation, 1);
+                            $cancelMessage = 'Bạn chỉ có thể hủy lịch hẹn trong vòng 5 giờ kể từ khi đặt lịch. Đã qua ' . $hoursPassed . ' giờ.';
+                        }
+                    }
                 @endphp
 
                 {{-- Price & Status Information --}}
@@ -231,7 +251,7 @@
 
                 {{-- Action Buttons --}}
                 @if(in_array($appointment->status, ['pending', 'confirmed']))
-                    <div class="d-flex gap-2 mt-4">
+                    <div class="d-flex gap-2 mt-4 flex-wrap">
                         {{-- Cancel Appointment Form --}}
                         @if($canCancelByDate)
                             <form action="{{ route('appointments.cancel', $appointment->id) }}"
@@ -287,6 +307,12 @@
                                     </div>
                                 </div>
                             </form>
+                        @else
+                            {{-- Hiển thị thông báo không thể hủy --}}
+                            <div class="alert alert-warning rounded-pill px-4 py-2 mb-0 d-flex align-items-center">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <span>{{ $cancelMessage }}</span>
+                            </div>
                         @endif
 
                         {{-- Payment Button --}}

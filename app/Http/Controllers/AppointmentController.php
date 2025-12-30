@@ -116,6 +116,47 @@ class AppointmentController extends Controller
             $appointmentDate = Carbon::parse($request->appointment_date)->toDateString();
 
             /**
+             * Bước 3.5️⃣: Kiểm tra thời gian đặt lịch - phải đặt trước ít nhất 5 giờ so với thời gian bắt đầu ca khám
+             * - Ca sáng bắt đầu lúc 07:30
+             * - Ca chiều bắt đầu lúc 13:00
+             * - Tính thời gian từ bây giờ đến thời điểm bắt đầu ca khám
+             * - Nếu < 5 giờ → báo lỗi, không cho đặt
+             */
+            $appointmentDateTime = Carbon::parse($request->appointment_date);
+            
+            // Xác định thời gian bắt đầu ca khám
+            if ($request->appointment_time === 'morning') {
+                $appointmentDateTime->setTime(7, 30, 0); // Ca sáng: 07:30
+            } else {
+                $appointmentDateTime->setTime(13, 0, 0); // Ca chiều: 13:00
+            }
+            
+            // Tính số giờ từ bây giờ đến thời điểm bắt đầu ca khám
+            $hoursUntilAppointment = now()->diffInHours($appointmentDateTime, false);
+            
+            // Nếu thời gian bắt đầu ca khám đã qua hoặc còn < 5 giờ, không cho đặt
+            if ($hoursUntilAppointment < 5) {
+                $timeString = $request->appointment_time === 'morning' ? '07:30' : '13:00';
+                $dateString = Carbon::parse($request->appointment_date)->format('d/m/Y');
+                
+                if ($hoursUntilAppointment < 0) {
+                    return back()->with(
+                        'error',
+                        'Không thể đặt lịch cho ca khám đã qua. ' .
+                        'Ca '.($request->appointment_time === 'morning' ? 'sáng' : 'chiều').' ngày '.$dateString.' ('.$timeString.') đã bắt đầu hoặc đã qua.'
+                    )->withInput();
+                } else {
+                    $hoursRemaining = round($hoursUntilAppointment, 1);
+                    return back()->with(
+                        'error',
+                        'Bạn phải đặt lịch trước ít nhất 5 giờ so với thời gian bắt đầu ca khám. ' .
+                        'Ca '.($request->appointment_time === 'morning' ? 'sáng' : 'chiều').' ngày '.$dateString.' ('.$timeString.') chỉ còn '.$hoursRemaining.' giờ nữa. ' .
+                        'Vui lòng chọn ca khám khác hoặc ngày khác.'
+                    )->withInput();
+                }
+            }
+
+            /**
              * Bước 4️⃣: Kiểm tra giới hạn số ca mỗi buổi
              * - Mỗi bác sĩ trong một ngày chỉ nhận tối đa:
              *   + 25 ca sáng
@@ -179,52 +220,6 @@ class AppointmentController extends Controller
     }
 
     /**
-     * Hiển thị form chỉnh sửa lịch hẹn.
-     * - Dành cho bệnh nhân hoặc admin muốn thay đổi thông tin lịch hẹn.
-     *
-     * @param  int  $id
-     * @return \Illuminate\View\View
-     */
-    public function edit($id)
-    {
-        $appointment = Appointment::findOrFail($id);
-        $doctors = Doctor::with('user')->get();
-        $services = Service::all();
-
-        return view('appointments.edit', compact('appointment', 'doctors', 'services'));
-    }
-
-    /**
-     * Cập nhật thông tin lịch hẹn.
-     * - Kiểm tra dữ liệu hợp lệ.
-     * - Cập nhật vào bảng `appointments`.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function update(Request $request, $id)
-    {
-        $appointment = Appointment::findOrFail($id);
-
-        // Validate dữ liệu đầu vào
-        $request->validate([
-            'doctor_id' => 'required|exists:doctors,id',
-            'service_id' => 'required|exists:services,id',
-            'appointment_date' => 'required|date|after_or_equal:today',
-            'status' => 'required|in:pending,confirmed,completed,cancelled',
-            'note' => 'nullable|string|max:500',
-        ]);
-
-        // Cập nhật thông tin lịch hẹn
-        $appointment->update($request->only([
-            'doctor_id', 'service_id', 'appointment_date', 'status', 'note',
-        ]));
-
-        return redirect()->route('appointments.index')->with('success', 'Cập nhật lịch hẹn thành công!');
-    }
-
-    /**
      * Hủy lịch hẹn.
      * - Cho phép bệnh nhân tự hủy khi lịch còn ở trạng thái chờ duyệt / đã duyệt (chưa khám).
      * - Không xóa bản ghi, chỉ cập nhật trạng thái để admin vẫn theo dõi được.
@@ -251,22 +246,38 @@ class AppointmentController extends Controller
                 ->with('error', 'Chỉ có thể hủy lịch hẹn đang chờ duyệt hoặc đã duyệt, chưa khám.');
         }
 
-        // Kiểm tra quy tắc 24 giờ: chỉ cho phép hủy trong vòng 24 giờ kể từ khi đặt lịch
-        $createdAt = Carbon::parse($appointment->created_at);
-        $hoursSinceCreation = now()->diffInHours($createdAt, false);
-        
-        // Nếu đã qua 24 giờ kể từ khi đặt lịch, không cho phép hủy
-        if ($hoursSinceCreation >= 24) {
-            $hoursPassed = round($hoursSinceCreation, 1);
-            
-            return redirect()->route('appointments.show', $appointment->id)
-                ->with('error', 'Bạn chỉ có thể hủy lịch hẹn trong vòng 24 giờ kể từ khi đặt lịch. ' .
-                    'Lịch hẹn này đã được đặt cách đây ' . $hoursPassed . ' giờ. ' .
-                    'Vui lòng liên hệ trực tiếp bệnh viện để được hỗ trợ.');
-        }
-
         // Kiểm tra trạng thái thanh toán
         $wasPaid = $appointment->payment_status === Appointment::PAYMENT_SUCCESS;
+
+        // Nếu đã thanh toán, kiểm tra quy tắc 5 giờ: chỉ cho phép hủy trong vòng 5 giờ kể từ khi thanh toán
+        if ($wasPaid && $appointment->paid_at) {
+            $paidAt = Carbon::parse($appointment->paid_at);
+            $hoursSincePayment = now()->diffInHours($paidAt, false);
+            
+            // Nếu đã qua 5 giờ kể từ khi thanh toán, không cho phép hủy
+            if ($hoursSincePayment >= 5) {
+                $hoursPassed = round($hoursSincePayment, 1);
+                
+                return redirect()->route('appointments.show', $appointment->id)
+                    ->with('error', 'Lịch hẹn đã thanh toán không thể hủy sau 5 giờ kể từ khi thanh toán. ' .
+                        'Lịch hẹn này đã được thanh toán cách đây ' . $hoursPassed . ' giờ. ' .
+                        'Vui lòng liên hệ trực tiếp bệnh viện để được hỗ trợ.');
+            }
+        } else {
+            // Nếu chưa thanh toán, kiểm tra quy tắc 5 giờ: chỉ cho phép hủy trong vòng 5 giờ kể từ khi đặt lịch
+            $createdAt = Carbon::parse($appointment->created_at);
+            $hoursSinceCreation = now()->diffInHours($createdAt, false);
+            
+            // Nếu đã qua 5 giờ kể từ khi đặt lịch, không cho phép hủy
+            if ($hoursSinceCreation >= 5) {
+                $hoursPassed = round($hoursSinceCreation, 1);
+                
+                return redirect()->route('appointments.show', $appointment->id)
+                    ->with('error', 'Bạn chỉ có thể hủy lịch hẹn trong vòng 5 giờ kể từ khi đặt lịch. ' .
+                        'Lịch hẹn này đã được đặt cách đây ' . $hoursPassed . ' giờ. ' .
+                        'Vui lòng liên hệ trực tiếp bệnh viện để được hỗ trợ.');
+            }
+        }
 
         // Cập nhật trạng thái lịch hẹn sang "cancelled"
         DB::transaction(function () use ($appointment) {

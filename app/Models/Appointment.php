@@ -20,11 +20,13 @@ class Appointment extends Model
         'total_amount',
         'note',
         'medical_examination',
+        'paid_at',
     ];
 
     protected $casts = [
         'appointment_date' => 'datetime',
         'total_amount' => 'decimal:2',
+        'paid_at' => 'datetime',
     ];
 
     // Status constants

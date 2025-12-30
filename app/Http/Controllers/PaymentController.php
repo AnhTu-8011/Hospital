@@ -52,6 +52,52 @@ class PaymentController extends Controller
                 return back()->with('error', 'Bác sĩ không thuộc khoa của dịch vụ đã chọn. Vui lòng chọn lại.')->withInput();
             }
 
+            /**
+             * Kiểm tra thời gian đặt lịch - phải đặt trước ít nhất 5 giờ so với thời gian bắt đầu ca khám
+             * - Ca sáng bắt đầu lúc 07:30
+             * - Ca chiều bắt đầu lúc 13:00
+             * - Tính thời gian từ bây giờ đến thời điểm bắt đầu ca khám
+             * - Nếu < 5 giờ → báo lỗi, không cho đặt
+             */
+            $appointmentDateTime = Carbon::parse($validated['appointment_date']);
+            
+            // Xác định thời gian bắt đầu ca khám dựa trên medical_examination
+            if (strpos($validated['medical_examination'], 'Ca sáng') !== false) {
+                $appointmentDateTime->setTime(7, 30, 0); // Ca sáng: 07:30
+                $timeString = '07:30';
+                $shiftName = 'sáng';
+            } elseif (strpos($validated['medical_examination'], 'Ca chiều') !== false) {
+                $appointmentDateTime->setTime(13, 0, 0); // Ca chiều: 13:00
+                $timeString = '13:00';
+                $shiftName = 'chiều';
+            } else {
+                return back()->with('error', 'Ca khám không hợp lệ.')->withInput();
+            }
+            
+            // Tính số giờ từ bây giờ đến thời điểm bắt đầu ca khám
+            $hoursUntilAppointment = now()->diffInHours($appointmentDateTime, false);
+            
+            // Nếu thời gian bắt đầu ca khám đã qua hoặc còn < 5 giờ, không cho đặt
+            if ($hoursUntilAppointment < 5) {
+                $dateString = Carbon::parse($validated['appointment_date'])->format('d/m/Y');
+                
+                if ($hoursUntilAppointment < 0) {
+                    return back()->with(
+                        'error',
+                        'Không thể đặt lịch cho ca khám đã qua. ' .
+                        'Ca '.$shiftName.' ngày '.$dateString.' ('.$timeString.') đã bắt đầu hoặc đã qua.'
+                    )->withInput();
+                } else {
+                    $hoursRemaining = round($hoursUntilAppointment, 1);
+                    return back()->with(
+                        'error',
+                        'Bạn phải đặt lịch trước ít nhất 5 giờ so với thời gian bắt đầu ca khám. ' .
+                        'Ca '.$shiftName.' ngày '.$dateString.' ('.$timeString.') chỉ còn '.$hoursRemaining.' giờ nữa. ' .
+                        'Vui lòng chọn ca khám khác hoặc ngày khác.'
+                    )->withInput();
+                }
+            }
+
             DB::beginTransaction();
 
             // Chuẩn bị dữ liệu lịch hẹn
