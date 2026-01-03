@@ -16,31 +16,13 @@ use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * Hiển thị trang đăng ký tài khoản.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị trang đăng ký tài khoản
     public function create(): View
     {
         return view('auth.register');
     }
 
-    /**
-     * Xử lý yêu cầu đăng ký tài khoản mới.
-     * - Luồng xử lý:
-     *   1️⃣ Validate dữ liệu đầu vào.
-     *   2️⃣ Lấy ID vai trò mặc định cho bệnh nhân.
-     *   3️⃣ Tạo người dùng mới.
-     *   4️⃣ Tạo hồ sơ bệnh nhân (patient) mặc định.
-     *   5️⃣ Gửi sự kiện đã đăng ký.
-     *   6️⃣ Đăng nhập người dùng mới.
-     *   7️⃣ Chuyển hướng đến trang hồ sơ.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
-     */
+    // Xử lý yêu cầu đăng ký tài khoản mới (tạo user và patient, đăng nhập tự động)
     public function store(Request $request): RedirectResponse
     {
         // Bước 1: Validate dữ liệu đầu vào

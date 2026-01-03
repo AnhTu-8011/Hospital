@@ -10,13 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class ChatController extends Controller
 {
-    /**
-     * Lấy user hiện tại theo đúng guard đang đăng nhập.
-     * - Admin đăng nhập bằng guard web_admin.
-     * - Người dùng/patient đăng nhập bằng guard mặc định web.
-     *
-     * @return \App\Models\User|null
-     */
+    // Lấy user hiện tại theo đúng guard đang đăng nhập
     private function authUser(): ?User
     {
         if (Auth::check()) {
@@ -30,11 +24,7 @@ class ChatController extends Controller
         return null;
     }
 
-    /**
-     * Lấy id user hiện tại (dựa trên authUser()).
-     *
-     * @return int|null
-     */
+    // Lấy id user hiện tại
     private function authId(): ?int
     {
         $user = $this->authUser();
@@ -42,11 +32,7 @@ class ChatController extends Controller
         return $user?->id;
     }
 
-    /**
-     * Kiểm tra user hiện tại có role admin hay không.
-     *
-     * @return bool
-     */
+    // Kiểm tra user hiện tại có role admin hay không
     private function isAdmin(): bool
     {
         $user = $this->authUser();
@@ -54,21 +40,7 @@ class ChatController extends Controller
         return (bool) ($user && $user->role && $user->role->name === 'admin');
     }
 
-    /**
-     * ============================
-     * HIỂN THỊ GIAO DIỆN CHAT
-     * ============================
-     * - Nếu người đăng nhập là admin → hiển thị danh sách người dùng (user) để chọn và trò chuyện.
-     * - Nếu người đăng nhập là user → tự động chat với admin đầu tiên trong hệ thống.
-     */
-
-    /**
-     * Hiển thị giao diện chat cho admin.
-     * - Load danh sách bệnh nhân (role patient) để admin chọn hội thoại.
-     * - Truyền authId sang view để JS so sánh tin nhắn gửi/nhận.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị giao diện chat cho admin
     public function adminChat()
     {
         $user = $this->authUser();
@@ -90,13 +62,7 @@ class ChatController extends Controller
         return view('admin.chat.admin', compact('users', 'authId'));
     }
 
-    /**
-     * Điều hướng trang chat theo role.
-     * - Nếu là admin: hiển thị giao diện chat admin.
-     * - Nếu là patient/user thường: mặc định chat với admin đầu tiên.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Điều hướng trang chat theo role (admin hoặc user thường)
     public function index()
     {
         $user = $this->authUser(); // Lấy thông tin người dùng hiện tại
@@ -128,17 +94,7 @@ class ChatController extends Controller
         return view('chat.user', ['receiverId' => $admin->id]);
     }
 
-    /**
-     * ============================
-     * GỬI TIN NHẮN
-     * ============================
-     * - Xử lý khi người dùng gửi tin nhắn.
-     * - Dữ liệu tin nhắn được lưu vào bảng `messages`.
-     * - Có kiểm tra quyền: admin chỉ chat với patient, patient chỉ chat với admin.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+    // Gửi tin nhắn
     public function sendMessage(Request $request)
     {
         $sender = $this->authUser();
@@ -177,12 +133,7 @@ class ChatController extends Controller
         return response()->json(['status' => 'success']);
     }
 
-    /**
-     * Đếm tổng số tin nhắn chưa đọc gửi tới admin hiện tại.
-     * Dùng cho badge thông báo ở sidebar admin.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
+    // Đếm tổng số tin nhắn chưa đọc gửi tới admin hiện tại
     public function adminUnreadCount()
     {
         $user = $this->authUser();
@@ -202,13 +153,7 @@ class ChatController extends Controller
         return response()->json(['count' => $count]);
     }
 
-    /**
-     * Đếm số tin nhắn chưa đọc theo từng bệnh nhân gửi tới admin.
-     * Trả về map: [sender_id => unread_count].
-     * Dùng để hiển thị badge số ngay trên từng bệnh nhân trong danh sách chat admin.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
+    // Đếm số tin nhắn chưa đọc theo từng bệnh nhân gửi tới admin
     public function adminUnreadByUser()
     {
         $user = $this->authUser();
@@ -237,13 +182,7 @@ class ChatController extends Controller
         return response()->json(['by_user' => $byUser]);
     }
 
-    /**
-     * Đếm tin nhắn chưa đọc của user hiện tại từ 1 người gửi cụ thể (senderId).
-     * Ví dụ: bệnh nhân đếm tin chưa đọc từ admin.
-     *
-     * @param  int|string  $senderId
-     * @return \Illuminate\Http\JsonResponse
-     */
+    // Đếm tin nhắn chưa đọc của user hiện tại từ 1 người gửi cụ thể
     public function userUnreadCount($senderId)
     {
         $user = $this->authUser();
@@ -260,18 +199,7 @@ class ChatController extends Controller
         return response()->json(['count' => $count]);
     }
 
-    /**
-     * ============================
-     * LẤY DANH SÁCH TIN NHẮN
-     * ============================
-     * - Lấy toàn bộ tin nhắn giữa người dùng hiện tại và người được chọn (receiver).
-     * - Sắp xếp theo thời gian tăng dần (tin nhắn cũ trước, mới sau).
-     * - Khi mở hội thoại sẽ đánh dấu đã đọc (is_read = true) các tin nhắn gửi tới user hiện tại.
-     * - Có kiểm tra quyền: admin chỉ chat với patient, patient chỉ chat với admin.
-     *
-     * @param  int|string  $receiverId
-     * @return \Illuminate\Http\JsonResponse
-     */
+    // Lấy danh sách tin nhắn giữa người dùng hiện tại và người được chọn
     public function getMessages($receiverId)
     {
         $sender = $this->authUser();

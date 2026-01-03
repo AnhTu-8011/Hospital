@@ -8,11 +8,7 @@ use Illuminate\Http\Request;
 
 class LabTestController extends Controller
 {
-    /**
-     * Hiển thị danh sách xét nghiệm.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị danh sách xét nghiệm
     public function index()
     {
         $labTests = LabTest::with(['department', 'record.patient', 'doctor'])
@@ -22,12 +18,7 @@ class LabTestController extends Controller
         return view('admin.lab_tests.index', compact('labTests'));
     }
 
-    /**
-     * Lưu xét nghiệm mới vào database.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Lưu xét nghiệm mới vào database
     public function store(Request $request)
     {
         // Validate dữ liệu đầu vào
@@ -65,13 +56,7 @@ class LabTestController extends Controller
             ->with('success', 'Thêm xét nghiệm thành công!');
     }
 
-    /**
-     * Cập nhật thông tin xét nghiệm.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Cập nhật thông tin xét nghiệm
     public function update(Request $request, $id)
     {
         $test = LabTest::findOrFail($id);
@@ -93,12 +78,7 @@ class LabTestController extends Controller
             ->with('success', 'Cập nhật xét nghiệm thành công!');
     }
 
-    /**
-     * Hiển thị form upload kết quả xét nghiệm.
-     *
-     * @param  int  $id
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form upload kết quả xét nghiệm
     public function uploadResult($id)
     {
         $test = LabTest::findOrFail($id);
@@ -106,13 +86,7 @@ class LabTestController extends Controller
         return view('admin.lab_tests.upload_result', compact('test'));
     }
 
-    /**
-     * Lưu kết quả xét nghiệm (ảnh) đã upload.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Lưu kết quả xét nghiệm (ảnh) đã upload
     public function saveUpload(Request $request, $id)
     {
         $test = LabTest::findOrFail($id);
@@ -141,12 +115,7 @@ class LabTestController extends Controller
             ->with('success', 'Đã upload kết quả thành công.');
     }
 
-    /**
-     * Xóa xét nghiệm khỏi database.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xóa xét nghiệm khỏi database
     public function destroy($id)
     {
         LabTest::findOrFail($id)->delete();

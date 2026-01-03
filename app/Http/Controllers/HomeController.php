@@ -15,11 +15,7 @@ use Illuminate\Support\Facades\Schema;
 
 class HomeController extends Controller
 {
-    /**
-     * Hiển thị trang chủ với danh sách khoa, bác sĩ và dịch vụ.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị trang chủ với danh sách khoa, bác sĩ và dịch vụ
     public function welcome()
     {
         $departments = Department::all();
@@ -29,12 +25,7 @@ class HomeController extends Controller
         return view('welcome', compact('departments', 'doctors', 'services'));
     }
 
-    /**
-     * Trang tư vấn theo triệu chứng (không lọc theo khoa).
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
+    // Trang tư vấn theo triệu chứng (không lọc theo khoa)
     public function advisorPage(Request $request)
     {
         // 1. Lấy triệu chứng từ request
@@ -55,12 +46,7 @@ class HomeController extends Controller
         ], $suggestions));
     }
 
-    /**
-     * Trang danh sách bác sĩ với tìm kiếm.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
+    // Trang danh sách bác sĩ với tìm kiếm
     public function doctorsPage(Request $request)
     {
         $q = trim((string) $request->input('q'));
@@ -71,19 +57,13 @@ class HomeController extends Controller
                     $subQuery->where('name', 'like', "%{$q}%");
                 });
             })
-            ->paginate(8);
-        /** @var \Illuminate\Pagination\LengthAwarePaginator $doctors */
-        $doctors = $doctors->withQueryString();
+            ->paginate(8)
+            ->appends(request()->query());
 
         return view('home.doctors.index', compact('doctors', 'q'));
     }
 
-    /**
-     * Trang danh sách chuyên khoa với tìm kiếm triệu chứng.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
+    // Trang danh sách chuyên khoa với tìm kiếm triệu chứng
     public function departmentsPage(Request $request)
     {
         $query = $request->input('symptom');
@@ -106,19 +86,13 @@ class HomeController extends Controller
             }
         }
 
-        /** @var \Illuminate\Pagination\LengthAwarePaginator $departments */
-        $departments = $departments->paginate(6)->withQueryString();
+        $departments = $departments->paginate(6)->appends(request()->query());
         $services = Service::with('department')->get();
 
         return view('home.departments.index', compact('departments', 'services', 'query'));
     }
 
-    /**
-     * Trang danh sách dịch vụ với tìm kiếm và lọc theo khoa.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
+    // Trang danh sách dịch vụ với tìm kiếm và lọc theo khoa
     public function servicesPage(Request $request)
     {
         // 1. Lấy triệu chứng và khoa từ request
@@ -134,16 +108,14 @@ class HomeController extends Controller
 
         // 4. Nếu có triệu chứng và có kết quả → dùng kết quả gợi ý
         if ($symptomQuery && $suggestions['suggestedServices']->isNotEmpty()) {
-            /** @var \Illuminate\Support\Collection $services */
             $services = $suggestions['suggestedServices'];
         } else {
             $services = Service::with(['department', 'symptoms'])
                 ->when($selectedDepartmentId, function ($query) use ($selectedDepartmentId) {
                     $query->where('department_id', $selectedDepartmentId);
                 })
-                ->paginate(6);
-            /** @var \Illuminate\Pagination\LengthAwarePaginator $services */
-            $services = $services->withQueryString();
+                ->paginate(6)
+                ->appends(request()->query());
         }
 
         // 5. Trả về view với dữ liệu
@@ -156,13 +128,7 @@ class HomeController extends Controller
         ], $suggestions));
     }
 
-    /**
-     * Lấy các gợi ý (dịch vụ, bệnh, khoa, bác sĩ) dựa trên triệu chứng.
-     *
-     * @param  string|null  $symptomQuery
-     * @param  int|null  $selectedDepartmentId
-     * @return array
-     */
+    // Lấy các gợi ý (dịch vụ, bệnh, khoa, bác sĩ) dựa trên triệu chứng
     private function getSuggestionsBySymptoms(?string $symptomQuery, ?int $selectedDepartmentId): array
     {
         // 1. Khởi tạo các collections rỗng để lưu kết quả
@@ -242,12 +208,7 @@ class HomeController extends Controller
         ];
     }
 
-    /**
-     * Chuẩn hóa từ khóa tìm kiếm: loại bỏ khoảng trắng, chuyển về chữ thường, bỏ trùng.
-     *
-     * @param  string  $symptomQuery
-     * @return \Illuminate\Support\Collection
-     */
+    // Chuẩn hóa từ khóa tìm kiếm: loại bỏ khoảng trắng, chuyển về chữ thường, bỏ trùng
     private function normalizeKeywords(string $symptomQuery): Collection
     {
         return collect(explode(',', $symptomQuery))
@@ -258,12 +219,7 @@ class HomeController extends Controller
             ->values(); //chuyển về mảng
     }
 
-    /**
-     * Tìm các ID dịch vụ khớp với từ khóa triệu chứng.
-     *
-     * @param  \Illuminate\Support\Collection  $keywords
-     * @return \Illuminate\Support\Collection
-     */
+    // Tìm các ID dịch vụ khớp với từ khóa triệu chứng
     private function findMatchingServiceIds(Collection $keywords): Collection
     {
         $serviceIds = collect();
@@ -278,12 +234,7 @@ class HomeController extends Controller
         return $serviceIds->unique(); //loại bỏ trùng
     }
 
-    /**
-     * Tìm các ID bệnh khớp với từ khóa triệu chứng.
-     *
-     * @param  \Illuminate\Support\Collection  $keywords
-     * @return \Illuminate\Support\Collection
-     */
+    // Tìm các ID bệnh khớp với từ khóa triệu chứng
     private function findMatchingDiseaseIds(Collection $keywords): Collection
     {
         $diseaseIds = collect(); //khởi tạo collection rỗng
@@ -298,13 +249,7 @@ class HomeController extends Controller
         return $diseaseIds->unique(); //loại bỏ trùng
     }
 
-    /**
-     * Tính số lượng triệu chứng khớp với từ khóa.
-     *
-     * @param  \Illuminate\Support\Collection  $symptoms
-     * @param  \Illuminate\Support\Collection  $keywords
-     * @return int
-     */
+    // Tính số lượng triệu chứng khớp với từ khóa
     private function calculateMatchedSymptomsCount(Collection $symptoms, Collection $keywords): int
     {
         return $symptoms->filter(function ($symptom) use ($keywords) {
@@ -319,14 +264,7 @@ class HomeController extends Controller
         })->count();
     }
 
-    /**
-     * Lấy danh sách dịch vụ gợi ý dựa trên triệu chứng.
-     *
-     * @param  \Illuminate\Support\Collection  $serviceIds
-     * @param  \Illuminate\Support\Collection  $keywords
-     * @param  int|null  $selectedDepartmentId
-     * @return \Illuminate\Support\Collection
-     */
+    // Lấy danh sách dịch vụ gợi ý dựa trên triệu chứng
     private function getSuggestedServices(Collection $serviceIds, Collection $keywords, ?int $selectedDepartmentId): Collection
     {
         // Lấy danh sách dịch vụ với quan hệ department và symptoms
@@ -354,14 +292,7 @@ class HomeController extends Controller
             ->values(); //chuyển về mảng
     }
 
-    /**
-     * Lấy danh sách bệnh gợi ý dựa trên triệu chứng.
-     *
-     * @param  \Illuminate\Support\Collection  $diseaseIds
-     * @param  \Illuminate\Support\Collection  $keywords
-     * @param  int|null  $selectedDepartmentId
-     * @return \Illuminate\Support\Collection
-     */
+    // Lấy danh sách bệnh gợi ý dựa trên triệu chứng
     private function getSuggestedDiseases(Collection $diseaseIds, Collection $keywords, ?int $selectedDepartmentId): Collection
     {
         // Lấy danh sách bệnh với quan hệ department và symptoms
@@ -389,12 +320,7 @@ class HomeController extends Controller
             ->values(); //chuyển về mảng         
     }
 
-    /**
-     * Lấy danh sách triệu chứng gợi ý theo khoa.
-     *
-     * @param  int|null  $departmentId
-     * @return \Illuminate\Support\Collection
-     */
+    // Lấy danh sách triệu chứng gợi ý theo khoa
     private function getSymptomSuggestionsByDepartment(?int $departmentId): Collection
     {
         // Kiểm tra nếu không có khoa → trả về rỗng
@@ -428,13 +354,7 @@ class HomeController extends Controller
             ->take(12); //lấy 12 triệu chứng đầu tiên
     }
 
-    /**
-     * Kiểm tra xem FULLTEXT index có tồn tại cho cột cụ thể không.
-     *
-     * @param  string  $table
-     * @param  string  $column
-     * @return bool
-     */
+    // Kiểm tra xem FULLTEXT index có tồn tại cho cột cụ thể không
     private function hasFulltextIndex(string $table, string $column): bool
     {
         try {

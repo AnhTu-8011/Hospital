@@ -30,33 +30,29 @@
         <div class="card-body p-4">
             <ul class="nav nav-pills mb-0 gap-2">
                 <li class="nav-item">
-                    <a class="nav-link rounded-pill {{ request('role') === null ? 'active' : '' }}"
-                       href="{{ route('admin.users.index') }}"
-                       style="{{ request('role') === null ? 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;' : '' }}">
+                    <a class="nav-link rounded-pill {{ request('role') === null ? 'active nav-link-active' : '' }}"
+                       href="{{ route('admin.users.index') }}">
                         <i class="fas fa-users me-1"></i>
                         Tất cả ({{ $counts['all'] }})
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link rounded-pill {{ request('role') === 'patient' ? 'active' : '' }}"
-                       href="{{ route('admin.users.index', ['role' => 'patient']) }}"
-                       style="{{ request('role') === 'patient' ? 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;' : '' }}">
+                    <a class="nav-link rounded-pill {{ request('role') === 'patient' ? 'active nav-link-active' : '' }}"
+                       href="{{ route('admin.users.index', ['role' => 'patient']) }}">
                         <i class="fas fa-user-injured me-1"></i>
                         Bệnh nhân ({{ $counts['patient'] }})
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link rounded-pill {{ request('role') === 'doctor' ? 'active' : '' }}"
-                       href="{{ route('admin.users.index', ['role' => 'doctor']) }}"
-                       style="{{ request('role') === 'doctor' ? 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;' : '' }}">
+                    <a class="nav-link rounded-pill {{ request('role') === 'doctor' ? 'active nav-link-active' : '' }}"
+                       href="{{ route('admin.users.index', ['role' => 'doctor']) }}">
                         <i class="fas fa-user-md me-1"></i>
                         Bác sĩ ({{ $counts['doctor'] }})
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link rounded-pill {{ request('role') === 'admin' ? 'active' : '' }}"
-                       href="{{ route('admin.users.index', ['role' => 'admin']) }}"
-                       style="{{ request('role') === 'admin' ? 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;' : '' }}">
+                    <a class="nav-link rounded-pill {{ request('role') === 'admin' ? 'active nav-link-active' : '' }}"
+                       href="{{ route('admin.users.index', ['role' => 'admin']) }}">
                         <i class="fas fa-user-shield me-1"></i>
                         Quản trị ({{ $counts['admin'] }})
                     </a>
@@ -188,6 +184,11 @@
 
         .nav-link:hover:not(.active) {
             background-color: #f0f0f0;
+        }
+
+        .nav-link-active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
         }
     </style>
 @endsection

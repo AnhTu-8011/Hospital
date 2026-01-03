@@ -10,15 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class DoctorDashboardController extends Controller
 {
-    /**
-     * Hiển thị trang dashboard của bác sĩ.
-     * - Hiển thị danh sách lịch hẹn trong ngày được chọn.
-     * - Thống kê số lượng lịch hẹn theo trạng thái (pending, confirmed, completed).
-     * - Cho phép lọc theo ngày.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị trang dashboard của bác sĩ với danh sách lịch hẹn và thống kê
     public function index(Request $request)
     {
         $doctor = Auth::user()->doctor ?? null;

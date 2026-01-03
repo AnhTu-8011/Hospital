@@ -10,26 +10,13 @@ use Illuminate\View\View;
 
 class AdminAuthController extends Controller
 {
-    /**
-     * Hiển thị form đăng nhập cho quản trị viên.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form đăng nhập cho quản trị viên
     public function showLoginForm(Request $request): View
     {
         return view('auth.login', ['role' => 'admin']);
     }
 
-    /**
-     * Xử lý đăng nhập cho quản trị viên.
-     * - Sử dụng guard 'web_admin' để xác thực.
-     * - Kiểm tra role phải là 'admin'.
-     * - Tự động chuyển hướng đến dashboard admin sau khi đăng nhập thành công.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xử lý đăng nhập cho quản trị viên (sử dụng guard web_admin, kiểm tra role admin)
     public function login(Request $request): RedirectResponse
     {
         // Validate dữ liệu đầu vào
@@ -65,14 +52,7 @@ class AdminAuthController extends Controller
         ])->withInput();
     }
 
-    /**
-     * Xử lý đăng xuất cho quản trị viên.
-     * - Đăng xuất khỏi guard 'web_admin'.
-     * - Hủy session và regenerate token để bảo mật.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xử lý đăng xuất cho quản trị viên (đăng xuất khỏi guard web_admin, hủy session)
     public function logout(Request $request): RedirectResponse
     {
         // Đăng xuất khỏi guard web_admin

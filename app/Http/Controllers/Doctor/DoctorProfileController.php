@@ -13,11 +13,7 @@ use Illuminate\Support\Facades\Storage;
 
 class DoctorProfileController extends Controller
 {
-    /**
-     * Hiển thị form chỉnh sửa hồ sơ bác sĩ.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form chỉnh sửa hồ sơ bác sĩ
     public function edit()
     {
         $user = Auth::user();
@@ -27,18 +23,9 @@ class DoctorProfileController extends Controller
         return view('doctor.profile', compact('user', 'doctor', 'departments'));
     }
 
-    /**
-     * Cập nhật thông tin hồ sơ bác sĩ.
-     * - Cập nhật thông tin trong bảng users.
-     * - Cập nhật thông tin trong bảng doctors.
-     * - Xử lý upload avatar và ảnh giấy phép hành nghề.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Cập nhật thông tin hồ sơ bác sĩ (cập nhật users và doctors, xử lý upload avatar và giấy phép)
     public function update(Request $request)
     {
-        /** @var User $user */
         $user = Auth::user();
         $doctor = Doctor::where('user_id', $user->id)->firstOrFail();
 
@@ -102,14 +89,7 @@ class DoctorProfileController extends Controller
         return redirect()->back()->with('success', 'Cập nhật hồ sơ thành công!');
     }
 
-    /**
-     * Cập nhật mật khẩu bác sĩ.
-     * - Yêu cầu nhập mật khẩu hiện tại để xác thực.
-     * - Mật khẩu mới phải được xác nhận và tối thiểu 6 ký tự.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Cập nhật mật khẩu bác sĩ (yêu cầu mật khẩu hiện tại và mật khẩu mới tối thiểu 6 ký tự)
     public function updatePassword(Request $request)
     {
         // Validate dữ liệu đầu vào
@@ -118,7 +98,6 @@ class DoctorProfileController extends Controller
             'new_password' => 'required|min:6|confirmed',
         ]);
 
-        /** @var User $user */
         $user = Auth::user();
 
         // Kiểm tra mật khẩu hiện tại

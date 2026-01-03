@@ -9,11 +9,7 @@ use Illuminate\Support\Str;
 
 class MedicineController extends Controller
 {
-    /**
-     * Hiển thị danh sách thuốc.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị danh sách thuốc
     public function index()
     {
         $medicines = Medicine::orderBy('name')->paginate(15);
@@ -21,22 +17,13 @@ class MedicineController extends Controller
         return view('admin.medicines.index', compact('medicines'));
     }
 
-    /**
-     * Hiển thị form tạo thuốc mới.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form tạo thuốc mới
     public function create()
     {
         return view('admin.medicines.create');
     }
 
-    /**
-     * Lưu thuốc mới vào database.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Lưu thuốc mới vào database
     public function store(Request $request)
     {
         // Validate và lấy dữ liệu hợp lệ
@@ -54,24 +41,13 @@ class MedicineController extends Controller
             ->with('success', 'Thêm thuốc thành công.');
     }
 
-    /**
-     * Hiển thị form chỉnh sửa thuốc.
-     *
-     * @param  \App\Models\Medicine  $medicine
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form chỉnh sửa thuốc
     public function edit(Medicine $medicine)
     {
         return view('admin.medicines.edit', compact('medicine'));
     }
 
-    /**
-     * Cập nhật thông tin thuốc trong database.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Medicine  $medicine
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Cập nhật thông tin thuốc trong database
     public function update(Request $request, Medicine $medicine)
     {
         // Validate và lấy dữ liệu hợp lệ
@@ -89,12 +65,7 @@ class MedicineController extends Controller
             ->with('success', 'Cập nhật thuốc thành công.');
     }
 
-    /**
-     * Xóa thuốc khỏi database.
-     *
-     * @param  \App\Models\Medicine  $medicine
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xóa thuốc khỏi database
     public function destroy(Medicine $medicine)
     {
         $medicine->delete();
@@ -103,13 +74,7 @@ class MedicineController extends Controller
             ->with('success', 'Xóa thuốc thành công.');
     }
 
-    /**
-     * Validate dữ liệu thuốc.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int|null  $id
-     * @return array
-     */
+    // Validate dữ liệu thuốc
     protected function validateData(Request $request, ?int $id = null): array
     {
         return $request->validate([

@@ -20,7 +20,7 @@
         </div>
 
         {{-- Chat Form --}}
-        <form id="chat-form" class="d-flex border-top">
+        <form id="chat-form" class="d-flex border-top" data-user-id="{{ Auth::id() ?? '' }}">
             @csrf
             <input type="hidden" id="receiver_id" value="{{ $receiverId ?? '' }}">
             <input type="text"
@@ -116,139 +116,18 @@
 {{-- jQuery --}}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-{{-- Chat Widget Script --}}
+{{-- Chat Widget Config --}}
 <script>
-    $(document).ready(function() {
-        const chatBox = $('#chat-box');
-        const toggleBtn = $('#chat-toggle');
-        const closeBtn = $('#chat-close');
-        let receiverId = $('#receiver_id').val();
-        const messagesDiv = $('#chat-messages');
-        const notifyDot = $('#chat-notify');
-        let lastMessageCount = 0;
-
-        const unreadUrlTemplate = "{{ route('chat.unread_count', ['senderId' => '__SID__']) }}";
-        const messagesUrlTemplate = "{{ route('chat.get', ['receiverId' => '__RID__']) }}";
-
-        // Request browser notification permission
-        if (Notification.permission !== 'granted') {
-            Notification.requestPermission();
-        }
-
-        // Toggle chat box
-        toggleBtn.on('click', () => {
-            chatBox.toggleClass('hidden');
-            notifyDot.text('').addClass('d-none');
-            if (!chatBox.hasClass('hidden')) {
-                receiverId = $('#receiver_id').val();
-                loadMessages();
-            }
-        });
-
-        // Close chat box
-        closeBtn.on('click', () => chatBox.addClass('hidden'));
-
-        // Send message
-        $('#chat-form').submit(function(e) {
-            e.preventDefault();
-            $.ajax({
-                url: "{{ route('chat.send') }}",
-                method: 'POST',
-                data: {
-                    _token: $('input[name=_token]').val(),
-                    receiver_id: receiverId,
-                    message: $('#message').val(),
-                },
-                success: function() {
-                    $('#message').val('');
-                    loadMessages();
-                }
-            });
-        });
-
-        // Update unread badge
-        function updateUnreadBadge() {
-            receiverId = $('#receiver_id').val();
-            if (!receiverId) {
-                notifyDot.text('').addClass('d-none');
-                return;
-            }
-            const url = unreadUrlTemplate.replace('__SID__', receiverId);
-            $.get(url, function(res) {
-                const count = res && typeof res.count !== 'undefined' ? Number(res.count) : 0;
-                if (count > 0 && chatBox.hasClass('hidden')) {
-                    notifyDot.text(String(count)).removeClass('d-none');
-                } else {
-                    notifyDot.text('').addClass('d-none');
-                }
-            });
-        }
-
-        // Load messages
-        function loadMessages() {
-            receiverId = $('#receiver_id').val();
-            if (!receiverId) {
-                messagesDiv.html('<p class="text-danger text-center mb-0">Không tìm thấy Admin để chat. Vui lòng đăng nhập lại hoặc liên hệ quản trị.</p>');
-                return;
-            }
-            $.ajax({
-                url: messagesUrlTemplate.replace('__RID__', receiverId),
-                method: 'GET',
-                success: function(messages) {
-                    // Check for new messages
-                    if (messages.length > lastMessageCount && chatBox.hasClass('hidden')) {
-                        updateUnreadBadge();
-                        playNotificationSound();
-                        showBrowserNotification('Bạn có tin nhắn mới từ Admin!');
-                    }
-                    lastMessageCount = messages.length;
-
-                    // Display messages
-                    messagesDiv.html('');
-                    messages.forEach(function(msg) {
-                        let isMine = msg.sender_id == {{ Auth::id() }};
-                        let msgAlign = isMine ? 'text-end text-primary' : 'text-start text-dark';
-                        let sender = isMine ? 'Bạn' : 'Admin';
-                        messagesDiv.append(`<p class="${msgAlign}"><strong>${sender}:</strong> ${msg.message}</p>`);
-                    });
-                    messagesDiv.scrollTop(messagesDiv[0].scrollHeight);
-                },
-                error: function(xhr) {
-                    const status = xhr && xhr.status ? String(xhr.status) : '';
-                    let text = 'Không tải được tin nhắn.';
-                    if (status === '401') {
-                        text = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
-                    } else if (status === '403') {
-                        text = 'Bạn không có quyền chat. Vui lòng kiểm tra quyền tài khoản.';
-                    }
-                    messagesDiv.html('<p class="text-danger text-center mb-0">' + text + '</p>');
-                }
-            });
-        }
-
-        // Play notification sound
-        function playNotificationSound() {
-            const audio = new Audio('/sounds/notify.mp3');
-            audio.play().catch(() => {});
-        }
-
-        // Show browser notification
-        function showBrowserNotification(text) {
-            if (Notification.permission === 'granted') {
-                new Notification('Tin nhắn mới', { body: text });
-            }
-        }
-
-        // Poll for messages / unread count periodically
-        setInterval(function() {
-            if (!chatBox.hasClass('hidden')) {
-                loadMessages();
-            } else {
-                updateUnreadBadge();
-            }
-        }, 2000);
-
-        // Initial unread badge update
-        updateUnreadBadge();
-    });
+    // Truyền config từ Blade vào JavaScript
+    window.chatUserConfig = {
+        routes: {
+            send: "{{ route('chat.send') }}",
+            unreadCount: "{{ route('chat.unread_count', ['senderId' => '__SID__']) }}",
+            getMessages: "{{ route('chat.get', ['receiverId' => '__RID__']) }}"
+        },
+        pollInterval: 2000
+    };
 </script>
+
+{{-- Chat Widget Script --}}
+<script src="{{ asset('js/chat/chat_user.js') }}"></script>

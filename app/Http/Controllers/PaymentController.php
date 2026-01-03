@@ -13,12 +13,7 @@ use Illuminate\Support\Facades\Schema;
 
 class PaymentController extends Controller
 {
-    /**
-     * Xử lý thanh toán VNPay cho lịch hẹn mới.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xử lý thanh toán VNPay cho lịch hẹn mới
     public function vnpay_payment(Request $request)
     {
         try {
@@ -52,13 +47,7 @@ class PaymentController extends Controller
                 return back()->with('error', 'Bác sĩ không thuộc khoa của dịch vụ đã chọn. Vui lòng chọn lại.')->withInput();
             }
 
-            /**
-             * Kiểm tra thời gian đặt lịch - phải đặt trước ít nhất 5 giờ so với thời gian bắt đầu ca khám
-             * - Ca sáng bắt đầu lúc 07:30
-             * - Ca chiều bắt đầu lúc 13:00
-             * - Tính thời gian từ bây giờ đến thời điểm bắt đầu ca khám
-             * - Nếu < 5 giờ → báo lỗi, không cho đặt
-             */
+            // Kiểm tra thời gian đặt lịch - phải đặt trước ít nhất 5 giờ so với thời gian bắt đầu ca khám
             $appointmentDateTime = Carbon::parse($validated['appointment_date']);
             
             // Xác định thời gian bắt đầu ca khám dựa trên medical_examination
@@ -151,12 +140,7 @@ class PaymentController extends Controller
         }
     }
 
-    /**
-     * Xử lý callback từ VNPay sau khi thanh toán.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xử lý callback từ VNPay sau khi thanh toán
     public function vnpay_return(Request $request)
     {
         $input = $request->all();
@@ -207,13 +191,7 @@ class PaymentController extends Controller
         return redirect()->route('appointments.show', $appointment->id)->with('error', $errorMessage);
     }
 
-    /**
-     * Khởi tạo thanh toán cho một lịch hẹn đã tồn tại (từ trang chi tiết lịch hẹn).
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Appointment  $appointment
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Khởi tạo thanh toán cho một lịch hẹn đã tồn tại
     public function checkout(Request $request, Appointment $appointment)
     {
         try {
@@ -265,26 +243,13 @@ class PaymentController extends Controller
         }
     }
 
-    /**
-     * Tạo mã giao dịch (Transaction Reference) cho VNPay.
-     *
-     * @param  int  $appointmentId
-     * @return string
-     */
+    // Tạo mã giao dịch (Transaction Reference) cho VNPay
     private function getTxnRef($appointmentId)
     {
         return 'APP'.$appointmentId.'_'.time();
     }
 
-    /**
-     * Build URL thanh toán VNPay theo chuẩn VNPay — KHÔNG sai chữ ký.
-     *
-     * @param  \App\Models\Appointment  $appointment
-     * @param  float  $price
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $txnRef
-     * @return string
-     */
+    // Build URL thanh toán VNPay theo chuẩn VNPay
     private function buildVnpayUrl(Appointment $appointment, $price, Request $request, $txnRef)
     {
         // Lấy cấu hình VNPay từ environment

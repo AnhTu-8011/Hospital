@@ -10,11 +10,7 @@ use Illuminate\Http\Request;
 
 class DiseaseController extends Controller
 {
-    /**
-     * Hiển thị danh sách bệnh.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị danh sách bệnh
     public function index()
     {
         $diseases = Disease::with(['department', 'symptoms'])
@@ -25,11 +21,7 @@ class DiseaseController extends Controller
         return view('admin.diseases.index', compact('diseases'));
     }
 
-    /**
-     * Hiển thị form tạo bệnh mới.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form tạo bệnh mới
     public function create()
     {
         $departments = Department::all();
@@ -37,12 +29,7 @@ class DiseaseController extends Controller
         return view('admin.diseases.create', compact('departments'));
     }
 
-    /**
-     * Lưu bệnh mới vào database.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Lưu bệnh mới vào database
     public function store(Request $request)
     {
         // Validate dữ liệu đầu vào
@@ -79,12 +66,7 @@ class DiseaseController extends Controller
         return redirect()->route('admin.diseases.index')->with('success', 'Thêm bệnh thành công!');
     }
 
-    /**
-     * Hiển thị form chỉnh sửa bệnh.
-     *
-     * @param  \App\Models\Disease  $disease
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form chỉnh sửa bệnh
     public function edit(Disease $disease)
     {
         $departments = Department::all();
@@ -93,13 +75,7 @@ class DiseaseController extends Controller
         return view('admin.diseases.edit', compact('disease', 'departments'));
     }
 
-    /**
-     * Cập nhật thông tin bệnh trong database.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Disease  $disease
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Cập nhật thông tin bệnh trong database
     public function update(Request $request, Disease $disease)
     {
         // Validate dữ liệu đầu vào
@@ -137,12 +113,7 @@ class DiseaseController extends Controller
         return redirect()->route('admin.diseases.index')->with('success', 'Cập nhật bệnh thành công!');
     }
 
-    /**
-     * Xóa bệnh khỏi database.
-     *
-     * @param  \App\Models\Disease  $disease
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xóa bệnh khỏi database
     public function destroy(Disease $disease)
     {
         $disease->delete();

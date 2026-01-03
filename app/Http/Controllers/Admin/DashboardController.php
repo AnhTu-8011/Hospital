@@ -13,14 +13,7 @@ use Illuminate\Support\Facades\Schema;
 
 class DashboardController extends Controller
 {
-    /**
-     * Hiển thị trang Dashboard dành cho Admin.
-     * - Cung cấp các thống kê tổng quan (tổng số bác sĩ, bệnh nhân, phòng ban, dịch vụ, lịch hẹn, v.v.)
-     * - Hiển thị danh sách lịch hẹn gần nhất.
-     * - Hiển thị biểu đồ/thống kê doanh thu theo ngày, tháng và năm.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị trang Dashboard dành cho Admin với thống kê tổng quan và doanh thu
     public function index()
     {
         // Lấy ngày hiện tại (chỉ phần ngày, không bao gồm giờ)

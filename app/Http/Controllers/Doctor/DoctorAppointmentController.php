@@ -9,27 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class DoctorAppointmentController extends Controller
 {
-    /**
-     * Bác sĩ đánh dấu lịch hẹn đã hoàn thành.
-     * 
-     * CHỨC NĂNG DÀNH CHO: BÁC SĨ
-     * 
-     * Mục đích:
-     * - Sau khi khám xong cho bệnh nhân, bác sĩ sử dụng chức năng này để đánh dấu lịch hẹn đã hoàn thành
-     * - Cập nhật trạng thái lịch hẹn từ "confirmed" (Đã duyệt) → "completed" (Đã khám)
-     * 
-     * Điều kiện:
-     * 1. Người dùng phải là bác sĩ (role = 'doctor')
-     * 2. Bác sĩ phải là bác sĩ được phân công cho lịch hẹn này (doctor_id khớp)
-     * 3. Lịch hẹn phải ở trạng thái "confirmed" (Đã duyệt) - không thể hoàn thành lịch chưa duyệt
-     * 
-     * Route: POST /doctor/appointments/{appointment}/complete
-     * Middleware: auth:web_doctor (chỉ bác sĩ mới truy cập được)
-     * 
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Appointment  $appointment  Lịch hẹn cần đánh dấu hoàn thành
-     * @return \Illuminate\Http\RedirectResponse  Redirect về trang trước với thông báo thành công/lỗi
-     */
+    // Bác sĩ đánh dấu lịch hẹn đã hoàn thành (chỉ bác sĩ được phân công mới có quyền)
     public function complete(Request $request, Appointment $appointment)
     {
         $user = Auth::user();

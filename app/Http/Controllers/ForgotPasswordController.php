@@ -7,22 +7,13 @@ use Illuminate\Support\Facades\Password;
 
 class ForgotPasswordController extends Controller
 {
-    /**
-     * Hiển thị form yêu cầu reset mật khẩu.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form yêu cầu reset mật khẩu
     public function showLinkRequestForm()
     {
         return view('auth.forgot-password');
     }
 
-    /**
-     * Gửi email chứa link reset mật khẩu đến người dùng.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Gửi email chứa link reset mật khẩu đến người dùng
     public function sendResetLinkEmail(Request $request)
     {
         // Validate email đầu vào

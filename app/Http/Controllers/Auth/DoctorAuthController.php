@@ -10,27 +10,13 @@ use Illuminate\View\View;
 
 class DoctorAuthController extends Controller
 {
-    /**
-     * Hiển thị form đăng nhập cho bác sĩ.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form đăng nhập cho bác sĩ
     public function showLoginForm(Request $request): View
     {
         return view('auth.login', ['role' => 'doctor']);
     }
 
-    /**
-     * Xử lý đăng nhập cho bác sĩ.
-     * - Sử dụng guard 'web_doctor' để xác thực.
-     * - Kiểm tra role phải là 'doctor'.
-     * - Kiểm tra user phải có hồ sơ bác sĩ (doctor profile).
-     * - Tự động chuyển hướng đến dashboard bác sĩ sau khi đăng nhập thành công.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xử lý đăng nhập cho bác sĩ (sử dụng guard web_doctor, kiểm tra role doctor và hồ sơ bác sĩ)
     public function login(Request $request): RedirectResponse
     {
         // Validate dữ liệu đầu vào
@@ -75,14 +61,7 @@ class DoctorAuthController extends Controller
         ])->withInput();
     }
 
-    /**
-     * Xử lý đăng xuất cho bác sĩ.
-     * - Đăng xuất khỏi guard 'web_doctor'.
-     * - Hủy session và regenerate token để bảo mật.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xử lý đăng xuất cho bác sĩ (đăng xuất khỏi guard web_doctor, hủy session)
     public function logout(Request $request): RedirectResponse
     {
         // Đăng xuất khỏi guard web_doctor

@@ -8,14 +8,7 @@ use Illuminate\Http\Request;
 
 class HistoryController extends Controller
 {
-    /**
-     * Hiển thị lịch sử khám: danh sách hồ sơ bệnh án.
-     * - Chỉ hiển thị các hồ sơ bệnh án của bác sĩ hiện tại.
-     * - Sắp xếp theo thời gian tạo giảm dần (mới nhất trước).
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị lịch sử khám: danh sách hồ sơ bệnh án của bác sĩ hiện tại
     public function history(Request $request)
     {
         $user = $request->user();

@@ -10,21 +10,13 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    /**
-     * Khởi tạo controller.
-     * Chỉ cho phép admin truy cập các hành động trong controller này.
-     */
+    // Chỉ cho phép admin truy cập các hành động trong controller này
     public function __construct()
     {
         $this->middleware('admin');
     }
 
-    /**
-     * Hiển thị danh sách người dùng, có thể lọc theo vai trò (role).
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị danh sách người dùng, có thể lọc theo vai trò
     public function index(Request $request)
     {
         // Lấy giá trị role trên URL (vd: ?role=doctor)
@@ -59,38 +51,23 @@ class UserController extends Controller
         return view('admin.users.index', [
             'users' => $users,
             'counts' => $counts,
-            'currentRole' => $filter, // để biết tab nào đang được chọn
+            'currentRole' => $filter, 
         ]);
     }
 
-    /**
-     * Hiển thị form chỉnh sửa thông tin người dùng cụ thể.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form chỉnh sửa thông tin người dùng
     public function edit(User $user)
     {
-        // Lấy danh sách tất cả vai trò để hiển thị trong dropdown chọn vai trò
         $roles = Role::orderBy('id')->get();
-
-        // Trả về view chỉnh sửa, truyền user và danh sách roles
         return view('admin.users.edit', [
-            'user' => $user->load('role'), // load quan hệ role của user
+            'user' => $user->load('role'),
             'roles' => $roles,
         ]);
     }
 
-    /**
-     * Cập nhật thông tin người dùng.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Cập nhật thông tin người dùng
     public function update(Request $request, User $user)
     {
-        // Xác thực dữ liệu đầu vào
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'], // tên bắt buộc
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)], // email duy nhất (trừ chính mình)
@@ -98,31 +75,17 @@ class UserController extends Controller
             'phone' => ['nullable', 'string', 'max:50'], // số điện thoại tùy chọn
             'address' => ['nullable', 'string', 'max:255'], // địa chỉ tùy chọn
         ]);
-
-        // Cập nhật dữ liệu vào user
         $user->update($validated);
-
-        // Chuyển hướng về danh sách người dùng kèm thông báo
         return redirect()->route('admin.users.index')->with('status', 'Cập nhật tài khoản thành công.');
     }
 
-    /**
-     * Xóa người dùng khỏi hệ thống.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xóa người dùng khỏi hệ thống
     public function destroy(User $user)
     {
-        // Ngăn admin tự xóa tài khoản của chính mình
         if (Auth::id() === $user->id) {
             return redirect()->back()->with('error', 'Không thể tự xóa tài khoản của chính bạn.');
         }
-
-        // Xóa người dùng
         $user->delete();
-
-        // Quay lại trang danh sách kèm thông báo
         return redirect()->route('admin.users.index')->with('status', 'Đã xóa tài khoản.');
     }
 }

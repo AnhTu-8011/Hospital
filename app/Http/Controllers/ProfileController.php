@@ -12,22 +12,13 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    /**
-     * Hiển thị trang chính của hồ sơ cá nhân.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị trang chính của hồ sơ cá nhân
     public function index()
     {
         return view('profile.index');
     }
 
-    /**
-     * Hiển thị trang chỉnh sửa hồ sơ người dùng.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị trang chỉnh sửa hồ sơ người dùng
     public function edit(Request $request): View
     {
         return view('profile.edit', [
@@ -35,13 +26,7 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * Cập nhật thông tin hồ sơ người dùng,
-     * đồng thời đồng bộ với bảng "patients".
-     *
-     * @param  \App\Http\Requests\ProfileUpdateRequest  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Cập nhật thông tin hồ sơ người dùng, đồng thời đồng bộ với bảng patients
     public function update(ProfileUpdateRequest $request)
     {
         $user = $request->user(); // Lấy người dùng hiện tại
@@ -58,12 +43,8 @@ class ProfileController extends Controller
         // Lưu thông tin cập nhật vào cơ sở dữ liệu
         $user->save();
 
-        /**
-         * ============================
-         * XỬ LÝ HÌNH ẢNH (AVATAR)
-         * ============================
-         */
-        $avatarPath = $user->patient->avatar ?? null; // Lấy đường dẫn avatar cũ (nếu có)
+        // Xử lý hình ảnh (avatar)
+        $avatarPath = $user->patient?->avatar ?? null; // Lấy đường dẫn avatar cũ (nếu có)
 
         // Nếu người dùng có upload avatar mới
         if ($request->hasFile('avatar')) {
@@ -76,13 +57,7 @@ class ProfileController extends Controller
             $avatarPath = $request->file('avatar')->store('patients/avatar', 'public');
         }
 
-        /**
-         * ============================
-         * CẬP NHẬT / TẠO BẢN GHI BỆNH NHÂN
-         * ============================
-         * Nếu user đã có bản ghi trong bảng patients thì cập nhật,
-         * nếu chưa có thì tạo mới (theo user_id).
-         */
+        // Cập nhật hoặc tạo bản ghi bệnh nhân
         $user->patient()->updateOrCreate(
             ['user_id' => $user->id], // điều kiện để tìm bản ghi
             [
@@ -101,12 +76,7 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
-    /**
-     * Đổi mật khẩu người dùng hiện tại.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Đổi mật khẩu người dùng hiện tại
     public function updatePassword(Request $request)
     {
         // Xác thực dữ liệu nhập
@@ -115,6 +85,7 @@ class ProfileController extends Controller
             'password' => 'required|confirmed|min:8', // mật khẩu mới ít nhất 8 ký tự và phải trùng với xác nhận
         ]);
 
+        /** @var \App\Models\User $user */
         $user = Auth::user(); // Lấy user hiện tại
 
         // Kiểm tra mật khẩu hiện tại có đúng không
@@ -130,13 +101,7 @@ class ProfileController extends Controller
         return redirect()->route('profile.edit')->with('status', 'password-updated');
     }
 
-    /**
-     * Xóa tài khoản người dùng (có yêu cầu xác nhận mật khẩu).
-     * Sau khi xóa, đăng xuất và hủy session.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xóa tài khoản người dùng (có yêu cầu xác nhận mật khẩu)
     public function destroy(Request $request)
     {
         $user = $request->user(); // Lấy user hiện tại

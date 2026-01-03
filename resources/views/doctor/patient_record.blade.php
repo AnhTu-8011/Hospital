@@ -152,7 +152,7 @@
                 </div>
             </div>
                 {{-- Medical Record Update Form --}}
-                <form action="{{ route('doctor.records.update', $record->id) }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('doctor.records.update', $record->id) }}" method="POST" enctype="multipart/form-data" data-prescription-index="{{ ($existingItems && $existingItems->count()) ? (int)$existingItems->count() : 1 }}">
                     @csrf
                     @method('PUT')
 
@@ -502,74 +502,25 @@
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="{{ asset('js/patient_record.js') }}"></script>
+
+{{-- Patient Record Config --}}
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        let prescriptionIndex = {{ ($existingItems && $existingItems->count()) ? $existingItems->count() : 1 }};
-        const body = document.getElementById('prescription-items-body');
-        const addBtn = document.getElementById('add-prescription-row');
-
-        // Khởi tạo Select2 cho các dropdown thuốc hiện có
-        if (window.jQuery) {
-            $('.medicine-select').select2({
-                width: '100%',
-                placeholder: '-- Chọn thuốc --',
-                allowClear: true
-            });
+    // Truyền config từ Blade vào JavaScript
+    (function() {
+        const form = document.querySelector('form[data-prescription-index]');
+        if (form) {
+            const index = parseInt(form.getAttribute('data-prescription-index')) || 1;
+            window.patientRecordConfig = {
+                prescriptionIndex: index
+            };
+        } else {
+            window.patientRecordConfig = {
+                prescriptionIndex: 1
+            };
         }
-
-        if (addBtn && body) {
-            addBtn.addEventListener('click', function () {
-                const firstRow = body.querySelector('.prescription-row');
-                if (!firstRow) return;
-
-                // Hủy select2 trên tất cả dropdown thuốc hiện tại để tránh clone markup của select2
-                if (window.jQuery) {
-                    $('.medicine-select').each(function () {
-                        if ($(this).hasClass('select2-hidden-accessible')) {
-                            $(this).select2('destroy');
-                        }
-                    });
-                }
-
-                const newRow = firstRow.cloneNode(true);
-
-                // Cập nhật name với index mới và xóa giá trị cũ
-                newRow.querySelectorAll('input, select').forEach(function (el) {
-                    if (el.name) {
-                        el.name = el.name.replace(/prescription_items\[[0-9]+\]/, 'prescription_items[' + prescriptionIndex + ']');
-                    }
-                    if (el.tagName === 'SELECT') {
-                        el.selectedIndex = 0;
-                    } else {
-                        el.value = '';
-                    }
-                });
-
-                body.appendChild(newRow);
-
-                // Khởi tạo lại select2 cho TẤT CẢ dropdown thuốc
-                if (window.jQuery) {
-                    $('.medicine-select').select2({
-                        width: '100%',
-                        placeholder: '-- Chọn thuốc --',
-                        allowClear: true
-                    });
-                }
-
-                prescriptionIndex++;
-            });
-
-            body.addEventListener('click', function (e) {
-                if (e.target.closest('.remove-prescription-row')) {
-                    const rows = body.querySelectorAll('.prescription-row');
-                    if (rows.length <= 1) return; // luôn giữ ít nhất 1 dòng
-                    const row = e.target.closest('.prescription-row');
-                    if (row) row.remove();
-                }
-            });
-        }
-    });
+    })();
 </script>
+
+<script src="{{ asset('js/patient_record.js') }}"></script>
 @endpush
 @endsection

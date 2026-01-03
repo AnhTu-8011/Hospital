@@ -10,14 +10,7 @@ use Illuminate\Validation\Rules\Password;
 
 class PasswordController extends Controller
 {
-    /**
-     * Cập nhật mật khẩu của người dùng hiện tại.
-     * - Yêu cầu nhập mật khẩu hiện tại để xác thực.
-     * - Mật khẩu mới phải tuân theo rules mặc định và phải được xác nhận.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Cập nhật mật khẩu của người dùng hiện tại (yêu cầu mật khẩu hiện tại và mật khẩu mới phải được xác nhận)
     public function update(Request $request): RedirectResponse
     {
         // Validate dữ liệu đầu vào với error bag riêng

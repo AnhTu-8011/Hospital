@@ -10,26 +10,13 @@ use Illuminate\View\View;
 
 class PatientAuthController extends Controller
 {
-    /**
-     * Hiển thị form đăng nhập cho bệnh nhân.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form đăng nhập cho bệnh nhân
     public function showLoginForm(Request $request): View
     {
         return view('auth.login', ['role' => 'patient']);
     }
 
-    /**
-     * Xử lý đăng nhập cho bệnh nhân.
-     * - Sử dụng guard mặc định 'web' để xác thực.
-     * - Kiểm tra role phải là 'patient'.
-     * - Tự động chuyển hướng đến trang chủ sau khi đăng nhập thành công.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xử lý đăng nhập cho bệnh nhân (sử dụng guard web, kiểm tra role patient)
     public function login(Request $request): RedirectResponse
     {
         // Validate dữ liệu đầu vào
@@ -65,14 +52,7 @@ class PatientAuthController extends Controller
         ])->withInput();
     }
 
-    /**
-     * Xử lý đăng xuất cho bệnh nhân.
-     * - Đăng xuất khỏi guard mặc định 'web'.
-     * - Hủy session và regenerate token để bảo mật.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xử lý đăng xuất cho bệnh nhân (đăng xuất khỏi guard web, hủy session)
     public function logout(Request $request): RedirectResponse
     {
         // Đăng xuất khỏi guard web

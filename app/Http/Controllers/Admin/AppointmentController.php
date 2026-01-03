@@ -11,12 +11,7 @@ use Illuminate\Support\Facades\Mail;
 
 class AppointmentController extends Controller
 {
-    /**
-     * Hiển thị danh sách lịch hẹn với bộ lọc tìm kiếm.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị danh sách lịch hẹn với bộ lọc tìm kiếm
     public function index(Request $request)
     {
         $query = Appointment::with(['patient.user', 'doctor.user', 'service']);
@@ -32,24 +27,14 @@ class AppointmentController extends Controller
         return view('admin.appointments.index', compact('appointments'));
     }
 
-    /**
-     * Hiển thị chi tiết lịch hẹn (tạm thời chuyển về danh sách).
-     *
-     * @param  \App\Models\Appointment  $appointment
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Hiển thị chi tiết lịch hẹn (tạm thời chuyển về danh sách)
     public function show(Appointment $appointment)
     {
         return redirect()->route('admin.appointments.index')
             ->with('success', 'Đã chuyển về danh sách lịch hẹn.');
     }
 
-    /**
-     * Xóa lịch hẹn.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xóa lịch hẹn
     public function destroy($id)
     {
         $appointment = Appointment::findOrFail($id);
@@ -59,13 +44,7 @@ class AppointmentController extends Controller
             ->with('success', 'Xóa lịch hẹn thành công!');
     }
 
-    /**
-     * Xác nhận lịch hẹn (thay đổi trạng thái thành "confirmed").
-     * - Gửi email xác nhận cho bệnh nhân nếu trạng thái thay đổi.
-     *
-     * @param  \App\Models\Appointment  $appointment
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xác nhận lịch hẹn (thay đổi trạng thái thành "confirmed" và gửi email)
     public function confirm(Appointment $appointment)
     {
         $previousStatus = $appointment->status;
@@ -79,15 +58,7 @@ class AppointmentController extends Controller
         return back()->with('success', 'Đã xác nhận lịch hẹn thành công');
     }
 
-    /**
-     * Cập nhật trạng thái lịch hẹn.
-     * - Gửi email xác nhận nếu chuyển sang "confirmed".
-     * - Gửi email hủy nếu chuyển sang "cancelled".
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Appointment  $appointment
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Cập nhật trạng thái lịch hẹn (gửi email xác nhận hoặc hủy nếu cần)
     public function updateStatus(Request $request, Appointment $appointment)
     {
         // Validate dữ liệu đầu vào
@@ -114,13 +85,7 @@ class AppointmentController extends Controller
         return back()->with('success', 'Cập nhật trạng thái thành công.');
     }
 
-    /**
-     * Áp dụng các bộ lọc tìm kiếm vào query.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  \Illuminate\Http\Request  $request
-     * @return void
-     */
+    // Áp dụng các bộ lọc tìm kiếm vào query
     private function applyFilters($query, Request $request): void
     {
         // Lọc theo tên bệnh nhân
@@ -155,12 +120,7 @@ class AppointmentController extends Controller
         }
     }
 
-    /**
-     * Gửi email xác nhận lịch hẹn.
-     *
-     * @param  \App\Models\Appointment  $appointment
-     * @return void
-     */
+    // Gửi email xác nhận lịch hẹn
     private function sendApprovalEmail(Appointment $appointment): void
     {
         $appointment->loadMissing(['patient', 'doctor.user', 'service']);
@@ -172,12 +132,7 @@ class AppointmentController extends Controller
         }
     }
 
-    /**
-     * Gửi email thông báo hủy lịch hẹn.
-     *
-     * @param  \App\Models\Appointment  $appointment
-     * @return void
-     */
+    // Gửi email thông báo hủy lịch hẹn
     private function sendCancellationMail(Appointment $appointment): void
     {
         $appointment->loadMissing(['patient.user', 'service']);
@@ -204,36 +159,21 @@ class AppointmentController extends Controller
         });
     }
 
-    /**
-     * Lấy email của bệnh nhân.
-     *
-     * @param  \App\Models\Appointment  $appointment
-     * @return string|null
-     */
+    // Lấy email của bệnh nhân
     private function getPatientEmail(Appointment $appointment): ?string
     {
         return optional($appointment->patient)->email
             ?? optional(optional($appointment->patient)->user)->email;
     }
 
-    /**
-     * Lấy tên của bệnh nhân.
-     *
-     * @param  \App\Models\Appointment  $appointment
-     * @return string|null
-     */
+    // Lấy tên của bệnh nhân
     private function getPatientName(Appointment $appointment): ?string
     {
         return optional($appointment->patient)->name
             ?? optional(optional($appointment->patient)->user)->name;
     }
 
-    /**
-     * Tính giá cuối cùng sau khi áp dụng giảm giá.
-     *
-     * @param  \App\Models\Appointment  $appointment
-     * @return float
-     */
+    // Tính giá cuối cùng sau khi áp dụng giảm giá
     private function calculateFinalPrice(Appointment $appointment): float
     {
         $basePrice = $appointment->total ?? ($appointment->service->price ?? 0);
@@ -242,14 +182,7 @@ class AppointmentController extends Controller
         return $basePrice * $discount;
     }
 
-    /**
-     * Tính tỷ lệ giảm giá dựa trên tháng sinh của bệnh nhân.
-     * - Giảm 30% nếu sinh trong tháng hiện tại.
-     * - Giảm 20% mặc định.
-     *
-     * @param  \App\Models\Appointment  $appointment
-     * @return float
-     */
+    // Tính tỷ lệ giảm giá dựa trên tháng sinh của bệnh nhân (30% nếu sinh trong tháng hiện tại, 20% mặc định)
     private function calculateDiscount(Appointment $appointment): float
     {
         $birthdate = optional($appointment->patient)->birthdate;
@@ -263,15 +196,7 @@ class AppointmentController extends Controller
         return 0.8;
     }
 
-    /**
-     * Xây dựng nội dung email thông báo hủy lịch hẹn.
-     *
-     * @param  \App\Models\Appointment  $appointment
-     * @param  string|null  $patientName
-     * @param  bool  $wasPaid
-     * @param  float  $finalPrice
-     * @return string
-     */
+    // Xây dựng nội dung email thông báo hủy lịch hẹn
     private function buildCancellationEmailBody(
         Appointment $appointment,
         ?string $patientName,

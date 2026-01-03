@@ -7,23 +7,13 @@ use Illuminate\Support\Facades\Password;
 
 class ResetPasswordController extends Controller
 {
-    /**
-     * Hiển thị form reset mật khẩu với token.
-     *
-     * @param  string  $token
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form reset mật khẩu với token
     public function showResetForm($token)
     {
         return view('auth.reset-password', ['token' => $token]);
     }
 
-    /**
-     * Xử lý reset mật khẩu từ form.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xử lý reset mật khẩu từ form
     public function reset(Request $request)
     {
         // Validate dữ liệu đầu vào

@@ -10,12 +10,7 @@ use Illuminate\Http\Request;
 
 class LabTestController extends Controller
 {
-    /**
-     * Hiển thị form yêu cầu xét nghiệm.
-     *
-     * @param  int  $recordId
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form yêu cầu xét nghiệm
     public function create($recordId)
     {
         $record = MedicalRecord::findOrFail($recordId);
@@ -24,15 +19,7 @@ class LabTestController extends Controller
         return view('doctor.lab_tests.create', compact('record', 'departments'));
     }
 
-    /**
-     * Lưu yêu cầu xét nghiệm mới vào database.
-     * - Tạo yêu cầu xét nghiệm cho hồ sơ bệnh án.
-     * - Ghi nhận người yêu cầu là bác sĩ hiện tại.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $recordId
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Lưu yêu cầu xét nghiệm mới vào database
     public function store(Request $request, $recordId)
     {
         // Validate dữ liệu đầu vào

@@ -14,16 +14,10 @@ use Illuminate\Validation\Rule;
 
 class DoctorController extends Controller
 {
-    /**
-     * Role ID cho bác sĩ trong hệ thống.
-     */
+    // Role ID cho bác sĩ trong hệ thống
     private const DOCTOR_ROLE_ID = 2;
 
-    /**
-     * Hiển thị danh sách bác sĩ.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị danh sách bác sĩ
     public function index()
     {
         $doctors = Doctor::with(['user', 'department'])->paginate(10);
@@ -31,11 +25,7 @@ class DoctorController extends Controller
         return view('admin.doctors.index', compact('doctors'));
     }
 
-    /**
-     * Hiển thị form thêm mới bác sĩ.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form thêm mới bác sĩ
     public function create()
     {
         $departments = Department::all();
@@ -43,13 +33,7 @@ class DoctorController extends Controller
         return view('admin.doctors.create', compact('departments'));
     }
 
-    /**
-     * Lưu bác sĩ mới vào database.
-     * - Sử dụng transaction để đảm bảo toàn vẹn dữ liệu.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Lưu bác sĩ mới vào database (sử dụng transaction)
     public function store(Request $request)
     {
         // Chuẩn hóa email và validate dữ liệu
@@ -66,12 +50,7 @@ class DoctorController extends Controller
             ->with('success', 'Thêm bác sĩ thành công!');
     }
 
-    /**
-     * Hiển thị form chỉnh sửa bác sĩ.
-     *
-     * @param  \App\Models\Doctor  $doctor
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form chỉnh sửa bác sĩ
     public function edit(Doctor $doctor)
     {
         $departments = Department::all();
@@ -79,14 +58,7 @@ class DoctorController extends Controller
         return view('admin.doctors.edit', compact('doctor', 'departments'));
     }
 
-    /**
-     * Cập nhật thông tin bác sĩ.
-     * - Sử dụng transaction để đảm bảo toàn vẹn dữ liệu.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Doctor  $doctor
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Cập nhật thông tin bác sĩ (sử dụng transaction)
     public function update(Request $request, Doctor $doctor)
     {
         // Chuẩn hóa email và validate dữ liệu
@@ -103,26 +75,14 @@ class DoctorController extends Controller
             ->with('success', 'Cập nhật bác sĩ thành công!');
     }
 
-    /**
-     * Hiển thị chi tiết bác sĩ (tạm thời chuyển về danh sách).
-     *
-     * @param  \App\Models\Doctor  $doctor
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Hiển thị chi tiết bác sĩ (tạm thời chuyển về danh sách)
     public function show(Doctor $doctor)
     {
         return redirect()->route('admin.doctors.index')
             ->with('success', 'Đã chuyển về danh sách bác sĩ.');
     }
 
-    /**
-     * Xóa bác sĩ và tài khoản liên kết.
-     * - Không cho phép xóa nếu bác sĩ còn lịch hẹn.
-     * - Sử dụng transaction để đảm bảo toàn vẹn dữ liệu.
-     *
-     * @param  \App\Models\Doctor  $doctor
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xóa bác sĩ và tài khoản liên kết (không cho phép xóa nếu còn lịch hẹn, sử dụng transaction)
     public function destroy(Doctor $doctor)
     {
         // Kiểm tra nếu bác sĩ còn lịch hẹn thì không cho xóa
@@ -144,12 +104,7 @@ class DoctorController extends Controller
             ->with('success', 'Xóa bác sĩ thành công!');
     }
 
-    /**
-     * Lấy danh sách bác sĩ theo khoa (API endpoint).
-     *
-     * @param  int  $departmentId
-     * @return \Illuminate\Http\JsonResponse
-     */
+    // Lấy danh sách bác sĩ theo khoa (API endpoint)
     public function getDoctorsByDepartment($departmentId)
     {
         $doctors = Doctor::with('user')
@@ -166,12 +121,7 @@ class DoctorController extends Controller
         return response()->json($doctors);
     }
 
-    /**
-     * Hiển thị lịch làm việc của bác sĩ trong ngày.
-     *
-     * @param  int  $doctorId
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị lịch làm việc của bác sĩ trong ngày
     public function schedule($doctorId)
     {
         $doctor = Doctor::with('user')->findOrFail($doctorId);
@@ -184,12 +134,7 @@ class DoctorController extends Controller
         return view('admin.doctors.schedule', compact('doctor', 'today', 'morningCount', 'afternoonCount'));
     }
 
-    /**
-     * Chuẩn hóa email: chuyển về chữ thường và loại bỏ khoảng trắng.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return void
-     */
+    // Chuẩn hóa email: chuyển về chữ thường và loại bỏ khoảng trắng
     private function normalizeEmail(Request $request): void
     {
         $request->merge([
@@ -197,13 +142,7 @@ class DoctorController extends Controller
         ]);
     }
 
-    /**
-     * Validate dữ liệu bác sĩ.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Doctor|null  $doctor
-     * @return void
-     */
+    // Validate dữ liệu bác sĩ
     private function validateDoctorData(Request $request, ?Doctor $doctor = null): void
     {
         // Chuẩn bị rule cho email (unique hoặc ignore nếu đang update)
@@ -229,12 +168,7 @@ class DoctorController extends Controller
         ]);
     }
 
-    /**
-     * Tạo tài khoản user cho bác sĩ.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \App\Models\User
-     */
+    // Tạo tài khoản user cho bác sĩ
     private function createUserForDoctor(Request $request): User
     {
         return User::create([
@@ -248,13 +182,7 @@ class DoctorController extends Controller
         ]);
     }
 
-    /**
-     * Tạo hồ sơ bác sĩ.
-     *
-     * @param  int  $userId
-     * @param  \Illuminate\Http\Request  $request
-     * @return \App\Models\Doctor
-     */
+    // Tạo hồ sơ bác sĩ
     private function createDoctorProfile(int $userId, Request $request): Doctor
     {
         return Doctor::create([
@@ -265,13 +193,7 @@ class DoctorController extends Controller
         ]);
     }
 
-    /**
-     * Cập nhật thông tin user của bác sĩ.
-     *
-     * @param  \App\Models\Doctor  $doctor
-     * @param  \Illuminate\Http\Request  $request
-     * @return void
-     */
+    // Cập nhật thông tin user của bác sĩ
     private function updateUserInfo(Doctor $doctor, Request $request): void
     {
         $updateData = [
@@ -290,13 +212,7 @@ class DoctorController extends Controller
         $doctor->user->update($updateData);
     }
 
-    /**
-     * Cập nhật thông tin hồ sơ bác sĩ.
-     *
-     * @param  \App\Models\Doctor  $doctor
-     * @param  \Illuminate\Http\Request  $request
-     * @return void
-     */
+    // Cập nhật thông tin hồ sơ bác sĩ
     private function updateDoctorProfile(Doctor $doctor, Request $request): void
     {
         $doctor->update([
@@ -306,25 +222,13 @@ class DoctorController extends Controller
         ]);
     }
 
-    /**
-     * Kiểm tra xem bác sĩ có lịch hẹn hay không.
-     *
-     * @param  \App\Models\Doctor  $doctor
-     * @return bool
-     */
+    // Kiểm tra xem bác sĩ có lịch hẹn hay không
     private function hasAppointments(Doctor $doctor): bool
     {
         return Appointment::where('doctor_id', $doctor->id)->exists();
     }
 
-    /**
-     * Đếm số lượng lịch hẹn theo ca khám.
-     *
-     * @param  int  $doctorId
-     * @param  string  $date
-     * @param  string  $shift  'morning' hoặc 'afternoon'
-     * @return int
-     */
+    // Đếm số lượng lịch hẹn theo ca khám (morning hoặc afternoon)
     private function countAppointmentsByShift(int $doctorId, string $date, string $shift): int
     {
         // Map shift name

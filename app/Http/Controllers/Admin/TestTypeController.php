@@ -9,11 +9,7 @@ use Illuminate\Http\Request;
 
 class TestTypeController extends Controller
 {
-    /**
-     * Hiển thị danh sách loại xét nghiệm.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị danh sách loại xét nghiệm
     public function index()
     {
         $types = TestType::with('department')->latest()->paginate(10);
@@ -21,11 +17,7 @@ class TestTypeController extends Controller
         return view('admin.test_types.index', compact('types'));
     }
 
-    /**
-     * Hiển thị form tạo loại xét nghiệm mới.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form tạo loại xét nghiệm mới
     public function create()
     {
         $departments = Department::all();
@@ -33,12 +25,7 @@ class TestTypeController extends Controller
         return view('admin.test_types.create', compact('departments'));
     }
 
-    /**
-     * Lưu loại xét nghiệm mới vào database.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Lưu loại xét nghiệm mới vào database
     public function store(Request $request)
     {
         // Validate dữ liệu đầu vào
@@ -59,12 +46,7 @@ class TestTypeController extends Controller
         return redirect()->route('admin.test-types.index')->with('success', 'Đã thêm loại xét nghiệm mới!');
     }
 
-    /**
-     * Hiển thị form chỉnh sửa loại xét nghiệm.
-     *
-     * @param  int  $id
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form chỉnh sửa loại xét nghiệm
     public function edit($id)
     {
         $type = TestType::findOrFail($id);
@@ -73,13 +55,7 @@ class TestTypeController extends Controller
         return view('admin.test_types.edit', compact('type', 'departments'));
     }
 
-    /**
-     * Cập nhật thông tin loại xét nghiệm.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Cập nhật thông tin loại xét nghiệm
     public function update(Request $request, $id)
     {
         $type = TestType::findOrFail($id);
@@ -90,12 +66,7 @@ class TestTypeController extends Controller
         return redirect()->route('admin.test-types.index')->with('success', 'Đã cập nhật loại xét nghiệm!');
     }
 
-    /**
-     * Xóa loại xét nghiệm khỏi database.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xóa loại xét nghiệm khỏi database
     public function destroy($id)
     {
         TestType::findOrFail($id)->delete();

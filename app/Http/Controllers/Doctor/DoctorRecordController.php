@@ -12,14 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class DoctorRecordController extends Controller
 {
-    /**
-     * Hiển thị hồ sơ khám bệnh của bệnh nhân.
-     * - Tạo hồ sơ bệnh án mới nếu chưa có.
-     * - Hiển thị thông tin lịch hẹn, bệnh nhân và dịch vụ.
-     *
-     * @param  int  $appointmentId
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị hồ sơ khám bệnh của bệnh nhân (tạo mới nếu chưa có)
     public function showPatientRecord($appointmentId)
     {
         // Lấy thông tin lịch hẹn
@@ -44,18 +37,7 @@ class DoctorRecordController extends Controller
             ->with('patient', $appointment->patient);
     }
 
-    /**
-     * Cập nhật thông tin chẩn đoán, kết luận và toa thuốc.
-     * - Lưu thông tin chẩn đoán và kết luận.
-     * - Lưu các hạng mục gói dịch vụ đã chọn.
-     * - Xử lý toa thuốc chi tiết theo bảng prescription_items.
-     * - Xử lý upload ảnh đơn và nhiều ảnh.
-     * - Cập nhật trạng thái lịch hẹn nếu có.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\MedicalRecord  $record
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Cập nhật thông tin chẩn đoán, kết luận, toa thuốc và upload ảnh
     public function update(Request $request, MedicalRecord $record)
     {
         // Validate dữ liệu đầu vào

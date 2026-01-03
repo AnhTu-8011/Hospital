@@ -9,12 +9,7 @@ use Illuminate\Http\Request;
 
 class MedicalRecordController extends Controller
 {
-    /**
-     * Hiển thị danh sách hồ sơ bệnh án với bộ lọc tìm kiếm.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị danh sách hồ sơ bệnh án với bộ lọc tìm kiếm
     public function index(Request $request)
     {
         $query = MedicalRecord::with(['patient.user', 'appointment.doctor.user']);
@@ -46,12 +41,7 @@ class MedicalRecordController extends Controller
         return view('admin.medical-records.index', compact('records'));
     }
 
-    /**
-     * Lưu hồ sơ bệnh án mới vào database.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Lưu hồ sơ bệnh án mới vào database
     public function store(Request $request)
     {
         // Validate dữ liệu đầu vào
@@ -86,12 +76,7 @@ class MedicalRecordController extends Controller
             ->with('success', 'Tạo hồ sơ bệnh án thành công.');
     }
 
-    /**
-     * Hiển thị chi tiết hồ sơ bệnh án.
-     *
-     * @param  \App\Models\MedicalRecord  $medicalRecord
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị chi tiết hồ sơ bệnh án
     public function show(MedicalRecord $medicalRecord)
     {
         // Load các quan hệ cần thiết

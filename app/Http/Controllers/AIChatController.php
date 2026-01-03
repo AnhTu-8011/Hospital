@@ -200,9 +200,7 @@ class AIChatController extends Controller
             ->values();
     }
 
-    /**
-     * GỌI AI ĐỂ LẤY DANH SÁCH BỆNH.
-     */
+    // Gọi AI để lấy danh sách bệnh
     private function askAIForDiseases(string $message): array
     {
         try {

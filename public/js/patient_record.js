@@ -94,4 +94,101 @@ document.addEventListener('DOMContentLoaded', function(){
       });
     });
   }
+
+  // Prescription Management
+  initPrescriptionManagement();
 });
+
+/**
+ * Khởi tạo quản lý toa thuốc (thêm/xóa dòng thuốc).
+ */
+function initPrescriptionManagement() {
+  // Lấy config từ window object (được set từ Blade template)
+  const config = window.patientRecordConfig || {};
+  const initialIndex = config.prescriptionIndex || 1;
+  
+  let prescriptionIndex = initialIndex;
+  const body = document.getElementById('prescription-items-body');
+  const addBtn = document.getElementById('add-prescription-row');
+
+  // Khởi tạo Select2 cho các dropdown thuốc hiện có
+  if (window.jQuery && typeof $.fn.select2 === 'function') {
+    $('.medicine-select').select2({
+      width: '100%',
+      placeholder: '-- Chọn thuốc --',
+      allowClear: true
+    });
+  }
+
+  if (!addBtn || !body) {
+    return;
+  }
+
+  // Xử lý thêm dòng thuốc mới
+  addBtn.addEventListener('click', function() {
+    const firstRow = body.querySelector('.prescription-row');
+    if (!firstRow) {
+      return;
+    }
+
+    // Hủy select2 trên tất cả dropdown thuốc hiện tại để tránh clone markup của select2
+    if (window.jQuery && typeof $.fn.select2 === 'function') {
+      $('.medicine-select').each(function() {
+        if ($(this).hasClass('select2-hidden-accessible')) {
+          $(this).select2('destroy');
+        }
+      });
+    }
+
+    // Clone dòng đầu tiên
+    const newRow = firstRow.cloneNode(true);
+
+    // Cập nhật name với index mới và xóa giá trị cũ
+    newRow.querySelectorAll('input, select').forEach(function(el) {
+      if (el.name) {
+        el.name = el.name.replace(/prescription_items\[[0-9]+\]/, 'prescription_items[' + prescriptionIndex + ']');
+      }
+      if (el.tagName === 'SELECT') {
+        el.selectedIndex = 0;
+      } else {
+        el.value = '';
+      }
+    });
+
+    body.appendChild(newRow);
+
+    // Khởi tạo lại select2 cho TẤT CẢ dropdown thuốc
+    if (window.jQuery && typeof $.fn.select2 === 'function') {
+      $('.medicine-select').select2({
+        width: '100%',
+        placeholder: '-- Chọn thuốc --',
+        allowClear: true
+      });
+    }
+
+    prescriptionIndex++;
+  });
+
+  // Xử lý xóa dòng thuốc
+  body.addEventListener('click', function(e) {
+    if (e.target.closest('.remove-prescription-row')) {
+      const rows = body.querySelectorAll('.prescription-row');
+      if (rows.length <= 1) {
+        return; // Luôn giữ ít nhất 1 dòng
+      }
+      
+      const row = e.target.closest('.prescription-row');
+      if (row) {
+        // Hủy select2 trên row bị xóa
+        if (window.jQuery && typeof $.fn.select2 === 'function') {
+          const select = row.querySelector('.medicine-select');
+          if (select && $(select).hasClass('select2-hidden-accessible')) {
+            $(select).select2('destroy');
+          }
+        }
+        
+        row.remove();
+      }
+    }
+  });
+}

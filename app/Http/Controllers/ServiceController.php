@@ -10,11 +10,7 @@ use Illuminate\Http\Request;
 
 class ServiceController extends Controller
 {
-    /**
-     * Hiển thị danh sách dịch vụ.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị danh sách dịch vụ
     public function index()
     {
         $services = Service::with(['department', 'symptoms'])
@@ -25,11 +21,7 @@ class ServiceController extends Controller
         return view('admin.services.index', compact('services'));
     }
 
-    /**
-     * Hiển thị form tạo dịch vụ mới.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form tạo dịch vụ mới
     public function create()
     {
         $departments = Department::all();
@@ -37,12 +29,7 @@ class ServiceController extends Controller
         return view('admin.services.create', compact('departments'));
     }
 
-    /**
-     * Lưu dịch vụ mới vào database.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Lưu dịch vụ mới vào database
     public function store(Request $request)
     {
         // Validate dữ liệu đầu vào
@@ -85,12 +72,7 @@ class ServiceController extends Controller
             ->with('success', 'Thêm dịch vụ thành công!');
     }
 
-    /**
-     * Hiển thị form chỉnh sửa dịch vụ.
-     *
-     * @param  \App\Models\Service  $service
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form chỉnh sửa dịch vụ
     public function edit(Service $service)
     {
         $departments = Department::all();
@@ -100,13 +82,7 @@ class ServiceController extends Controller
         return view('admin.services.edit', compact('service', 'departments'));
     }
 
-    /**
-     * Cập nhật thông tin dịch vụ trong database.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Service  $service
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Cập nhật thông tin dịch vụ trong database
     public function update(Request $request, Service $service)
     {
         // Validate dữ liệu đầu vào
@@ -152,12 +128,7 @@ class ServiceController extends Controller
             ->with('success', 'Cập nhật dịch vụ thành công!');
     }
 
-    /**
-     * Xóa dịch vụ khỏi database.
-     *
-     * @param  \App\Models\Service  $service
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Xóa dịch vụ khỏi database
     public function destroy(Service $service)
     {
         // Không cho phép xóa nếu đã có lịch hẹn tham chiếu tới dịch vụ này

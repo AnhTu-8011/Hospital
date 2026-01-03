@@ -16,14 +16,7 @@ use Illuminate\Support\Facades\Validator;
 
 class AppointmentController extends Controller
 {
-    /**
-     * Hiển thị danh sách lịch hẹn của bệnh nhân đang đăng nhập.
-     * - Lấy thông tin bệnh nhân tương ứng với user hiện tại.
-     * - Nếu user chưa có hồ sơ bệnh nhân → trả về trang chủ kèm thông báo lỗi.
-     * - Nếu có, hiển thị danh sách các lịch hẹn (gồm thông tin bác sĩ, dịch vụ, ...).
-     *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
-     */
+    // Hiển thị danh sách lịch hẹn của bệnh nhân đang đăng nhập
     public function index()
     {
         $user = Auth::user();
@@ -44,13 +37,7 @@ class AppointmentController extends Controller
         return view('appointments.index', compact('appointments'));
     }
 
-    /**
-     * Hiển thị form tạo lịch hẹn mới.
-     * - Lấy danh sách bác sĩ, dịch vụ, khoa.
-     * - Trả về view form tạo lịch hẹn.
-     *
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị form tạo lịch hẹn mới
     public function create()
     {
         $doctors = Doctor::with('user')->get();
@@ -60,23 +47,10 @@ class AppointmentController extends Controller
         return view('appointments.create', compact('doctors', 'services', 'departments'));
     }
 
-    /**
-     * Lưu lịch hẹn mới vào cơ sở dữ liệu.
-     * - Xác thực dữ liệu nhập vào.
-     * - Kiểm tra trùng lịch hẹn với bác sĩ.
-     * - Dùng transaction để đảm bảo toàn vẹn dữ liệu.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Lưu lịch hẹn mới vào cơ sở dữ liệu
     public function store(Request $request)
     {
-        /**
-         * Bước 1️⃣: Kiểm tra dữ liệu đầu vào
-         * - Bắt buộc phải có các thông tin: bệnh nhân, bác sĩ, dịch vụ, ngày khám, ca khám.
-         * - Ngày khám không được nhỏ hơn hôm nay.
-         * - Ca khám chỉ có thể là "morning" hoặc "afternoon".
-         */
+        // Kiểm tra dữ liệu đầu vào
         $validator = Validator::make($request->all(), [
             'patient_id' => 'required|exists:patients,id',
             'doctor_id' => 'required|exists:doctors,id',
@@ -91,21 +65,14 @@ class AppointmentController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        /**
-         * Bước 2️⃣: Sử dụng transaction để đảm bảo an toàn dữ liệu
-         * - Nếu có lỗi trong quá trình tạo lịch hẹn, mọi thao tác sẽ bị rollback (hủy bỏ).
-         */
+        // Sử dụng transaction để đảm bảo an toàn dữ liệu
         return DB::transaction(function () use ($request) {
             // Lấy thông tin các đối tượng liên quan
             $doctor = Doctor::with('user')->findOrFail($request->doctor_id);
             $service = Service::findOrFail($request->service_id);
             $patient = Patient::findOrFail($request->patient_id);
 
-            /**
-             * Bước 3️⃣: Xác định tên ca khám dựa vào giá trị appointment_time
-             * - morning → Ca sáng (07:30 - 11:30)
-             * - afternoon → Ca chiều (13:00 - 17:00).
-             */
+            // Xác định tên ca khám dựa vào giá trị appointment_time
             $medicalExaminationMap = [
                 'morning' => 'Ca sáng (07:30 - 11:30)',
                 'afternoon' => 'Ca chiều (13:00 - 17:00)',
@@ -115,13 +82,7 @@ class AppointmentController extends Controller
             // ✅ Chỉ lưu ngày khám (không cần giờ mặc định)
             $appointmentDate = Carbon::parse($request->appointment_date)->toDateString();
 
-            /**
-             * Bước 3.5️⃣: Kiểm tra thời gian đặt lịch - phải đặt trước ít nhất 5 giờ so với thời gian bắt đầu ca khám
-             * - Ca sáng bắt đầu lúc 07:30
-             * - Ca chiều bắt đầu lúc 13:00
-             * - Tính thời gian từ bây giờ đến thời điểm bắt đầu ca khám
-             * - Nếu < 5 giờ → báo lỗi, không cho đặt
-             */
+            // Kiểm tra thời gian đặt lịch - phải đặt trước ít nhất 5 giờ so với thời gian bắt đầu ca khám
             $appointmentDateTime = Carbon::parse($request->appointment_date);
             
             // Xác định thời gian bắt đầu ca khám
@@ -156,13 +117,7 @@ class AppointmentController extends Controller
                 }
             }
 
-            /**
-             * Bước 4️⃣: Kiểm tra giới hạn số ca mỗi buổi
-             * - Mỗi bác sĩ trong một ngày chỉ nhận tối đa:
-             *   + 25 ca sáng
-             *   + 25 ca chiều
-             * - Nếu đã đủ → báo lỗi, không cho đặt thêm.
-             */
+            // Kiểm tra giới hạn số ca mỗi buổi (tối đa 25 ca sáng và 25 ca chiều mỗi bác sĩ)
             $existingCount = Appointment::where('doctor_id', $doctor->id)
                 ->whereDate('appointment_date', $request->appointment_date)
                 ->where('medical_examination', $medicalExamination)
@@ -179,11 +134,7 @@ class AppointmentController extends Controller
                 )->withInput();
             }
 
-            /**
-             * Bước 5️⃣: Tạo lịch hẹn mới
-             * - Ghi vào bảng appointments
-             * - Trạng thái mặc định: "pending" (chờ xác nhận).
-             */
+            // Tạo lịch hẹn mới với trạng thái pending
             $appointment = Appointment::create([
                 'patient_id' => $patient->id,
                 'doctor_id' => $doctor->id,
@@ -194,23 +145,14 @@ class AppointmentController extends Controller
                 'note' => $request->note,
             ]);
 
-            /**
-             * Bước 6️⃣: Trả về thông báo thành công
-             * - Redirect về trang danh sách lịch hẹn.
-             */
+            // Trả về thông báo thành công
             return redirect()
                 ->route('appointments.index')
                 ->with('success', 'Đặt lịch thành công! Vui lòng chờ xác nhận.');
         });
     }
 
-    /**
-     * Hiển thị chi tiết một lịch hẹn.
-     * - Bao gồm thông tin bệnh nhân, bác sĩ, dịch vụ.
-     *
-     * @param  int  $id
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị chi tiết một lịch hẹn
     public function show($id)
     {
         $appointment = Appointment::with(['patient', 'doctor.user', 'service'])
@@ -219,16 +161,7 @@ class AppointmentController extends Controller
         return view('appointments.show', compact('appointment'));
     }
 
-    /**
-     * Hủy lịch hẹn.
-     * - Cho phép bệnh nhân tự hủy khi lịch còn ở trạng thái chờ duyệt / đã duyệt (chưa khám).
-     * - Không xóa bản ghi, chỉ cập nhật trạng thái để admin vẫn theo dõi được.
-     * - Nếu đã thanh toán, coi như ghi nhận hoàn tiền (xử lý chi tiết ở lớp thanh toán hoặc kế toán).
-     * - Gửi email thông báo cho bệnh nhân, và tùy chọn gửi cho admin.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    // Hủy lịch hẹn (chỉ cho phép trong vòng 5 giờ kể từ khi đặt hoặc thanh toán)
     public function cancel($id)
     {
         $appointment = Appointment::with(['patient.user'])->findOrFail($id);
@@ -350,13 +283,7 @@ class AppointmentController extends Controller
         return redirect()->route('appointments.index')->with('success', $flashMessage);
     }
 
-    /**
-     * Hiển thị hồ sơ bệnh án sau khi khám.
-     * - Dành cho bệnh nhân xem lại chi tiết lịch khám và kết quả (medical_record).
-     *
-     * @param  int  $id
-     * @return \Illuminate\View\View
-     */
+    // Hiển thị hồ sơ bệnh án sau khi khám
     public function viewRecord($id)
     {
         $appointment = \App\Models\Appointment::with(['doctor.user', 'service', 'patient', 'medicalRecord'])
