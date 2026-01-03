@@ -7,6 +7,7 @@ use App\Models\Appointment;
 use App\Models\MedicalRecord;
 use App\Models\PrescriptionItem;
 use App\Models\Service;
+use App\Models\Medicine;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -21,8 +22,8 @@ class DoctorRecordController extends Controller
         // Lấy danh sách dịch vụ
         $services = Service::with('department')->orderBy('name')->get();
 
-        // Tạo hoặc lấy hồ sơ bệnh án
-        $record = MedicalRecord::firstOrCreate(
+        // Tạo hoặc lấy hồ sơ bệnh án (load relationship prescriptionItems)
+        $record = MedicalRecord::with('prescriptionItems')->firstOrCreate(
             ['appointment_id' => $appointmentId],
             [
                 'patient_id' => $appointment->patient_id,
@@ -32,6 +33,11 @@ class DoctorRecordController extends Controller
                 'prescription' => [],
             ]
         );
+        
+        // Nếu record đã tồn tại nhưng chưa load relationship, load lại
+        if (!$record->relationLoaded('prescriptionItems')) {
+            $record->load('prescriptionItems');
+        }
 
         return view('doctor.patient_record', compact('appointment', 'record', 'services'))
             ->with('patient', $appointment->patient);
@@ -54,7 +60,7 @@ class DoctorRecordController extends Controller
             'prescription_items.*.dosage' => 'nullable|string|max:255',
             'prescription_items.*.frequency' => 'nullable|string|max:255',
             'prescription_items.*.duration' => 'nullable|string|max:255',
-            'prescription_items.*.quantity' => 'nullable|integer|min:0',
+            'prescription_items.*.quantity' => 'nullable|integer|min:0|max:9999',
             'prescription_items.*.unit' => 'nullable|string|max:255',
             'prescription_items.*.usage' => 'nullable|string',
             'prescription_items.*.note' => 'nullable|string',
@@ -83,6 +89,38 @@ class DoctorRecordController extends Controller
 
             // Xử lý toa thuốc chi tiết theo bảng prescription_items
             $items = $request->input('prescription_items', []);
+
+            // Kiểm tra số lượng không vượt quá tồn kho thuốc
+            if (is_array($items)) {
+                $medicineIds = collect($items)
+                    ->pluck('medicine_id')
+                    ->filter()
+                    ->unique()
+                    ->values();
+
+                if ($medicineIds->isNotEmpty()) {
+                    $medicines = Medicine::whereIn('id', $medicineIds)->get()->keyBy('id');
+
+                    foreach ($items as $item) {
+                        $mid = $item['medicine_id'] ?? null;
+                        if (!$mid || !isset($medicines[$mid])) {
+                            continue;
+                        }
+
+                        $qty = (int) ($item['quantity'] ?? 0);
+                        $stock = (int) ($medicines[$mid]->stock ?? 0);
+
+                        if ($qty > $stock) {
+                            return redirect()
+                                ->back()
+                                ->withErrors([
+                                    'prescription_items' => "Thuốc \"{$medicines[$mid]->name}\" chỉ còn {$stock} đơn vị trong kho. Vui lòng điều chỉnh số lượng."
+                                ])
+                                ->withInput();
+                        }
+                    }
+                }
+            }
 
             // Xóa các dòng toa thuốc cũ
             if (method_exists($record, 'prescriptionItems')) {

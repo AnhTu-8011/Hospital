@@ -5,6 +5,7 @@ namespace App\Http\Requests\Auth;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -41,10 +42,10 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        \Log::info('Attempting to login with email: '.$this->email);
-
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            \Log::warning('Login failed for email: '.$this->email);
+            Log::warning('Login failed', [
+                'ip' => $this->ip(),
+            ]);
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -52,7 +53,10 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        \Log::info('Login successful for user ID: '.Auth::id());
+        Log::info('Login successful', [
+            'user_id' => Auth::id(),
+            'ip' => $this->ip(),
+        ]);
 
         RateLimiter::clear($this->throttleKey());
     }

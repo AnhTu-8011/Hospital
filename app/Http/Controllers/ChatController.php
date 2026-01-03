@@ -32,14 +32,6 @@ class ChatController extends Controller
         return $user?->id;
     }
 
-    // Kiểm tra user hiện tại có role admin hay không
-    private function isAdmin(): bool
-    {
-        $user = $this->authUser();
-
-        return (bool) ($user && $user->role && $user->role->name === 'admin');
-    }
-
     // Hiển thị giao diện chat cho admin
     public function adminChat()
     {
@@ -108,7 +100,7 @@ class ChatController extends Controller
             'receiver_id' => 'required|exists:users,id', // ID người nhận phải tồn tại
             'message' => 'required|string', // Nội dung tin nhắn là chuỗi ký tự
         ]);
-
+        // Lấy thông tin người nhận
         $receiver = User::with('role')->findOrFail($request->receiver_id);
 
         // Phân quyền: user chỉ chat với admin; admin chỉ chat với user
@@ -202,12 +194,14 @@ class ChatController extends Controller
     // Lấy danh sách tin nhắn giữa người dùng hiện tại và người được chọn
     public function getMessages($receiverId)
     {
+        // Lấy thông tin người gửi
         $sender = $this->authUser();
 
         if (!$sender) {
             abort(401);
         }
 
+        // Lấy thông tin người nhận
         $receiver = User::with('role')->findOrFail($receiverId);
 
         // Phân quyền: user chỉ chat với admin; admin chỉ chat với user

@@ -152,6 +152,12 @@
                 </div>
             </div>
                 {{-- Medical Record Update Form --}}
+                @php
+                    // Định nghĩa biến existingItems trước khi sử dụng trong form
+                    $existingItems = method_exists($record, 'prescriptionItems')
+                        ? $record->prescriptionItems
+                        : collect();
+                @endphp
                 <form action="{{ route('doctor.records.update', $record->id) }}" method="POST" enctype="multipart/form-data" data-prescription-index="{{ ($existingItems && $existingItems->count()) ? (int)$existingItems->count() : 1 }}">
                     @csrf
                     @method('PUT')
@@ -285,9 +291,6 @@
 
                             @php
                                 $medicines = \App\Models\Medicine::orderBy('name')->get();
-                                $existingItems = method_exists($record, 'prescriptionItems')
-                                    ? $record->prescriptionItems
-                                    : collect();
                             @endphp
 
                     <div class="table-responsive">
@@ -314,7 +317,9 @@
                                                 <select name="prescription_items[{{ $rowIndex }}][medicine_id]" class="form-select form-select-sm rounded-3 medicine-select">
                                                     <option value="">-- Chọn thuốc --</option>
                                                     @foreach($medicines as $m)
-                                                        <option value="{{ $m->id }}" {{ $pi->medicine_id == $m->id ? 'selected' : '' }}>
+                                                        <option value="{{ $m->id }}"
+                                                            data-stock="{{ $m->stock ?? 0 }}"
+                                                            {{ $pi->medicine_id == $m->id ? 'selected' : '' }}>
                                                             {{ $m->name }} @if($m->strength) ({{ $m->strength }}) @endif
                                                         </option>
                                                     @endforeach
@@ -330,7 +335,7 @@
                                                 <input type="text" name="prescription_items[{{ $rowIndex }}][duration]" class="form-control form-control-sm rounded-3" placeholder="5 ngày" value="{{ $pi->duration }}">
                                             </td>
                                             <td>
-                                                <input type="number" name="prescription_items[{{ $rowIndex }}][quantity]" class="form-control form-control-sm rounded-3" min="0" value="{{ $pi->quantity }}">
+                                                <input type="number" name="prescription_items[{{ $rowIndex }}][quantity]" class="form-control form-control-sm rounded-3" min="0" max="9999" value="{{ $pi->quantity }}" title="Số lượng tối đa: 9999">
                                             </td>
                                             <td>
                                                 <input type="text" name="prescription_items[{{ $rowIndex }}][unit]" class="form-control form-control-sm rounded-3" placeholder="viên, hộp..." value="{{ $pi->unit }}">
@@ -355,7 +360,7 @@
                                             <select name="prescription_items[0][medicine_id]" class="form-select form-select-sm rounded-3 medicine-select">
                                                 <option value="">-- Chọn thuốc --</option>
                                                 @foreach($medicines as $m)
-                                                    <option value="{{ $m->id }}">{{ $m->name }} @if($m->strength) ({{ $m->strength }}) @endif</option>
+                                                    <option value="{{ $m->id }}" data-stock="{{ $m->stock ?? 0 }}">{{ $m->name }} @if($m->strength) ({{ $m->strength }}) @endif</option>
                                                 @endforeach
                                             </select>
                                         </td>
@@ -369,7 +374,7 @@
                                             <input type="text" name="prescription_items[0][duration]" class="form-control form-control-sm rounded-3" placeholder="5 ngày">
                                         </td>
                                         <td>
-                                            <input type="number" name="prescription_items[0][quantity]" class="form-control form-control-sm rounded-3" min="0" value="0">
+                                            <input type="number" name="prescription_items[0][quantity]" class="form-control form-control-sm rounded-3" min="0" max="9999" value="0" title="Số lượng tối đa: 9999">
                                         </td>
                                         <td>
                                             <input type="text" name="prescription_items[0][unit]" class="form-control form-control-sm rounded-3" placeholder="viên, hộp...">

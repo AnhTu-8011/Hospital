@@ -111,6 +111,40 @@ function initPrescriptionManagement() {
   const body = document.getElementById('prescription-items-body');
   const addBtn = document.getElementById('add-prescription-row');
 
+  function getStockFromRow(row) {
+    const sel = row.querySelector('.medicine-select');
+    if (!sel) return 0;
+    const opt = sel.options[sel.selectedIndex];
+    const stock = opt ? parseInt(opt.getAttribute('data-stock')) : 0;
+    return Number.isFinite(stock) ? stock : 0;
+  }
+
+  function validateQuantityInput(input) {
+    const row = input.closest('.prescription-row');
+    if (!row) return;
+    const stock = getStockFromRow(row);
+    const value = parseInt(input.value) || 0;
+
+    if (value < 0) {
+      input.value = 0;
+      input.setCustomValidity('');
+      return;
+    }
+
+    if (value > 9999) {
+      input.setCustomValidity('Số lượng thuốc không được vượt quá 9999');
+      input.reportValidity();
+      return;
+    }
+
+    if (stock > 0 && value > stock) {
+      input.setCustomValidity(`Số lượng vượt quá tồn kho còn lại (${stock}).`);
+      input.reportValidity();
+    } else {
+      input.setCustomValidity('');
+    }
+  }
+
   // Khởi tạo Select2 cho các dropdown thuốc hiện có
   if (window.jQuery && typeof $.fn.select2 === 'function') {
     $('.medicine-select').select2({
@@ -188,6 +222,32 @@ function initPrescriptionManagement() {
         }
         
         row.remove();
+      }
+    }
+  });
+
+  // Validate số lượng thuốc khi nhập (giới hạn tối đa 9999 và không vượt tồn kho)
+  body.addEventListener('input', function(e) {
+    if (e.target.name && e.target.name.includes('[quantity]')) {
+      validateQuantityInput(e.target);
+    }
+  });
+
+  // Validate khi blur (rời khỏi ô input)
+  body.addEventListener('blur', function(e) {
+    if (e.target.name && e.target.name.includes('[quantity]')) {
+      validateQuantityInput(e.target);
+    }
+  }, true);
+
+  // Revalidate khi chọn thuốc (để cập nhật tồn kho)
+  body.addEventListener('change', function(e) {
+    if (e.target.classList.contains('medicine-select')) {
+      const row = e.target.closest('.prescription-row');
+      if (!row) return;
+      const qtyInput = row.querySelector('input[name*="[quantity]"]');
+      if (qtyInput) {
+        validateQuantityInput(qtyInput);
       }
     }
   });

@@ -10,6 +10,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class DoctorController extends Controller
@@ -175,7 +176,7 @@ class DoctorController extends Controller
             'role_id' => self::DOCTOR_ROLE_ID,
             'name' => $request->name,
             'email' => $request->email,
-            'password' => bcrypt($request->password),
+            'password' => Hash::make($request->password),
             'phone' => $request->phone,
             'gender' => $request->gender,
             'address' => $request->address,
@@ -206,7 +207,7 @@ class DoctorController extends Controller
 
         // Cập nhật mật khẩu nếu có
         if ($request->filled('password')) {
-            $updateData['password'] = bcrypt($request->password);
+            $updateData['password'] = Hash::make($request->password);
         }
 
         $doctor->user->update($updateData);

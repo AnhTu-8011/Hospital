@@ -192,13 +192,13 @@
                         <div class="mb-3 d-flex justify-content-center">
                           <div style="width: 160px; height: 160px; overflow:hidden; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                             @php
-                            {{-- $serviceImage: Đường dẫn ảnh của dịch vụ (nếu có)
-                                 Kiểu: string|null
-                                 Lấy từ $service->image --}}
+                            // $serviceImage: Đường dẫn ảnh của dịch vụ (nếu có)
+                            // Kiểu: string|null
+                            // Lấy từ $service->image
                             $serviceImage = $service->image ?? null;
-                            {{-- $departmentImage: Đường dẫn ảnh của khoa (nếu dịch vụ không có ảnh)
-                                 Kiểu: string|null
-                                 Lấy từ $service->department->image --}}
+                            // $departmentImage: Đường dẫn ảnh của khoa (nếu dịch vụ không có ảnh)
+                            // Kiểu: string|null
+                            // Lấy từ $service->department->image
                             $departmentImage = $service->department->image ?? null;
                             @endphp
                             @if(!empty($serviceImage))
@@ -241,9 +241,9 @@
                           <div class="text-center mb-4">
                             <div style="width: 200px; height: 200px; margin: 0 auto; overflow:hidden; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                               @php
-                              {{-- Biến tạm để lưu ảnh dịch vụ trong modal --}}
+                              // Biến tạm để lưu ảnh dịch vụ trong modal
                               $serviceImage = $service->image ?? null;
-                              {{-- Biến tạm để lưu ảnh khoa trong modal (fallback) --}}
+                              // Biến tạm để lưu ảnh khoa trong modal (fallback)
                               $departmentImage = $service->department->image ?? null;
                               @endphp
                               @if(!empty($serviceImage))

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class PatientController extends Controller
 {
@@ -42,7 +43,7 @@ class PatientController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => bcrypt('123456'), // Gán mật khẩu mặc định (nên buộc đổi khi đăng nhập)
+            'password' => Hash::make('123456'), // Gán mật khẩu mặc định (nên buộc đổi khi đăng nhập)
             'role_id' => 3,                 // 3 = mã vai trò bệnh nhân (patient)
         ]);
 

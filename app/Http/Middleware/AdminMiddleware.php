@@ -19,11 +19,6 @@ class AdminMiddleware
             return redirect()->route('login');
         }
 
-        // Temporary: Allow specific user ID during development
-        if (in_array(Auth::id(), [1])) {  // Replace 1 with your user ID
-            return $next($request);
-        }
-
         $user = Auth::user();
 
         if (! $user->role || strtolower(trim($user->role->name)) !== 'admin') {
