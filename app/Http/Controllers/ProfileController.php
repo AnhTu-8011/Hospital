@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -82,7 +83,7 @@ class ProfileController extends Controller
         // Xác thực dữ liệu nhập
         $request->validate([
             'current_password' => 'required', // bắt buộc nhập mật khẩu hiện tại
-            'password' => 'required|confirmed|min:8', // mật khẩu mới ít nhất 8 ký tự và phải trùng với xác nhận
+            'password' => ['required', 'confirmed', Password::defaults()], // mật khẩu mới theo policy mặc định và phải trùng với xác nhận
         ]);
 
         /** @var \App\Models\User $user */

@@ -258,19 +258,11 @@ class PaymentController extends Controller
         $vnp_Url = rtrim(env('VNPAY_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'), '?');
         $vnp_Returnurl = trim(env('VNPAY_RETURN_URL', route('vnpay.return')));
 
-        // Lấy ngày sinh của bệnh nhân
-        $birthdate = $appointment->patient->birthdate ?? null;
-
-        // Mặc định giảm 20%
-        $discount = 0.8;
-
-        // Nếu có ngày sinh và tháng sinh trùng với tháng hiện tại → giảm thêm 10%
-        if ($birthdate && Carbon::parse($birthdate)->format('m') == now()->format('m')) {
-            $discount = 0.7;
-        }
+        // Tính hệ số giảm giá (20% mặc định, tháng sinh giảm còn 30%)
+        $discountFactor = $this->calculateDiscount($appointment->patient->birthdate ?? null);
 
         // Tính số tiền thanh toán (VNPay yêu cầu đơn vị là đồng, nhân 100)
-        $vnp_Amount = (int) ($price * $discount * 100);
+        $vnp_Amount = (int) ($price * $discountFactor * 100);
 
         // Chuẩn bị tham số VNPay
         $params = [
@@ -323,5 +315,19 @@ class PaymentController extends Controller
         ]);
 
         return $finalUrl;
+    }
+
+    // Hệ số giảm giá: mặc định thanh toán 80%, nếu cùng tháng sinh giảm còn 70%
+    private function calculateDiscount(?string $birthdate): float
+    {
+        $defaultDiscount = 0.8;
+
+        if (! $birthdate) {
+            return $defaultDiscount;
+        }
+
+        $isBirthdayMonth = Carbon::parse($birthdate)->isSameMonth(now());
+
+        return $isBirthdayMonth ? 0.7 : $defaultDiscount;
     }
 }
